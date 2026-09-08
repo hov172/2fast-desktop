@@ -1,0 +1,108 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>d1825e4f-d418-4d2f-9456-66badc726d1a</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>UNOversalTemplate.Core</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)ApplicationArgs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\IParameters.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\ListDictionary.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\MvvmHelpers.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\ParametersBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\ParametersExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Events\BackgroundEventSubscription.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Events\DataEventArgs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Events\DelegateReference.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Events\DispatcherEventSubscription.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Events\EventAggregator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Events\EventBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Events\EventSubscription.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Events\Abstracts\IDelegateReference.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Events\Abstracts\IEventAggregator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Events\Abstracts\IEventSubscription.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Events\PubSubEvent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Events\SubscriptionToken.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Events\ThreadOption.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Events\WeakDelegatesManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extension\ApplicationThemeExtension.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extension\ExceptionExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extension\TaskExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extension\TaskExtensions{T}.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\ApplicationDataStorageHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Structures\OSVersion.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\SystemInformationHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IApplicationArgs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Ioc\ContainerLocator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Ioc\ContainerProvider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Ioc\ContainerResolutionErrorCollection.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Ioc\ContainerResolutionException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Ioc\Abstracts\IContainerExtension.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Ioc\ContainerExtensionExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Ioc\Abstracts\IContainerProvider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Ioc\Abstracts\IContainerProviderExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Ioc\Abstracts\IContainerRegistry.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Ioc\ContainerRegistryExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Ioc\Abstracts\Internals\IContainerInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Ioc\Abstracts\Internals\IContainerInfoExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Ioc\Abstracts\IScopedProvider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Logging\Category.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Logging\DebugLogger.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Logging\EmptyLogger.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Logging\ILoggerFacade.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Logging\Priority.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Mvvm\ErrorsContainer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Mvvm\PropertySupport.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Mvvm\ViewModelBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Mvvm\ViewModelLocationProvider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Mvvm\ViewModelLocator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Navigation\Abstract\IConfirmNavigation.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Navigation\Abstract\IConfirmNavigationAsync.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Navigation\Abstract\IDestructible.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Navigation\Abstract\IFrameFacade.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Navigation\Abstract\IFrameFacade2.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Navigation\Abstract\IInitialize.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Navigation\Abstract\IInitializeAsync.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Navigation\Abstract\INavigatedAware.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Navigation\Abstract\INavigatingAware.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Navigation\Abstract\INavigatingAwareAsync.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Navigation\Abstract\INavigationAware.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Navigation\Abstract\INavigationParameters.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Navigation\Abstract\INavigationParametersExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Navigation\Abstract\INavigationParametersInternal.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Navigation\Abstract\INavigationPath.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Navigation\Abstract\INavigationResult.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Navigation\Abstract\INavigationService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Navigation\Abstract\INavigationService2.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Navigation\NavigationServiceExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Navigation\FrameFacade.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Navigation\FrameFacadeExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Navigation\NavigationEventArgsExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Navigation\NavigationFactory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Navigation\NavigationMode.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Navigation\NavigationParameters.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Navigation\NavigationParametersExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Navigation\NavigationPath.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Navigation\NavigationQueue.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Navigation\NavigationService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Navigation\PageNavigationInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Navigation\PageNavigationRegistry.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)StartCauses.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)StartKinds.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UNOversalApplicationBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UNOversalApplicationBase.xaml.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utilities\BindingUtilities.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utilities\WindowDisplayInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utilities\WindowDisplayMode.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utilities\XamlUtilities.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)Events\Abstracts\" />
+    <Folder Include="$(MSBuildThisFileDirectory)Ioc\Abstracts\" />
+    <Folder Include="$(MSBuildThisFileDirectory)Structures\" />
+  </ItemGroup>
+</Project>

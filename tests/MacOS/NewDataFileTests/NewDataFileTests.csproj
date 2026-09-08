@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType><TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings><DefineConstants>TWOFAST_MACOS;TWOFAST_DESKTOP</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup><Compile Include="../../../src/Project2FA.Uno/Platforms/Desktop/MacOSNewDataFile.cs" Link="MacOSNewDataFile.cs" /><Compile Include="../../../src/Project2FA.Uno/Platforms/Desktop/MacOSVaultLocation.cs" Link="MacOSVaultLocation.cs" /><Compile Include="../../../src/Project2FA.Uno/Platforms/Desktop/MacOSFileTransaction.cs" Link="MacOSFileTransaction.cs" /></ItemGroup>
+</Project>

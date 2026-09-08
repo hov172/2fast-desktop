@@ -1,0 +1,263 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>d4df9b87-0533-4d3e-81d8-09e1b159c9f5</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>Project2FA.Shared</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Controls\AutoCloseTeachingTip.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Controls\ImageEx\ImageEx.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Controls\ImageEx\ImageEx.Members.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Controls\ImageEx\ImageExBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Controls\ImageEx\ImageExBase.Members.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Controls\ImageEx\ImageExBase.Placeholder.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Controls\ImageEx\ImageExBase.Source.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Controls\ImageEx\ImageExFailedEventArgs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Controls\ImageEx\ImageExOpenedEventArgs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Controls\ProgressRing\RingShape\RingShape.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Controls\ProgressRing\RingShape\RingShape.Properties.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Controls\RadialProgressBar\RadialProgressBar.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Controls\SettingsGroup\SettingsGroup.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Controls\SettingsGroup\SettingsGroupAutomationPeer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Controls\Shimmer\Shimmer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Controls\Shimmer\Shimmer.Properties.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Converters\BoolToCommandBarVisibilityConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Converters\BytesToHumanReadableConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Converters\DateTimeToStringConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Converters\DoubleToInt32ToStringConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Converters\FavouriteToIconConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Converters\FavouriteTooltipConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Converters\FontIconNameToGlyphConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Converters\FontIconUnicodeIndexToGlyphConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Converters\NullToVisibilityConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Converters\PersonalPictureInitialsVisibilityConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Converters\PersonPictureSizeConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Converters\ShowCodeToIconConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Converters\SVGImageConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Converters\TOTPVisibilityTooltipConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Converters\VisibleWhenFalseConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\ListViewExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\ScrollToElementExtension.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\TextBoxRegex.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\TextBoxRegex.Data.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\TextBoxRegex.Properties.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\TemplateSelector.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\AccountAvatarTemplateSelector.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\ThemeHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Messenger\CategoriesChangedMessage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Messenger\DatafileWriteStatusChangedMessage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Messenger\FilteringChangedMessage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Messenger\InAppItemChangedMessage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Messenger\PasswordStatusChangedMessage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Messenger\WebDAVStatusChangedMessage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\AccountEntryEnum.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\AegisBackupModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\AndOTPBackupModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\BackupServiceEnum.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\CategoryModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\DatafileModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\DependencyGroupModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\DependencyModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\DependencyRootModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\FontIdentifikationCollectionModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\FontIdentifikationModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\InAppPaymentItemModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\OTPTypeEnum.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\SymbolModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\TwoFACodeModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\TwoFASBackupModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\WebDAVStatusEnums.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\NextcloudLoginFlowV2Model.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Crypto\CryptoService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Crypto\ProtectData.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Importer\AegisBackupImportService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Importer\AndOTPBackupImportService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Importer\BackupImporterService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Importer\ITwoFASBackupImportService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Importer\IAndOTPBackupImportService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Importer\IAegisBackupImportService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Importer\IBackupImporterService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\DataService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Importer\ITwofastBackupImportService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Importer\TwoFASBackupImportService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Importer\TwofastBackupImportService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Parser\IProject2FAParser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Parser\Project2FAParser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Serialization\EncryptedBytesConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Serialization\EncryptedStringConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Serialization\ISerializationCryptoService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Serialization\SerializationCryptoService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Serialization\SerializationService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Serialization\SerializationContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\SettingsService\Enums\Theme.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\SettingsService\Enums\BiometricPreferEnum.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\SettingsService\SettingsService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\WebDAV\WebDAVClientService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\WebDAV\WebDAVDirectoryService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\SettingPageViewModel.Desktop.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Strings\en\Resources.generated.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utils\ErrorDialogs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utils\JSONUtil.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utils\WindowDisplayInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utils\WindowDisplayMode.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\AccountCodePageViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\CameraPageViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\AddAccountPageViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\Base\AddAccountViewModelBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\Base\CredentialViewModelBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\Base\EditAccountViewModelBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\BlankPageViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\Fylouts\CategoryFilterFlyoutViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\ContentDialogs\AddAccountContentDialogViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\ContentDialogs\ChangeDatafilePasswordContentDialogViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\ContentDialogs\DisplayQRCodeContentDialogViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\ContentDialogs\EditAccountContentDialogViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\ContentDialogs\ImportBackupContentDialogViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\ContentDialogs\UpdateDatafileContentDialogViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\ContentDialogs\UseDatafileContentDialogViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\ContentDialogs\WebViewDatafileContentDialogViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\Base\DatafileViewModelBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\EditAccountPageViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\FileActivationPageViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\Fylouts\ResponsiveDrawerFlyoutViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\ImportBackupPageViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\ContentDialogs\InAppPaymentContentDialogViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\LoginPageViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\ContentDialogs\ManageCategoriesContentDialogViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\NewDataFilePageViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\SettingPageViewModel.Android.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\SettingPageViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\SettingPageViewModel.iOS.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\ShellPageViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\TutorialPageViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\UseDataFilePageViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\ContentDialogs\WebDAVAuthContentDialogViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\WelcomePageViewModel.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Background\mhellmeier_blue-hills.jpg" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Fonts\FluentSystemIcons-Filled.ttf" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Fonts\FluentSystemIcons-Regular.ttf" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Fonts\SimpleIcons.ttf" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\appoverview.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\categories_DE.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\categories_EN.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\FileLogo.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\firstSteps_DE.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\firstSteps_EN.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\gift.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\give-love.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\LargeTile.scale-100.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\LargeTile.scale-125.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\LargeTile.scale-150.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\LargeTile.scale-200.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\LargeTile.scale-400.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\price-tag.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\SmallTile.scale-100.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\SmallTile.scale-125.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\SmallTile.scale-150.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\SmallTile.scale-200.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\SmallTile.scale-400.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\SplashScreen.scale-100.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\SplashScreen.scale-125.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\SplashScreen.scale-150.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\SplashScreen.scale-200.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\SplashScreen.scale-400.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\Square150x150Logo.scale-100.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\Square150x150Logo.scale-125.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\Square150x150Logo.scale-150.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\Square150x150Logo.scale-200.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\Square150x150Logo.scale-400.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\Square44x44Logo.altform-lightunplated_targetsize-16.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\Square44x44Logo.altform-lightunplated_targetsize-24.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\Square44x44Logo.altform-lightunplated_targetsize-256.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\Square44x44Logo.altform-lightunplated_targetsize-32.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\Square44x44Logo.altform-lightunplated_targetsize-48.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\Square44x44Logo.altform-unplated_targetsize-16.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\Square44x44Logo.altform-unplated_targetsize-256.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\Square44x44Logo.altform-unplated_targetsize-32.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\Square44x44Logo.altform-unplated_targetsize-48.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\Square44x44Logo.scale-100.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\Square44x44Logo.scale-125.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\Square44x44Logo.scale-150.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\Square44x44Logo.scale-200.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\Square44x44Logo.scale-400.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\Square44x44Logo.targetsize-16.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\Square44x44Logo.targetsize-24.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\Square44x44Logo.targetsize-24_altform-unplated.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\Square44x44Logo.targetsize-256.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\Square44x44Logo.targetsize-32.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\Square44x44Logo.targetsize-48.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\StoreLogo.scale-100.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\StoreLogo.scale-125.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\StoreLogo.scale-150.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\StoreLogo.scale-200.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\StoreLogo.scale-400.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\Wide310x150Logo.scale-100.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\Wide310x150Logo.scale-125.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\Wide310x150Logo.scale-150.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\Wide310x150Logo.scale-200.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Images\Wide310x150Logo.scale-400.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\JSONs\CategoryIcons.json" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\JSONs\Dependencies.json" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\JSONs\ProgressRingDeterminate.json" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\JSONs\ProgressRingIntdeterminate.json" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Splashcreen\splash_screen.svg" />
+  </ItemGroup>
+  <ItemGroup>
+    <PRIResource Include="$(MSBuildThisFileDirectory)Strings\da\Resources.resw" />
+    <PRIResource Include="$(MSBuildThisFileDirectory)Strings\de\Resources.resw" />
+    <PRIResource Include="$(MSBuildThisFileDirectory)Strings\el\Resources.resw" />
+    <PRIResource Include="$(MSBuildThisFileDirectory)Strings\en\Resources.resw" />
+    <PRIResource Include="$(MSBuildThisFileDirectory)Strings\es\Resources.resw" />
+    <PRIResource Include="$(MSBuildThisFileDirectory)Strings\et\Resources.resw" />
+    <PRIResource Include="$(MSBuildThisFileDirectory)Strings\fi\Resources.resw" />
+    <PRIResource Include="$(MSBuildThisFileDirectory)Strings\fr\Resources.resw" />
+    <PRIResource Include="$(MSBuildThisFileDirectory)Strings\it\Resources.resw" />
+    <PRIResource Include="$(MSBuildThisFileDirectory)Strings\ja\Resources.resw" />
+    <PRIResource Include="$(MSBuildThisFileDirectory)Strings\nb\Resources.resw" />
+    <PRIResource Include="$(MSBuildThisFileDirectory)Strings\pl\Resources.resw" />
+    <PRIResource Include="$(MSBuildThisFileDirectory)Strings\pt-br\Resources.resw" />
+    <PRIResource Include="$(MSBuildThisFileDirectory)Strings\pt-pt\Resources.resw" />
+    <PRIResource Include="$(MSBuildThisFileDirectory)Strings\sv\Resources.resw" />
+    <PRIResource Include="$(MSBuildThisFileDirectory)Strings\zh-cn\Resources.resw" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Icons\schluessel.svg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)Controls\ImageEx\ImageEx.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Controls\SettingsGroup\SettingsGroup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="$(MSBuildThisFileDirectory)Assets\JSONs\simpleicons.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Icons\android_schluessel.svg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)Strings\da\Resources.md" />
+    <None Include="$(MSBuildThisFileDirectory)Strings\el\Resources.md" />
+    <None Include="$(MSBuildThisFileDirectory)Strings\es\Resources.md" />
+    <None Include="$(MSBuildThisFileDirectory)Strings\et\Resources.md" />
+    <None Include="$(MSBuildThisFileDirectory)Strings\fi\Resources.md" />
+    <None Include="$(MSBuildThisFileDirectory)Strings\fr\Resources.md" />
+    <None Include="$(MSBuildThisFileDirectory)Strings\it\Resources.md" />
+    <None Include="$(MSBuildThisFileDirectory)Strings\ja\Resources.md" />
+    <None Include="$(MSBuildThisFileDirectory)Strings\nb\Resources.md" />
+    <None Include="$(MSBuildThisFileDirectory)Strings\pt-br\Resources.md" />
+    <None Include="$(MSBuildThisFileDirectory)Strings\pt-pt\Resources.md" />
+    <None Include="$(MSBuildThisFileDirectory)Strings\sv\Resources.md" />
+    <None Include="$(MSBuildThisFileDirectory)Strings\zh-cn\Resources.md" />
+  </ItemGroup>
+</Project>

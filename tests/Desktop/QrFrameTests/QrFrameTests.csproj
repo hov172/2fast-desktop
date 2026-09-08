@@ -1,0 +1,4 @@
+<Project Sdk="Microsoft.NET.Sdk">
+<PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net10.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><DefineConstants>TWOFAST_DESKTOP</DefineConstants></PropertyGroup>
+<ItemGroup><Compile Include="../../../src/Project2FA.Uno/Platforms/Desktop/DesktopQrFrameDecoder.cs" Link="DesktopQrFrameDecoder.cs"/><PackageReference Include="ZXing.Net" Version="0.16.11" /></ItemGroup>
+</Project>

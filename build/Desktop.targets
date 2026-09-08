@@ -1,0 +1,11 @@
+<Project>
+  <!-- Keep each project's normal customizations, then restrict this build to the desktop target. -->
+  <PropertyGroup>
+    <DesktopOriginalBuildTargets>$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildProjectDirectory)'))</DesktopOriginalBuildTargets>
+  </PropertyGroup>
+  <Import Project="$(DesktopOriginalBuildTargets)" Condition="'$(DesktopOriginalBuildTargets)' != ''" />
+  <PropertyGroup>
+    <TargetFrameworks Condition="'$(TargetFrameworks)' != ''">net10.0</TargetFrameworks>
+    <TargetFrameworks Condition="'$(MSBuildProjectName)' == 'Project2FA.Uno' or '$(MSBuildProjectName)' == 'UnoLibrary.Controls' or '$(MSBuildProjectName)' == 'CommunityToolkit.Uno.Camera' or '$(MSBuildProjectName)' == 'ZXing.Net.Uno' or '$(MSBuildProjectName)' == 'BiometryService'">net10.0-desktop</TargetFrameworks>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,1385 @@
+using Project2FA.Repository.Models;
+using System;
+using System.Collections.ObjectModel;
+using UNOversal.Ioc;
+using Windows.Storage;
+using System.Collections.Specialized;
+using OtpNet;
+using Project2FA.Core.Utils;
+using System.Threading;
+using System.Security.Cryptography;
+using System.IO;
+using Project2FA.Core;
+using Project2FA.Core.Services.NTP;
+using System.Threading.Tasks;
+using DecaTec.WebDav;
+using Project2FA.Services.WebDAV;
+using Windows.Storage.Streams;
+using WebDAVClient.Types;
+using System.Collections.Generic;
+using System.Diagnostics;
+using CommunityToolkit.Mvvm.ComponentModel;
+using Project2FA.Core.Messenger;
+using CommunityToolkit.Mvvm.Messaging;
+using Project2FA.Repository.Models.Enums;
+using UNOversal.Services.Secrets;
+using UNOversal.Services.Dialogs;
+using UNOversal.Logging;
+using UNOversal.Services.File;
+using UNOversal.Services.Network;
+using Project2FA.Utils;
+using Project2FA.Core.Services.Crypto;
+using CommunityToolkit.WinUI.Helpers;
+using CommunityToolkit.WinUI.Collections;
+using UNOversal.Services.Serialization;
+using UNOversal.Services.Logging;
+using System.Text;
+using UNOversal.Helpers;
+using System.Linq;
+
+#if WINDOWS_UWP
+using Project2FA.UWP;
+using Project2FA.UWP.Views;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
+using Project2FA.UWP.Utils;
+using Windows.Security.Authorization.AppCapabilityAccess;
+using Project2FA.Helpers;
+
+#else
+using Project2FA.UnoApp;
+using Project2FA.Uno.Views;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Controls;
+#endif
+
+namespace Project2FA.Services
+{
+#if !WINDOWS_UWP
+    [Bindable]
+#endif
+    public partial class DataService : ObservableRecipient, IDisposable
+    {
+        private SemaphoreSlim _collectionAccessSemaphore;
+        public SemaphoreSlim CollectionAccessSemaphore 
+        { 
+            get
+            {
+                if (_collectionAccessSemaphore == null)
+                {
+                    _collectionAccessSemaphore = new SemaphoreSlim(1);
+                }
+                return _collectionAccessSemaphore;
+            }
+        }
+        private bool _checkedTimeSynchronisation;
+        private bool _isLoading;
+        private TimeSpan _ntpServerTimeDifference;
+        private ISecretService SecretService { get; }
+        private IDialogService DialogService { get; }
+        private ILoggerFacade Logger { get; }
+        private IFileService FileService { get; }
+        private INetworkTimeService NetworkTimeService { get; }
+        private INetworkService NetworkService { get; }
+        private ISerializationService SerializationService { get; }
+        private ISerializationCryptoService SerializationCryptoService { get; }
+        private bool _initialization, _errorOccurred;
+        private ILoggingService LoggingService { get; }
+        public Stopwatch TOTPEventStopwatch { get; }
+        public AdvancedCollectionView ACVCollection { get; }
+        public ObservableCollection<TwoFACodeModel> Collection { get; } = new ObservableCollection<TwoFACodeModel>();
+        public ObservableCollection<FontIdentifikationModel> FontIconCollection { get; } = new ObservableCollection<FontIdentifikationModel>();
+
+        public ObservableCollection<CategoryModel> GlobalCategories { get; set; } = new ObservableCollection<CategoryModel>();
+        private StorageFile _openDatefile;
+        private bool _emptyAccountCollectionTipIsOpen;
+        private TwoFACodeModel _tempDeletedTFAModel;
+        private const long unixEpochTicks = 621355968000000000L;
+        private const long ticksToSeconds = 10000000L;
+        int _reloadCollectionCounter = 0;
+        private bool _isFilterEnabled;
+        private bool _isFilterChecked;
+        private bool _newAppUpdateDialogDisplayed = false;
+        private ResourceDictionary _compactDict;
+#if __IOS__
+        private Foundation.NSUrl _openDatefileUrl = null;
+#endif
+
+        //private StorageFileQueryResult _queryResult; // to reload the datafile if the file is modified
+        //private bool _datafileWritten;
+        //private int _queryChangedCounter;
+
+        /// <summary>
+        /// Gets public singleton property.
+        /// </summary>
+        public static DataService Instance { get; } = new DataService();
+
+        /// <summary>
+        /// Private Constructor
+        /// </summary>
+        private DataService()
+        {
+            SecretService = App.Current.Container.Resolve<ISecretService>();
+            FileService = App.Current.Container.Resolve<IFileService>();
+            Logger = App.Current.Container.Resolve<ILoggerFacade>();
+            DialogService = App.Current.Container.Resolve<IDialogService>();
+            SerializationService = App.Current.Container.Resolve<ISerializationService>();
+            SerializationCryptoService = App.Current.Container.Resolve<ISerializationCryptoService>();
+            NetworkTimeService = App.Current.Container.Resolve<INetworkTimeService>();
+            NetworkService = App.Current.Container.Resolve<INetworkService>();
+            LoggingService = App.Current.Container.Resolve<ILoggingService>();
+            ACVCollection = new AdvancedCollectionView(Collection, true);
+            TOTPEventStopwatch = new Stopwatch();
+            ACVCollection.SortDescriptions.Add(new SortDescription("IsFavouriteText", SortDirection.Ascending));
+            // TODO Community Toolkit 8.3
+            // ACVCollection.SortDescriptions.Add(new SortDescription(<string>("IsFavouriteText"), SortDirection.Ascending));
+            Collection.CollectionChanged += Accounts_CollectionChanged;
+            CheckTime().ConfigureAwait(false);
+        }
+
+        public async Task StartService()
+        {
+            await LoadFontIconList();
+            await CheckLocalDatafile();
+            TOTPEventStopwatch.Start();
+        }
+
+        private async Task LoadFontIconList()
+        {
+            try
+            {
+                StorageFile file = await StorageFile.GetFileFromApplicationUriAsync(new Uri($"ms-appx:///Assets/JSONs/simpleicons.json"));
+                IRandomAccessStreamWithContentType randomStream = await file.OpenReadAsync();
+                using StreamReader r = new StreamReader(randomStream.AsStreamForRead());
+                var fontIdentifikationCollectionModel = SerializationService.Deserialize<FontIdentifikationCollectionModel>(await r.ReadToEndAsync());
+                FontIconCollection.AddRange(fontIdentifikationCollectionModel.Collection, true);
+            }
+            catch (Exception exc)
+            {
+                await LoggingService.LogException(exc, SettingsService.Instance.LoggingSetting);
+#if WINDOWS_UWP
+                TrackingManager.TrackExceptionCatched(nameof(LoadFontIconList), exc);
+#endif
+            }
+        }
+
+#region Time Check
+        /// <summary>
+        /// Check if the current time of the system is correct
+        /// </summary>
+        private async Task CheckTime()
+        {
+            TimeSpan difference = DateTime.UtcNow - SettingsService.Instance.LastCheckedSystemTime;
+            // check the time again after 8 hours
+            if (difference.TotalHours > 8)
+            {
+                if (NetworkHelper.Instance.ConnectionInformation.IsInternetAvailable && SettingsService.Instance.UseNTPServerCorrection)
+                {
+                    try
+                    {
+                        DateTime time = await NetworkTimeService.GetNetworkTimeAsync(SettingsService.Instance.NTPServerString);
+                        TimeSpan timespan = time.Subtract(DateTime.UtcNow);
+                        _checkedTimeSynchronisation = true;
+                        if (Math.Abs(timespan.TotalSeconds) >= 15) // difference of 15 seconds or more
+                        {
+                            _ntpServerTimeDifference = timespan;
+                            await ErrorDialogs.SystemTimeNotCorrectError();
+                        }
+                        SettingsService.Instance.LastCheckedSystemTime = DateTime.UtcNow;
+                    }
+                    catch (Exception exc)
+                    {
+                        LoggingService.LogException(exc, SettingsService.Instance.LoggingSetting);
+                        Logger.Log("NTP exception: " + exc.Message, Category.Exception, Priority.Low);
+                        //TrackingManager.TrackException(exc);
+                    }
+                }
+            }
+        }
+        #endregion
+
+        /// <summary>
+        /// Create TOTP code for collection initialization and write the datafile, if an item added or removed from the collection
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private async void Accounts_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                case NotifyCollectionChangedAction.Replace:
+                case NotifyCollectionChangedAction.Remove:
+                    // normal mode
+                    if (_initialization == false)
+                    {
+                        await WriteLocalDatafile();
+                        if (e.Action == NotifyCollectionChangedAction.Add)
+                        {
+                            await ResetCollection();
+                        }
+                    }
+                    // if the initialization is active
+                    else
+                    {
+                        if (e.Action == NotifyCollectionChangedAction.Add)
+                        {
+                            // initialize the newest (last) item
+                            int count = (sender as ObservableCollection<TwoFACodeModel>).Count;
+                            if (count > 0)
+                            {
+                                int i = count - 1;
+                                Collection[i].HideTOTPCode = SettingsService.Instance.UseHiddenTOTP;
+                                if (SettingsService.Instance.UseHiddenTOTP)
+                                {
+                                    Collection[i].CodeVisibilityOptionEnabled = true;
+                                }
+                                await InitializeItem(i);
+                            }
+                        }
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Reset the TOTP code
+        /// </summary>
+        public async Task ResetCollection()
+        {
+            var useHiddenTOTP = SettingsService.Instance.UseHiddenTOTP;
+            await CollectionAccessSemaphore.WaitAsync();
+            for (int i = 0; i < Collection.Count; i++)
+            {
+                Collection[i].HideTOTPCode = useHiddenTOTP;
+                Collection[i].CodeVisibilityOptionEnabled = useHiddenTOTP;
+                await InitializeItem(i);
+            }
+            TOTPEventStopwatch.Restart();
+            CollectionAccessSemaphore.Release();
+        }
+
+        /// <summary>
+        /// Reset the period and regnerate the TOTP code
+        /// </summary>
+        /// <param name="i">The index of the item in the collection</param>
+        private Task InitializeItem(int i)
+        {
+            return GenerateTOTP(i);
+        }
+
+        /// <summary>
+        /// Reloads the datafile in the local database
+        /// </summary>
+        public async Task ReloadDatafile()
+        {
+            await CheckLocalDatafile();
+        }
+
+        /// <summary>
+        /// Checks and reads the current local datafile
+        /// </summary>
+        private async Task CheckLocalDatafile()
+        {
+            if (Collection.Count == 0)
+            {
+                // loading animation only for empty collection
+                IsLoading = true;
+            }
+
+            bool collectionLockHeld = false;
+            try
+            {
+                ObservableCollection<TwoFACodeModel> deserializeCollection = new ObservableCollection<TwoFACodeModel>();
+
+#if !WINDOWS_UWP
+                // not for UWP
+                StorageFile file = null;
+#endif
+#if __IOS__
+                Foundation.NSUrl nsUrl = null;
+#endif
+                StorageFolder folder = null;
+                string datafilename, passwordHashName, path;
+
+                if (ActivatedDatafile != null)
+                {
+#if WINDOWS_UWP
+                    // check if the app has file system access to load the file
+                    var checkFileSystemAccess = AppCapability.Create(Constants.BroadFileSystemAccessName).CheckAccess();
+                    switch (checkFileSystemAccess)
+                    {
+                        case AppCapabilityAccessStatus.DeniedBySystem:
+                        case AppCapabilityAccessStatus.NotDeclaredByApp:
+                        case AppCapabilityAccessStatus.DeniedByUser:
+                        case AppCapabilityAccessStatus.UserPromptRequired:
+                            await ErrorDialogs.UnauthorizedAccessUseLocalFileDialog();
+                            return;
+                        case AppCapabilityAccessStatus.Allowed:
+                            break;
+                        default:
+                            await ErrorDialogs.UnauthorizedAccessUseLocalFileDialog();
+                            return;
+                    }
+#endif
+                    path = ActivatedDatafile.Path;
+                    passwordHashName = Constants.ActivatedDatafileHashName;
+                    datafilename = ActivatedDatafile.Name;
+#if WINDOWS_UWP
+                    folder = await ActivatedDatafile.GetParentAsync();
+#endif
+#if __IOS__
+                    nsUrl = OpenDatefileUrl;
+#endif
+#if __IOS__ || __ANDROID__
+                    file = ActivatedDatafile;
+#endif
+                }
+                else
+                {
+#if WINDOWS_UWP
+                    folder = SettingsService.Instance.DataFileWebDAVEnabled ?
+                    ApplicationData.Current.LocalFolder :
+                    await StorageFolder.GetFolderFromPathAsync(SettingsService.Instance.DataFilePath);
+#else
+                    path = SettingsService.Instance.DataFilePath;
+                    if (SettingsService.Instance.DataFileWebDAVEnabled)
+                    {
+                        folder = ApplicationData.Current.LocalFolder;
+                    }
+#endif
+
+                    passwordHashName = SettingsService.Instance.DataFilePasswordHash;
+                    datafilename = SettingsService.Instance.DataFileName;
+
+#if __ANDROID__
+                    // create new thread for buggy Android, else NetworkOnMainThreadException 
+                    await Task.Run(() =>
+                    {
+                        Android.Net.Uri androidUri = Android.Net.Uri.Parse(path);
+
+                        file = StorageFile.GetFromSafUri(androidUri);
+                    });
+#endif
+#if __IOS__
+                    Foundation.NSData bookmark = Foundation.NSUserDefaults.StandardUserDefaults.DataForKey(Constants.ContainerName);
+#pragma warning disable CA1416 // Validate platform compatibility
+                    nsUrl = Foundation.NSUrl.FromBookmarkData(
+                        bookmark,
+                        Foundation.NSUrlBookmarkResolutionOptions.WithSecurityScope,
+                        null,
+                        out bool isStale,
+                        out Foundation.NSError error);
+#pragma warning restore CA1416 // Validate platform compatibility
+                    file = await StorageFile.GetFileFromPathAsync(nsUrl.Path);
+#endif
+                }
+
+
+
+
+#if TWOFAST_DESKTOP
+                file = await Project2FA.Services.MacOS.MacOSVaultLocation.OpenAsync(
+                    ActivatedDatafile?.Path ?? SettingsService.Instance.DataFilePath,
+                    datafilename, ActivatedDatafile == null && SettingsService.Instance.DataFileWebDAVEnabled);
+                folder = await file.GetParentAsync();
+                datafilename = file.Name;
+#endif
+
+#if __ANDROID__ || __IOS__
+                if (file != null)
+#else
+                // WINDOWS_UWP and Desktop: check via FileService
+                if (await FileService.FileExistsAsync(datafilename, folder))
+#endif
+                {
+                    await CollectionAccessSemaphore.WaitAsync();
+                    collectionLockHeld = true;
+                    // prevent write of the datafile to folder
+                    _initialization = true;
+                    try
+                    {
+                        // read the datafile content as string
+                        string datafileStr = string.Empty;
+
+#if WINDOWS_UWP
+                        datafileStr = await FileService.ReadStringAsync(datafilename, folder);
+#elif __ANDROID__
+                        // create new thread for buggy Android, else NetworkOnMainThreadException
+                        await Task.Run(async () => {
+                            datafileStr = await FileIO.ReadTextAsync(file);
+                        });
+#elif __IOS__
+                        if (Foundation.NSFileManager.DefaultManager.IsReadableFile(nsUrl.Path))
+                        {
+                            datafileStr = await FileIO.ReadTextAsync(file);
+                        }
+                        else
+                        {
+                            if (nsUrl.StartAccessingSecurityScopedResource())
+                            {
+                                datafileStr = await FileIO.ReadTextAsync(file);
+                            }
+                        }
+#else
+                        // Desktop (Linux/macOS/Windows-Skia)
+                        datafileStr = await FileService.ReadStringAsync(datafilename, folder);
+#endif
+
+
+                        if (!string.IsNullOrWhiteSpace(datafileStr))
+                        {
+#if TWOFAST_DESKTOP
+                            var passwordBytes = ActivatedDatafile != null
+                                ? SerializationService.Deserialize<byte[]>(SecretService.Helper.ReadSecret(Constants.ContainerName, passwordHashName))
+                                : Encoding.UTF8.GetBytes(SecretService.Helper.ReadSecret(Constants.ContainerName, passwordHashName));
+                            DatafileModel datafile;
+                            try { datafile = await Task.Run(() => Project2FA.Services.MacOS.MacOSVaultCodec.DecryptCurrent(datafileStr, Encoding.UTF8.GetString(passwordBytes), passwordHashName)); }
+                            finally { CryptographicOperations.ZeroMemory(passwordBytes); }
+#else
+                            // read the iv for AES
+                            DatafileModel datafile = SerializationService.Deserialize<DatafileModel>(datafileStr);
+                            Aes algorithm = Aes.Create();
+                            algorithm.IV = datafile.IV;
+
+                            byte[] byteArrayKey;
+
+
+                            // app is started via double click on .2fa file
+                            if (ActivatedDatafile != null)
+                            {
+#if WINDOWS_UWP
+                                // only Windows can use the ProtectData class to encrypt the password for the activated file
+                                byteArrayKey = ProtectData.Unprotect(SerializationService.Deserialize<byte[]>(SecretService.Helper.ReadSecret(Constants.ContainerName, passwordHashName)));
+#else
+
+                                byteArrayKey = SerializationService.Deserialize<byte[]>(SecretService.Helper.ReadSecret(Constants.ContainerName, passwordHashName));
+#endif
+                            }
+                            else
+                            {
+                                byteArrayKey = Encoding.UTF8.GetBytes(SecretService.Helper.ReadSecret(Constants.ContainerName, passwordHashName));
+                            }
+
+                            
+                            if (datafile.Version == 1 || datafile.Version == 0)
+                            {
+                                algorithm.Key = CryptoService.CreateByteArrayKeyV1(byteArrayKey);
+                            }
+                            else if (datafile.Version >= 3 && datafile.Salt != null)
+                            {
+                                algorithm.Key = CryptoService.CreateByteArrayKeyV3(byteArrayKey, datafile.Salt);
+                            }
+                            else
+                            {
+                                algorithm.Key = CryptoService.CreateByteArrayKeyV2(byteArrayKey);
+                            }
+
+                            // deserialize and decrypt the datafile
+                            datafile = SerializationCryptoService.DeserializeDecrypt<DatafileModel>(algorithm.Key, algorithm.IV,datafileStr, datafile.Version);
+
+#endif
+                            deserializeCollection = datafile.Collection;
+                            if (datafile.GlobalCategories != null)
+                            {
+                                GlobalCategories.AddRange(datafile.GlobalCategories, true);
+                            }
+                        }
+
+                        if (deserializeCollection != null)
+                        {
+                            // It skips any performance heavy logic while it's in use, and automatically calls the method when disposed.
+                            using (ACVCollection.DeferRefresh())
+                            {
+                                if (Collection.AddRange(deserializeCollection, true) == 0) // clear the current items and add the new
+                                {
+                                    // if no error has occured
+                                    if (!_errorOccurred)
+                                    {
+                                        EmptyAccountCollectionTipIsOpen = true;
+                                    }
+                                }
+                                else
+                                {
+                                    if (EmptyAccountCollectionTipIsOpen)
+                                    {
+                                        EmptyAccountCollectionTipIsOpen = false;
+                                    }
+
+                                    // check if imported categories from older versions exist and add missing properties
+                                    // bugfix for imported accounts with missing SelectedCategories initialization
+                                    // TODO remove after some versions
+                                    if (SystemInformationHelper.Instance.PreviousVersionInstalled.Equals(PackageVersionHelper.ToPackageVersion("1.4.1.0")))
+                                    {
+                                        for (int i = 0; i < Collection.Count; i++)
+                                        {
+                                            if (Collection[i].Model.SelectedCategories == null)
+                                            {
+                                                Collection[i].Model.SelectedCategories = new ObservableCollection<CategoryModel>();
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            
+
+                            //if (_queryResult == null)
+                            //{
+                            //    try
+                            //    {
+                            //        // monitors the folder of the datafile for changes and triggers the reload. 
+                            //        List<string> fileTypeFilter = new List<string>();
+                            //        fileTypeFilter.Add(".2fa");
+                            //        var options = new QueryOptions(CommonFileQuery.DefaultQuery, fileTypeFilter);
+                            //        _queryResult = folder.CreateFileQueryWithOptions(options);
+                            //        //subscribe on query's ContentsChanged event
+                            //        _queryResult.ContentsChanged += Query_DatafileChanged;
+                            //        // call the query to get later changed elements
+                            //        //TODO add this feature
+                            //        //var files = await _queryResult.GetFilesAsync();
+                            //    }
+                            //    catch (Exception exc)
+                            //    {
+                            //        // TODO exception
+                            //        throw;
+                            //    }
+                            //}
+                            
+                        }
+                    }
+                    catch (Exception exc)
+                    {
+                        await LoggingService.LogException(exc, SettingsService.Instance.LoggingSetting);
+                        _errorOccurred = true;
+#if WINDOWS_UWP
+                        TrackingManager.TrackExceptionCatched(nameof(CheckLocalDatafile) + " PW", exc);
+#endif
+#if __ANDROID__
+                        if (exc is Java.Lang.NullPointerException)
+                        {
+
+                        }
+                        else
+                        {
+                            await ErrorDialogs.ShowUnexpectedError(exc);
+                        }
+#else
+                        if (exc.Message == "Padding is invalid and cannot be removed.")
+                        {
+                            await ErrorDialogs.ShowPasswordError();
+                        }
+                        else
+                        {
+                            await ErrorDialogs.ShowUnexpectedError(exc);
+                        }
+                        
+#endif
+                    }
+                    finally
+                    {
+                        IsLoading = false;
+#if __IOS__
+                        if (nsUrl != null)
+                        {
+                            // release the access of the file
+                            nsUrl.StopAccessingSecurityScopedResource();
+                        }
+#endif
+                    }
+                }
+                // file not found case
+                else
+                {
+                    if (SettingsService.Instance.DataFileWebDAVEnabled)
+                    {
+                        // TODO show not found error
+                        await ErrorDialogs.ShowFileOrFolderNotFoundError();
+                        //await CheckLocalDatafile();
+                    }
+                    else
+                    {
+                        _errorOccurred = true;
+                        await ErrorDialogs.ShowFileOrFolderNotFoundError();
+                    }
+                }
+            }
+#pragma warning disable CA1031 // Do not catch general exception types
+            catch (Exception exc)
+#pragma warning restore CA1031 // Do not catch general exception types
+            {
+                await LoggingService.LogException(exc, SettingsService.Instance.LoggingSetting);
+                _errorOccurred = true;
+                if (exc is UnauthorizedAccessException)
+                {
+                    await ErrorDialogs.ShowUnauthorizedAccessError();
+                }
+                else if(exc is FileNotFoundException)
+                {
+                    if (SettingsService.Instance.DataFileWebDAVEnabled)
+                    {
+#if WINDOWS_UWP
+                        TrackingManager.TrackExceptionCatched(nameof(CheckLocalDatafile) + " WebD", exc);
+#endif
+                        // TODO add dialog for error
+                        ///var webDAVTask = await CheckIfWebDAVDatafileIsOutdated(dbDatafile);
+                    }
+                    else
+                    {
+                        await ErrorDialogs.ShowFileOrFolderNotFoundError();
+                    }
+                }
+                else
+                {
+#if WINDOWS_UWP
+                    TrackingManager.TrackException(nameof(CheckLocalDatafile),exc);
+#endif
+                    await ErrorDialogs.ShowUnexpectedError(exc);
+                }
+            }
+            finally
+            {
+                // writing status for the data file is activated again
+                _initialization = false;
+                if (collectionLockHeld) CollectionAccessSemaphore.Release();
+            }
+
+            //check if a newer version is available or the current file must be uploaded
+            if (SettingsService.Instance.DataFileWebDAVEnabled && ActivatedDatafile == null)
+            {
+                if (await NetworkService.GetIsInternetAvailableAsync())
+                {
+                    var (success, outdated) = await CheckIfWebDAVDatafileIsEqual();
+                    if (success && outdated)
+                    {
+#if !TWOFAST_DESKTOP
+                        Collection.Clear();
+#endif
+                        await CheckLocalDatafile(); //reload the data file
+                        Messenger.Send(new WebDAVStatusChangedMessage(WebDAVStatus.Updated));
+                    }
+                    else if (!success)
+                    {
+                        // TODO add dialog for error, the path of the file is changed
+                    }
+                }
+                else
+                {
+                    Messenger.Send(new WebDAVStatusChangedMessage(WebDAVStatus.NoInternet));
+                }
+            }
+        }
+
+        //private async void Query_DatafileChanged(IStorageQueryResultBase sender, object args)
+        //{
+        //    if (_queryChangedCounter != 0)
+        //    {
+        //        _initialization = true;
+        //        // reload the datafile only, when the file is modified outside the app
+        //        if (!_datafileWritten)
+        //        {
+        //            // TODO display information for reloading
+        //            // reload the datafile, if the file is changed
+        //            await ReloadDatafile();
+        //        }
+        //        else
+        //        {
+        //            _datafileWritten = false;
+        //        }
+        //    }
+        //    _queryChangedCounter++;
+        //}
+
+        public void ErrorResolved()
+        {
+            _errorOccurred = false;
+        }
+
+        private void SendPasswordStatusMessage(bool isinvalid, string hash)
+        {
+            Messenger.Send(new PasswordStatusChangedMessage(isinvalid, hash));
+        }
+
+
+        /// <summary>
+        /// Writes the current accounts into the datafile
+        /// </summary>
+        public async Task<bool> WriteLocalDatafile()
+        {
+            string fileName = string.Empty;
+            StorageFolder folder = Windows.Storage.ApplicationData.Current.LocalFolder;
+#if !WINDOWS_UWP
+            StorageFile file = null;
+#endif
+#if __IOS__
+            Foundation.NSUrl nsUrl = null;
+#endif
+
+            // keep an in-memory backup of the last valid encrypted content for error recovery
+            string encryptedBackup = string.Empty;
+            DatafileModel datafile = new DatafileModel();
+            await CollectionAccessSemaphore.WaitAsync();
+            try
+            {
+                Aes algorithm = Aes.Create();
+
+                string passwordHashName = ActivatedDatafile != null ?
+                    Constants.ActivatedDatafileHashName :
+                    SettingsService.Instance.DataFilePasswordHash;
+
+                // set new template version for data file
+
+                var prevíousVersion = new Version(SystemInformationHelper.Instance.ApplicationVersion.ToFormattedString());
+
+                ObservableCollection<CategoryModel> tempCategories = new ObservableCollection<CategoryModel>();
+                for (int i = 0; i < GlobalCategories.Count; i++)
+                {
+                    tempCategories.Add((CategoryModel)GlobalCategories[i].Clone());
+                }
+                // create the new datafile model (Version 2; V3 with per-file salt will be introduced in a future release)
+                //byte[] fileSalt = datafile.Salt ?? CryptoService.GenerateRandomSalt();
+                DatafileModel fileModel = new DatafileModel() { IV = algorithm.IV, Collection = Collection, Version = 2, GlobalCategories = tempCategories };
+
+                if (ActivatedDatafile != null)
+                {
+#if WINDOWS_UWP
+                    folder = await ActivatedDatafile.GetParentAsync();
+#endif
+                    fileName = ActivatedDatafile.Name;
+                }
+                else
+                {
+#if WINDOWS_UWP
+                    folder = SettingsService.Instance.DataFileWebDAVEnabled ?
+                    ApplicationData.Current.LocalFolder :
+                    await StorageFolder.GetFolderFromPathAsync(SettingsService.Instance.DataFilePath);
+#endif
+                    fileName = SettingsService.Instance.DataFileName;
+#if __ANDROID__
+                    // create new thread for buggy Android, else NetworkOnMainThreadException 
+                    await Task.Run(async () => {
+                        Android.Net.Uri androidUri = Android.Net.Uri.Parse(SettingsService.Instance.DataFilePath);
+                        file = StorageFile.GetFromSafUri(androidUri);
+                    });
+#endif
+#if __IOS__
+                    Foundation.NSData bookmark = Foundation.NSUserDefaults.StandardUserDefaults.DataForKey(Constants.ContainerName);
+#pragma warning disable CA1416 // Validate platform compatibility
+                    nsUrl = Foundation.NSUrl.FromBookmarkData(
+                        bookmark,
+                        Foundation.NSUrlBookmarkResolutionOptions.WithSecurityScope,
+                        null,
+                        out bool isStale,
+                        out Foundation.NSError error);
+#pragma warning restore CA1416 // Validate platform compatibility
+                    file = await StorageFile.GetFileFromPathAsync(nsUrl.Path);
+#endif
+                }
+
+#if TWOFAST_DESKTOP
+                file = await Project2FA.Services.MacOS.MacOSVaultLocation.OpenAsync(
+                    ActivatedDatafile?.Path ?? SettingsService.Instance.DataFilePath,
+                    fileName, ActivatedDatafile == null && SettingsService.Instance.DataFileWebDAVEnabled);
+                folder = await file.GetParentAsync();
+                fileName = file.Name;
+#endif
+
+                // read the current encrypted file content as backup before overwriting
+                encryptedBackup = await FileService.ReadStringAsync(fileName, folder);
+#if TWOFAST_DESKTOP
+                var passwordBytes = ActivatedDatafile != null
+                    ? SerializationService.Deserialize<byte[]>(SecretService.Helper.ReadSecret(Constants.ContainerName, passwordHashName))
+                    : Encoding.UTF8.GetBytes(SecretService.Helper.ReadSecret(Constants.ContainerName, passwordHashName));
+                try
+                {
+                    string password = Encoding.UTF8.GetString(passwordBytes);
+                    // Authenticate the current file before replacing it; never overwrite externally changed credentials.
+                    await Task.Run(() => Project2FA.Services.MacOS.MacOSVaultCodec.DecryptCurrent(encryptedBackup, password, passwordHashName));
+                    string content;
+                    if (Project2FA.Services.MacOS.MacOSVaultCodec.IsModern(encryptedBackup))
+                        content = await Task.Run(() => Project2FA.Services.MacOS.MacOSVaultCodec.Encrypt(fileModel, password));
+                    else
+                    {
+                        algorithm.Key = CryptoService.CreateByteArrayKeyV2(passwordBytes);
+                        content = SerializationCryptoService.SerializeEncrypt(algorithm.Key, algorithm.IV, fileModel, 2);
+                    }
+                    if (SettingsService.Instance.DataFileWebDAVEnabled && ActivatedDatafile == null)
+                        await WriteMacOSRemoteVault(file.Path, encryptedBackup, content, password);
+                    else
+                        await WriteAtomicAsync(content, fileName, folder);
+                }
+                finally { CryptographicOperations.ZeroMemory(passwordBytes); }
+#else
+                datafile = SerializationService.Deserialize<DatafileModel>(encryptedBackup);
+
+                if (ActivatedDatafile != null)
+                {
+#if WINDOWS_UWP
+                    algorithm.Key = CryptoService.CreateByteArrayKeyV2(ProtectData.Unprotect(SerializationService.Deserialize<byte[]>(SecretService.Helper.ReadSecret(Constants.ContainerName, passwordHashName))));
+                    string encryptedContent = SerializationCryptoService.SerializeEncrypt(
+                            algorithm.Key,
+                            algorithm.IV,
+                            fileModel,
+                            fileModel.Version);
+                    await WriteAtomicAsync(encryptedContent, fileName, folder);
+#else
+                    algorithm.Key = CryptoService.CreateByteArrayKeyV2(SerializationService.Deserialize<byte[]>(SecretService.Helper.ReadSecret(Constants.ContainerName, passwordHashName)));
+                    string content = SerializationCryptoService.SerializeEncrypt(
+                            algorithm.Key,
+                            algorithm.IV,
+                            fileModel,
+                            fileModel.Version);
+#if __ANDROID__
+                    // Atomic write via LocalFolder temp file, then move to target (Android: direct write as fallback)
+                    await Task.Run(async () => {
+                        await FileIO.WriteTextAsync(ActivatedDatafile, content);
+                    });
+#else
+                    await WriteAtomicAsync(content, fileName, folder);
+#endif
+#endif
+                }
+                else
+                {
+                    algorithm.Key = CryptoService.CreateByteArrayKeyV2(Encoding.UTF8.GetBytes(SecretService.Helper.ReadSecret(Constants.ContainerName, passwordHashName)));
+                    string encryptedContent = SerializationCryptoService.SerializeEncrypt(
+                            algorithm.Key,
+                            algorithm.IV,
+                            fileModel,
+                            fileModel.Version);
+#if WINDOWS_UWP
+                    await WriteAtomicAsync(encryptedContent, fileName, folder);
+#else
+#if __IOS__
+                    if (!Foundation.NSFileManager.DefaultManager.IsWritableFile(nsUrl.Path))
+                    {
+                        nsUrl.StartAccessingSecurityScopedResource();
+                    }
+#endif
+#if __ANDROID__
+                    // create new thread for buggy Android, else NetworkOnMainThreadException 
+                    await Task.Run(async () => {
+                        await FileIO.WriteTextAsync(file, encryptedContent);
+                    });
+#else
+                    await WriteAtomicAsync(encryptedContent, fileName, folder);
+#endif
+#endif
+                }
+
+#endif
+
+#if !TWOFAST_DESKTOP
+                if (SettingsService.Instance.DataFileWebDAVEnabled && ActivatedDatafile == null)
+                {
+                    if (await NetworkService.GetIsInternetAvailableAsync())
+                    {
+                        (bool successful, bool statusResult) = await UploadDatafileWithWebDAV(folder);
+                        if (successful && statusResult)
+                        {
+                            Messenger.Send(new WebDAVStatusChangedMessage(WebDAVStatus.UptoDate));
+                        }
+                        else
+                        {
+                            Messenger.Send(new WebDAVStatusChangedMessage(WebDAVStatus.Failed));
+                        }
+                    }
+                    else
+                    {
+                        Messenger.Send(new WebDAVStatusChangedMessage(WebDAVStatus.NoInternet));
+                    }
+                }
+#endif
+                Messenger.Send(new DatafileWriteStatusChangedMessage(true));
+                return true;
+            }
+            catch (Exception exc)
+            {
+                await LoggingService.LogException(exc, SettingsService.Instance.LoggingSetting);
+#if WINDOWS_UWP
+                TrackingManager.TrackExceptionCatched(nameof(WriteLocalDatafile), exc);
+#endif
+#if TWOFAST_DESKTOP
+                // Atomic writes/remote transactions already preserve recovery state. Do not overwrite an external change here.
+                await Project2FA.Services.MacOS.MacOSSession.Message(DialogService, "Unable to save", exc is IOException ? exc.Message : "The vault could not be saved. Check the password, connection and file access, then retry.");
+#else
+                await HandleWriteError(encryptedBackup, fileName, folder);
+#endif
+                return false;
+            }
+            finally
+            {
+                CollectionAccessSemaphore.Release();
+            }
+        }
+
+        private async Task HandleWriteError(string encryptedBackup, string fileName, StorageFolder folder, int attempt = 0)
+        {
+            if (string.IsNullOrEmpty(encryptedBackup))
+            {
+                await Utils.ErrorDialogs.WritingFatalRestoreError();
+                return;
+            }
+            bool restoreSuccess = await RestoreLastDatafile(encryptedBackup, fileName, folder);
+            if (restoreSuccess)
+            {
+                await Utils.ErrorDialogs.WritingDatafileError(false);
+            }
+            else
+            {
+                if (attempt < 3)
+                {
+                    await Task.Delay(250 * (attempt + 1));
+                    await HandleWriteError(encryptedBackup, fileName, folder, attempt + 1);
+                }
+                else
+                {
+                    await Utils.ErrorDialogs.WritingFatalRestoreError();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Restores the datafile from the raw encrypted backup string.
+        /// The caller holds the collection semaphore throughout write and recovery.
+        /// </summary>
+        private async Task<bool> RestoreLastDatafile(string encryptedBackup, string fileName, StorageFolder folder)
+        {
+            try
+            {
+                await WriteAtomicAsync(encryptedBackup, fileName, folder);
+                return true;
+            }
+            catch (Exception exc)
+            {
+                await LoggingService.LogException(exc, SettingsService.Instance.LoggingSetting);
+#if WINDOWS_UWP
+                TrackingManager.TrackExceptionCatched(nameof(RestoreLastDatafile), exc);
+#endif
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Writes <paramref name="content"/> atomically to <paramref name="targetFolder"/>/<paramref name="fileName"/>
+        /// by first writing to a temporary file in LocalFolder, then moving it to the target location.
+        /// This ensures the original file is never left in a partially-written state.
+        /// </summary>
+        private async Task WriteAtomicAsync(string content, string fileName, StorageFolder targetFolder)
+        {
+#if TWOFAST_DESKTOP
+            await Project2FA.Services.MacOS.MacOSVaultLocation.WriteAtomicAsync(targetFolder.Path, fileName, content);
+            return;
+#endif
+            StorageFolder localFolder = ApplicationData.Current.LocalFolder;
+            string tempFileName = fileName + ".tmp";
+
+            // Step 1: Write to temp file in LocalFolder (safe, app always has write access)
+            StorageFile tempFile = await localFolder.CreateFileAsync(tempFileName, CreationCollisionOption.ReplaceExisting);
+            try
+            {
+                await FileIO.WriteTextAsync(tempFile, content);
+            }
+            catch
+            {
+                // Clean up incomplete temp file so no leftover exists; original file is untouched
+                try { await tempFile.DeleteAsync(StorageDeleteOption.PermanentDelete); } catch { /* ignore */ }
+                throw;
+            }
+
+            // Step 2: Move temp file to target folder, replacing the original (atomic on same volume)
+            await tempFile.MoveAsync(targetFolder, fileName, NameCollisionOption.ReplaceExisting);
+        }
+
+        public async Task<bool> AddAccountsToCollection(List<TwoFACodeModel> accountList)
+        {
+            try
+            {
+                await CollectionAccessSemaphore.WaitAsync();
+                _initialization = true;
+                this.Collection.AddRange(accountList);
+                return true;
+            }
+            catch (Exception exc)
+            {
+                await LoggingService.LogException(exc, SettingsService.Instance.LoggingSetting);
+#if WINDOWS_UWP
+                TrackingManager.TrackExceptionCatched(nameof(AddAccountsToCollection), exc);
+#endif
+                return false;
+            }
+            finally
+            {
+                _initialization = false;
+                CollectionAccessSemaphore.Release();
+            }
+        }
+
+        /// <summary>
+        /// Generates a TOTP code for the i'th entry of a collection
+        /// </summary>
+        /// <param name="i"></param>
+        public async Task GenerateTOTP(int i)
+        {
+            try
+            {
+                if (Collection[i].SecretByteArray != null)
+                {
+                    int remainingTime = 0;
+                    Enum.TryParse<OTPType>(Collection[i].OTPType, out OTPType oTPResult);
+#if TWOFAST_DESKTOP
+                    if (oTPResult == OTPType.mobileid)
+                    {
+                        var account = Collection[i];
+                        if (!Project2FA.Services.MacOS.MacOSDeviceBinding.Allows(account.MobileIdDeviceId))
+                        { account.TwoFACode = "Different Mac"; account.Seconds = 0; return; }
+                        var now = DateTimeOffset.UtcNow;
+                        account.TwoFACode = Project2FA.Services.MacOS.MacOSMobileId.ComputeOtp(account.SecretByteArray, account.Period, account.TotpSize, account.MobileIdChecksum, now);
+                        account.Seconds = account.Period - now.ToUnixTimeSeconds() % account.Period;
+                        return;
+                    }
+#endif
+                    if (oTPResult == OTPType.ocra)
+                    {
+                        Collection[i].TwoFACode = "Challenge…";
+                        Collection[i].Seconds = 0;
+                        return;
+                    }
+                    if (oTPResult == OTPType.totp)
+                    {
+                        Totp totp = new Totp(Collection[i].SecretByteArray, Collection[i].Period, Collection[i].HashMode, Collection[i].TotpSize);
+                        if (_checkedTimeSynchronisation && _ntpServerTimeDifference.TotalMilliseconds > 0)
+                        {
+                            Collection[i].TwoFACode = totp.ComputeTotp(DateTime.UtcNow.AddMilliseconds(_ntpServerTimeDifference.TotalMilliseconds));
+                            //calc the remaining time for the TOTP code with the time correction
+                            remainingTime = Collection[i].Period -
+                                (int)((DateTime.UtcNow.AddMilliseconds(_ntpServerTimeDifference.TotalMilliseconds).Ticks - unixEpochTicks)
+                                / ticksToSeconds % Collection[i].Period);
+                        }
+                        else
+                        {
+                            Collection[i].TwoFACode = totp.ComputeTotp(DateTime.UtcNow);
+                            remainingTime = totp.RemainingSeconds();
+                        }
+                    }
+                    if (oTPResult == OTPType.steam)
+                    {
+                        Steam otp = new Steam(Collection[i].SecretByteArray, Collection[i].Period, Collection[i].HashMode, Collection[i].TotpSize);
+                        if (_checkedTimeSynchronisation && _ntpServerTimeDifference.TotalMilliseconds > 0)
+                        {
+                            Collection[i].TwoFACode = otp.ComputeTotp(DateTime.UtcNow.AddMilliseconds(_ntpServerTimeDifference.TotalMilliseconds));
+                            //calc the remaining time for the TOTP code with the time correction
+                            remainingTime = Collection[i].Period -
+                                (int)((DateTime.UtcNow.AddMilliseconds(_ntpServerTimeDifference.TotalMilliseconds).Ticks - unixEpochTicks)
+                                / ticksToSeconds % Collection[i].Period);
+                        }
+                        else
+                        {
+                            Collection[i].TwoFACode = otp.ComputeTotp(DateTime.UtcNow);
+                            remainingTime = otp.RemainingSeconds();
+                        }
+                    }
+
+                    Logger.Log("TOTP remaining Time: " + remainingTime.ToString(), Category.Debug, Priority.None);
+                    Collection[i].Seconds = remainingTime;
+                }
+                else
+                {
+                    Collection[i].TwoFACode = "Error";
+                    await LoggingService.Log("ArgumentNullException " + Collection[i].Label, SettingsService.Instance.LoggingSetting);
+                    throw new ArgumentNullException(Collection[i].Label);
+                }
+            }
+            catch (Exception exc)
+            {
+                await LoggingService.LogException(exc, SettingsService.Instance.LoggingSetting);
+                Logger.Log(exc.Message, Category.Exception, Priority.High);
+#if WINDOWS_UWP
+                TrackingManager.TrackExceptionCatched(nameof(GenerateTOTP), exc);
+#endif
+                _reloadCollectionCounter++;
+                if (_reloadCollectionCounter < 3)
+                {
+                    await ReloadDatafile();
+                }
+                else
+                {
+                    // track if the creation finally failed
+#if WINDOWS_UWP
+                    TrackingManager.TrackException(nameof(GenerateTOTP), exc);
+#endif
+                    Collection[i].TwoFACode = string.Empty;
+                    await ErrorDialogs.SecretKeyError(Collection[i].Label).ConfigureAwait(false);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Calculates the remaining seconds for a TOTP entry directly from UTC,
+        /// so the countdown is always in sync with the TOTP epoch boundary — no drift.
+        /// </summary>
+        public double GetRemainingSeconds(int period)
+        {
+            DateTime now = _checkedTimeSynchronisation && _ntpServerTimeDifference.TotalMilliseconds > 0
+                ? DateTime.UtcNow.AddMilliseconds(_ntpServerTimeDifference.TotalMilliseconds)
+                : DateTime.UtcNow;
+
+            double elapsed = (now.Ticks - unixEpochTicks) / (double)ticksToSeconds % period;
+            return period - elapsed;
+        }
+
+        public string GetIconForLabel(string label)
+        {
+            var transformName = label;
+            transformName = transformName.Replace(" ", string.Empty);
+            transformName = transformName.Replace("-", string.Empty);
+
+            try
+            {
+                if (FontIconCollection.Where(x => x.Name == transformName).Any())
+                {
+                    return transformName;
+                }
+                else
+                {
+                    // fallback: check if one IconNameCollectionModel name fits into the label name
+
+                    var list = FontIconCollection.Where(x => x.Name.Contains(transformName));
+                    if (list.Count() == 1)
+                    {
+                        return transformName;
+                    }
+                    else
+                    {
+                        return string.Empty;
+                    }
+                }
+            }
+            catch (Exception exc)
+            {
+#if WINDOWS_UWP
+                Project2FA.UWP.TrackingManager.TrackExceptionCatched(nameof(GetIconForLabel), exc);
+#endif
+                return string.Empty;
+            }
+        }
+
+        #region WebDAV
+        /// <summary>
+        /// Upload the data file with custom WebDAV header
+        /// </summary>
+        /// <param name="folder"></param>
+        /// <param name="datafileDB"></param>
+        /// <returns></returns>
+        private async Task<(bool successful, bool statusResult)> UploadDatafileWithWebDAV(StorageFolder folder, bool initial=false)
+        {
+            WebDAVClient.Client client = WebDAVClientService.Instance.GetClient();
+            if (await FileService.FileExistsAsync(SettingsService.Instance.DataFileName, folder))
+            {
+                string fileName = SettingsService.Instance.DataFileName;
+                StorageFile file = await folder.GetFileAsync(fileName);
+                CancellationTokenSource cts = new CancellationTokenSource();
+                //IProgress<WebDavProgress> progress = new Progress<WebDavProgress>();
+                if (initial || await client.ExistsAsync(SettingsService.Instance.DataFilePath + "/" + fileName))
+                {
+                    //set custom date properties (current file date) to prevent that a newer date with the upload is created
+                    string modifiedDate = (await file.GetBasicPropertiesAsync()).DateModified.ToUniversalTime().ToUnixTimeSeconds().ToString();
+                    List<(string Key, string Value)> headerPairs = new List<(string Key, string Value)>(); //custom http headers (owncloud and nextcloud)
+                    headerPairs.Add(("X-OC-MTime", modifiedDate)); //last modified date
+                    headerPairs.Add(("X-OC-CTime", file.DateCreated.ToUniversalTime().ToUnixTimeSeconds().ToString())); //creation date
+                    var uploaded = await client.UploadAsync(
+                        SettingsService.Instance.DataFilePath + "/" + fileName,
+                        await file.OpenStreamForReadAsync(),
+                        file.ContentType,
+                        cts.Token,
+                        headerPairs);
+                    if (uploaded)
+                    {
+                        // TODO webdav file upload failed
+                        return (true, true);
+                    }
+                    else
+                    {
+                        return (false, false);
+                    }
+                }
+                else
+                {
+                    // TODO webdav file was moved
+                    return (false, false);
+                }
+            }
+            else
+            {
+                return (false, false);
+            }
+
+        }
+
+        /// <summary>
+        /// Download the datafile in the local app storage
+        /// </summary>
+        /// <param name="storageFolder"></param>
+        /// <param name="dbDatafile"></param>
+        /// <returns></returns>
+        private async Task<StorageFile> DownloadWebDAVFile(StorageFolder storageFolder)
+        {
+            //todo create date is correct?
+            StorageFile localFile;
+            localFile = await storageFolder.CreateFileAsync(SettingsService.Instance.DataFileName, CreationCollisionOption.ReplaceExisting);
+            IProgress<WebDavProgress> progress = new Progress<WebDavProgress>();
+            WebDAVClient.Client client = WebDAVClientService.Instance.GetClient();
+            using IRandomAccessStream randomAccessStream = await localFile.OpenAsync(FileAccessMode.ReadWrite);
+            Stream targetStream = randomAccessStream.AsStreamForWrite();
+            await client.Download(SettingsService.Instance.DataFilePath + "/" + SettingsService.Instance.DataFileName, targetStream, progress, new CancellationToken());
+            return localFile;
+        }
+
+        /// <summary>
+        /// Check if the datafile is outdated
+        /// </summary>
+        /// <param name="dbDatafile"></param>
+        private async Task<(bool successful, bool outdated)> CheckIfWebDAVDatafileIsEqual()
+        {
+#if TWOFAST_DESKTOP
+            return await SyncMacOSRemoteVault();
+#else
+            try
+            {
+                StorageFolder storageFolder = ApplicationData.Current.LocalFolder;
+                StorageFile storageFile = await storageFolder.GetFileAsync(SettingsService.Instance.DataFileName);
+                WebDAVClient.Client client = WebDAVClientService.Instance.GetClient();
+                ResourceInfoModel webDAVFile = await client.GetResourceInfoAsync(SettingsService.Instance.DataFilePath, SettingsService.Instance.DataFileName);
+
+                DateTime fileDateModified = (await storageFile.GetBasicPropertiesAsync()).DateModified.UtcDateTime;
+                DateTime trimmedFileLastModified = new DateTime(fileDateModified.Year, fileDateModified.Month,
+                    fileDateModified.Day, fileDateModified.TimeOfDay.Hours,
+                    fileDateModified.TimeOfDay.Minutes, fileDateModified.TimeOfDay.Seconds);
+
+                var webDAVDateModified = webDAVFile != null? webDAVFile.LastModified.ToUniversalTime() : trimmedFileLastModified;
+                if (webDAVDateModified > trimmedFileLastModified && webDAVFile != null)
+                {
+                    await DownloadWebDAVFile(storageFolder);
+                    return (true, true);
+                }
+                else if (webDAVDateModified < trimmedFileLastModified || webDAVFile == null)
+                {
+                    if (webDAVFile == null)
+                    {
+                        (bool successful, bool statusResult) = await UploadDatafileWithWebDAV(storageFolder, true);
+                        return (successful, false);
+                    }
+                    else
+                    {
+                        (bool successful, bool statusResult) = await UploadDatafileWithWebDAV(storageFolder);
+                        return (successful, false);
+                    }
+                }
+                else
+                {
+                    return (true, false);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(ex.Message, Category.Exception, Priority.High);
+                return (false, false);
+            }
+#endif
+        }
+#endregion
+
+
+#region GetSet
+        public TwoFACodeModel TempDeletedTFAModel
+        {
+            get => _tempDeletedTFAModel;
+            set
+            {
+                SetProperty(ref _tempDeletedTFAModel, value);
+            }
+        }
+
+        public bool RestoreDeletedModel()
+        {
+            if (_tempDeletedTFAModel != null)
+            {
+                Collection.Add(_tempDeletedTFAModel);
+                TempDeletedTFAModel = null;
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// If collection is empty, bool is true => open teaching tip to add a new account
+        /// </summary>
+        public bool EmptyAccountCollectionTipIsOpen
+        {
+            get => _emptyAccountCollectionTipIsOpen;
+            set => SetProperty(ref _emptyAccountCollectionTipIsOpen, value);
+        }
+
+        public StorageFile ActivatedDatafile 
+        { 
+            get => _openDatefile;
+            set => SetProperty(ref _openDatefile, value);
+        }
+
+        public bool IsLoading 
+        { 
+            get => _isLoading; 
+            set => SetProperty(ref _isLoading, value); 
+        }
+
+        public bool IsFilterEnabled
+        {
+            get => _isFilterEnabled;
+            set => SetProperty(ref _isFilterEnabled, value);
+        }
+
+        public bool IsFilterChecked
+        {
+            get => _isFilterChecked;
+            set 
+            {
+                if(SetProperty(ref _isFilterChecked, value))
+                {
+                    Messenger.Send(new FilteringChangedMessage(true));
+                }
+            }
+        }
+
+        public bool NewAppUpdateDialogDisplayed 
+        { 
+            get => _newAppUpdateDialogDisplayed; 
+            set => _newAppUpdateDialogDisplayed = value; 
+        }
+
+#if __IOS__
+        public Foundation.NSUrl OpenDatefileUrl { get => _openDatefileUrl; set => _openDatefileUrl = value; }
+#endif
+        #endregion
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _collectionAccessSemaphore?.Dispose();
+            }
+        }
+    }
+}

@@ -1,0 +1,26 @@
+name: MacOSSigning
+options:
+  deploymentTarget:
+    macOS: "15.0"
+targets:
+  MacOSSigning:
+    type: application
+    platform: macOS
+    sources: [main.m]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: jpweber.it.Project2FA.Uno
+        GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGN_STYLE: Automatic
+        CODE_SIGN_ENTITLEMENTS: Keychain.entitlements
+        ENABLE_HARDENED_RUNTIME: YES
+        CLANG_ENABLE_MODULES: YES
+    entitlements:
+      path: Keychain.entitlements
+      properties:
+        keychain-access-groups: ["$(AppIdentifierPrefix)$(PRODUCT_BUNDLE_IDENTIFIER)"]
+schemes:
+  MacOSSigning:
+    build:
+      targets:
+        MacOSSigning: all

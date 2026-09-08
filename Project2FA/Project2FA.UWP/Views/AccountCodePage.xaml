@@ -1,0 +1,1149 @@
+﻿<Page
+    x:Class="Project2FA.UWP.Views.AccountCodePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Project2FA.UWP"
+    xmlns:models="using:Project2FA.Repository.Models"
+    xmlns:wctc="using:CommunityToolkit.WinUI.Controls"
+    xmlns:appcontrols="using:Project2FA.UWP.Controls"
+    xmlns:unocontrols="using:Project2FA.Controls"
+    xmlns:core="using:Microsoft.Xaml.Interactivity"
+    xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:views="using:Project2FA.UWP.Views"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:viewmodels="using:Project2FA.ViewModels"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:strings="using:Project2FA.Strings"
+    xmlns:lottie="using:CommunityToolkit.WinUI.Lottie"
+    xmlns:wctmedia="using:CommunityToolkit.WinUI.Media"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:helpers="using:Project2FA.Helpers"
+    xmlns:behaviors="using:CommunityToolkit.WinUI.Behaviors"
+    xmlns:appbehaviors="using:Project2FA.UWP.Behaviors"
+    x:Name="Page"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <ResourceDictionary>
+            <helpers:AccountAvatarTemplateSelector
+                x:Key="AccountAvatarTemplateSelector"
+                Normal="{StaticResource TwoFACodeCustomTemplate}" 
+                Accent="{StaticResource TwoFACodeCustomAccentTemplate}"/>
+
+            <DataTemplate x:Key="SuggestBoxDataTemplate" x:DataType="models:TwoFACodeModel">
+                <Grid
+                    HorizontalAlignment="Stretch"
+                    Background="Transparent"
+                    ToolTipService.ToolTip="{x:Bind Label, Mode=OneWay}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="30" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <FontIcon
+                        FontSize="16"
+                        Margin="4,0,0,0"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        FontFamily="{StaticResource SimpleIcons}"
+                        Glyph="{x:Bind AccountIconName, Mode=OneWay, Converter={StaticResource FontIconNameToGlyphConverter}}"/>
+                    <TextBlock
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Text="{x:Bind Label, Mode=OneWay}"
+                        TextTrimming="CharacterEllipsis" />
+                </Grid>
+            </DataTemplate>
+
+            <MenuFlyout 
+                x:Key="MF_AccountMoreOptionsFlyout"  
+                Placement="Bottom">
+                <MenuFlyoutItem 
+                    x:Name="MFI_EditAccount"
+                    x:Uid="AccountCodePageEditEntry"
+                    Click="MFI_EditAccount_Click">
+                    <MenuFlyoutItem.Icon>
+                        <FontIcon Glyph="&#xE70F;"/>
+                    </MenuFlyoutItem.Icon>
+                </MenuFlyoutItem>
+                <MenuFlyoutItem 
+                    x:Name="MFI_DeleteAccount"
+                    x:Uid="AccountCodePageDeleteEntry"
+                    IsEnabled="{x:Bind ViewModel.IsAccountNotDeleted, Mode=OneWay}" 
+                    Click="MFI_DeleteAccount_Click">
+                    <MenuFlyoutItem.Icon>
+                        <FontIcon Glyph="&#xE107;"/>
+                    </MenuFlyoutItem.Icon>
+                </MenuFlyoutItem>
+                <MenuFlyoutItem
+                    x:Name="MFI_ExportAccount"
+                    x:Uid="AccountCodePageShowQRCode"
+                    Click="MFI_ExportAccount_Click">
+                    <MenuFlyoutItem.Icon>
+                        <FontIcon Glyph="&#xE72D;"/>
+                    </MenuFlyoutItem.Icon>
+                </MenuFlyoutItem>
+            </MenuFlyout>
+
+
+            <DataTemplate x:Name="ShellHeaderTemplatePro" x:DataType="viewmodels:AccountCodePageViewModel">
+                <UserControl>
+                    <UserControl.Resources>
+                        <Style TargetType="FontIcon">
+                            <Setter Property="FontFamily" Value="{StaticResource SegoeFluentIcons}"/>
+                        </Style>
+                    </UserControl.Resources>
+                    <Grid>
+                        <CommandBar 
+                    x:Name="HeaderCommandBar"
+                    OverflowButtonVisibility="Auto"
+                    DefaultLabelPosition="Right"
+                    VerticalAlignment="Top"
+                    Background="{ThemeResource ShellAcrylicWindowBrush}">
+                            <CommandBar.Content>
+                                <CommandBar 
+                                OverflowButtonVisibility="Collapsed"
+                                Background="{ThemeResource ShellAcrylicWindowBrush}"
+                                DefaultLabelPosition="Right">
+                                    <CommandBar.Content>
+                                        <TextBlock 
+                                        Style="{StaticResource ShellHeaderTitleTextBlockStyle}"
+                                        Text="{x:Bind strings:Resources.AccountCodePageTitle}"
+                                        Margin="15,0,0,11"
+                                        TextWrapping="NoWrap" 
+                                        VerticalAlignment="Top" />
+                                    </CommandBar.Content>
+                                    <CommandBar.PrimaryCommands>
+                                        <AppBarSeparator Foreground="{ThemeResource ApplicationForegroundThemeBrush}"/>
+                                        <AppBarButton 
+                                        x:Name="ABB_AddAccount"
+                                        x:Uid="AccountCodePageAddEntry"
+                                        Command="{x:Bind AddAccountCommand}">
+                                            <AppBarButton.Icon>
+                                                <FontIcon Glyph="&#xE710;"/>
+                                            </AppBarButton.Icon>
+                                            <AppBarButton.Resources>
+                                                <!--user information for adding totp accounts-->
+                                                <appcontrols:AutoCloseTeachingTip 
+                                                x:Name="EmptyAccountCollectionTip"
+                                                AutoCloseInterval="10000"
+                                                BorderBrush="{ThemeResource SystemAccentColor}"
+                                                x:Uid="AccountCodePageEmptyCollectionTip"
+                                                IsOpen="{x:Bind TwoFADataService.EmptyAccountCollectionTipIsOpen, Mode=TwoWay}"
+                                                BorderThickness="2"
+                                                Target="{Binding ElementName=ABB_AddAccount, Mode=OneTime}">
+                                                    <muxc:TeachingTip.HeroContent>
+                                                        <muxc:AnimatedVisualPlayer 
+                                                        MaxHeight="120"
+                                                        x:Name="LottiePlayer"
+                                                        AutoPlay="True">
+                                                            <lottie:LottieVisualSource  
+                                                                UriSource="ms-appx:///Assets/AnimatedVisuals/10223-search-empty.json"/>
+                                                            </muxc:AnimatedVisualPlayer>
+                                                    </muxc:TeachingTip.HeroContent>
+                                                </appcontrols:AutoCloseTeachingTip>
+                                            </AppBarButton.Resources>
+                                        </AppBarButton>
+                                        <!--1.3.6 release-->
+                                        <AppBarButton
+                                            x:Name="ABB_ImportAccount"
+                                            Command="{x:Bind ImportAccountCommand}"
+                                            x:Uid="AccoundCodePageImportEntry">
+                                            <AppBarButton.Icon>
+                                                <FontIcon Glyph="&#xE8B5;"/>
+                                            </AppBarButton.Icon>
+                                        </AppBarButton>
+                                    </CommandBar.PrimaryCommands>
+                                </CommandBar>
+                            </CommandBar.Content>
+                            <CommandBar.PrimaryCommands>
+                                <AppBarElementContainer
+                                    Visibility="{x:Bind IsAccountDeleted, Mode=OneWay}">
+                                    <CommandBar 
+                                        OverflowButtonVisibility="Collapsed"
+                                        Background="{ThemeResource ShellAcrylicWindowBrush}"
+                                        DefaultLabelPosition="Right">
+                                        <CommandBar.Content>
+                                            <Grid>
+                                                <unocontrols:RadialProgressBar
+                                Value="{x:Bind TwoFADataService.TempDeletedTFAModel.Seconds,Mode=OneWay}" 
+                                Maximum="{x:Bind TwoFADataService.TempDeletedTFAModel.Period, Mode=OneWay}" 
+                                Width="40"
+                                Height="40"
+                                IsIndeterminate="False"
+                                Foreground="{ThemeResource SystemAccentColor}"/>
+                                                <TextBlock 
+                                Opacity="0.6"
+                                Text="{x:Bind TwoFADataService.TempDeletedTFAModel.Seconds,Mode=OneWay}"
+                                FontSize="12"
+                                VerticalAlignment="Center" 
+                                HorizontalAlignment="Center"/>
+                                            </Grid>
+                                        </CommandBar.Content>
+                                        <CommandBar.PrimaryCommands>
+                                            <AppBarButton  
+                                            x:Name="ABB_UndoDelete"
+                                            x:Uid="AccountCodePageABBUndoDelete" 
+                                            Command="{x:Bind UndoDeleteCommand}"  >
+                                                <AppBarButton.Icon>
+                                                    <FontIcon Glyph="&#xE7A7;"/>
+                                                </AppBarButton.Icon>
+                                            </AppBarButton>
+                                        </CommandBar.PrimaryCommands>
+                                    </CommandBar>
+                                </AppBarElementContainer>
+                                <AppBarElementContainer>
+                                    <AutoSuggestBox 
+                                        Width="200"
+                                        Height="40"
+                                        VerticalAlignment="Center"
+                                        Text="{x:Bind SearchedAccountLabel,Mode=TwoWay}"
+                                        ItemsSource="{x:Bind SearchAccountCollection,Mode=OneWay}"
+                                        PlaceholderText="{x:Bind strings:Resources.AccountCodePageAutoSuggestBoxPlaceholder}" 
+                                        ItemTemplate="{StaticResource SuggestBoxDataTemplate}"
+                                        ItemContainerStyle="{StaticResource AutoSuggestBoxItemContainerStyle}"
+                                        TextChanged="AutoSuggestBox_TextChanged" 
+                                        VerticalContentAlignment="Center"
+                                        SuggestionChosen="AutoSuggestBox_SuggestionChosen"
+                                        UpdateTextOnSelect="False"
+                                        TextMemberPath="Name"
+                                        GotFocus="AutoSuggestBox_GotFocus"
+                                        AllowFocusOnInteraction="True"
+                                        Margin="0,0,1,0" >
+                                        <AutoSuggestBox.QueryIcon>
+                                            <FontIcon Glyph="&#xE721;" FontSize="18"/>
+                                        </AutoSuggestBox.QueryIcon>
+
+
+                                        <!--<AutoSuggestBox.Style>
+                                            <Style TargetType="AutoSuggestBox">
+                                                <Setter Property="SelectionHighlightColor" Value="{ThemeResource TextControlSelectionHighlightColor}" />
+                                            </Style>
+                                        </AutoSuggestBox.Style>-->
+                                    </AutoSuggestBox>
+                                </AppBarElementContainer>
+                                <AppBarButton 
+                                    x:Name="ABB_ManageFilter"
+                                    x:Uid="AccountCodePageManageFilter"
+                                    Click="ABB_SearchFilter_Click" >
+                                    <AppBarButton.Content>
+                                        <StackPanel Orientation="Horizontal">
+                                            <FontIcon Glyph="&#xE16E;"/>
+                                            <FontIcon Glyph="&#xE70D;"/>
+                                        </StackPanel>
+                                    </AppBarButton.Content>
+                                    <!--<AppBarButton.Icon>
+                                        <FontIcon FontSize="30" Glyph="&#xE70D;"/>
+                                    </AppBarButton.Icon>-->
+                                    <FlyoutBase.AttachedFlyout>
+                                        <Flyout LightDismissOverlayMode="Off">
+                                            <views:CategoryFilterFlyout/>
+                                        </Flyout>
+                                    </FlyoutBase.AttachedFlyout>
+                                </AppBarButton>
+                                <AppBarToggleButton
+                                    x:Name="ABB_SearchFilter"
+                                    IsEnabled="{x:Bind TwoFADataService.IsFilterEnabled,Mode=OneWay}"
+                                    IsChecked="{x:Bind TwoFADataService.IsFilterChecked,Mode=TwoWay}"
+                                    x:Uid="AccountCodePageSearchFilter">
+                                    <AppBarToggleButton.Icon>
+                                        <FontIcon Glyph="&#xE16E;"/>
+                                    </AppBarToggleButton.Icon>
+                                </AppBarToggleButton>
+                                <AppBarButton 
+                                x:Name="ABB_Logout"
+                                x:Uid="AccountCodePageABBLogout" 
+                                Command="{x:Bind LogoutCommand}">
+                                    <AppBarButton.Icon>
+                                        <FontIcon Glyph="&#xE1F6;"/>
+                                    </AppBarButton.Icon>
+                                </AppBarButton>
+                                <AppBarButton 
+                                x:Name="ABB_Refresh"
+                                x:Uid="AccountCodePageReloadDatafile"
+                                Command="{x:Bind RefreshCommand}">
+                                    <AppBarButton.Icon>
+                                        <FontIcon Glyph="&#xE895;"/>
+                                    </AppBarButton.Icon>
+                                </AppBarButton>
+                            </CommandBar.PrimaryCommands>
+                        </CommandBar>
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="WindowStates">
+                                <VisualState x:Name="NarrowState">
+                                    <VisualState.StateTriggers>
+                                        <AdaptiveTrigger MinWindowWidth="0" />
+                                    </VisualState.StateTriggers>
+                                    <VisualState.Setters>
+                                        <Setter Target="ABB_Logout.LabelPosition" Value="Collapsed"/>
+                                        <Setter Target="ABB_Refresh.LabelPosition" Value="Collapsed"/>
+                                        <Setter Target="ABB_SearchFilter.LabelPosition" Value="Collapsed"/>
+                                        <Setter Target="ABB_ManageFilter.LabelPosition" Value="Collapsed"/>
+                                        <Setter Target="ABB_AddAccount.LabelPosition" Value="Collapsed"/>
+                                        <Setter Target="ABB_ImportAccount.LabelPosition" Value="Collapsed"/>
+                                        <Setter Target="ABB_UndoDelete.LabelPosition" Value="Collapsed"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="MediumState">
+                                    <VisualState.StateTriggers>
+                                        <AdaptiveTrigger MinWindowWidth="1120" />
+                                    </VisualState.StateTriggers>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                    </Grid>
+                </UserControl>
+            </DataTemplate>
+
+            <DataTemplate x:Name="ShellHeaderTemplate" x:DataType="viewmodels:AccountCodePageViewModel">
+                <UserControl>
+                    <Grid>
+                        <CommandBar 
+                    x:Name="HeaderCommandBar"
+                    OverflowButtonVisibility="Auto"
+                    DefaultLabelPosition="Right"
+                    VerticalAlignment="Top"
+                    Background="{ThemeResource ShellAcrylicWindowBrush}">
+                            <CommandBar.Content>
+                                <CommandBar 
+                                OverflowButtonVisibility="Collapsed"
+                                Background="{ThemeResource ShellAcrylicWindowBrush}"
+                                DefaultLabelPosition="Right">
+                                    <CommandBar.Content>
+                                        <TextBlock 
+                                        Style="{StaticResource ShellHeaderTitleTextBlockStyle}"
+                                        Text="{x:Bind strings:Resources.AccountCodePageTitle}"
+                                        Margin="15,0,0,11"
+                                        TextWrapping="NoWrap" 
+                                        VerticalAlignment="Top" />
+                                    </CommandBar.Content>
+                                    <CommandBar.PrimaryCommands>
+                                        <AppBarSeparator Foreground="{ThemeResource ApplicationForegroundThemeBrush}"/>
+                                        <AppBarButton 
+                                        x:Name="ABB_AddAccount"
+                                        x:Uid="AccountCodePageAddEntry"
+                                        Command="{x:Bind AddAccountCommand}">
+                                            <AppBarButton.Icon>
+                                                <FontIcon Glyph="&#xE710;"/>
+                                            </AppBarButton.Icon>
+                                            <AppBarButton.Resources>
+                                                <!--user information for adding totp accounts-->
+                                                <appcontrols:AutoCloseTeachingTip 
+                                                x:Name="EmptyAccountCollectionTip"
+                                                AutoCloseInterval="10000"
+                                                BorderBrush="{ThemeResource SystemAccentColor}"
+                                                x:Uid="AccountCodePageEmptyCollectionTip"
+                                                IsOpen="{x:Bind TwoFADataService.EmptyAccountCollectionTipIsOpen, Mode=TwoWay}"
+                                                BorderThickness="2"
+                                                Target="{Binding ElementName=ABB_AddAccount, Mode=OneTime}">
+                                                    <muxc:TeachingTip.HeroContent>
+                                                        <muxc:AnimatedVisualPlayer 
+                                                        MaxHeight="120"
+                                                        x:Name="LottiePlayer"
+                                                        AutoPlay="True">
+                                                            <lottie:LottieVisualSource  
+                                                                UriSource="ms-appx:///Assets/AnimatedVisuals/10223-search-empty.json"/>
+                                                        </muxc:AnimatedVisualPlayer>
+                                                    </muxc:TeachingTip.HeroContent>
+                                                </appcontrols:AutoCloseTeachingTip>
+                                            </AppBarButton.Resources>
+                                        </AppBarButton>
+                                        <!--1.3.6 release-->
+                                        <AppBarButton
+                                            x:Name="ABB_ImportAccount"
+                                            Command="{x:Bind ImportAccountCommand}"
+                                            x:Uid="AccoundCodePageImportEntry">
+                                            <AppBarButton.Icon>
+                                                <FontIcon Glyph="&#xE8B5;"/>
+                                            </AppBarButton.Icon>
+                                        </AppBarButton>
+                                    </CommandBar.PrimaryCommands>
+                                </CommandBar>
+                            </CommandBar.Content>
+                            <CommandBar.PrimaryCommands>
+                                <AppBarElementContainer
+                                    Visibility="{x:Bind IsAccountDeleted, Mode=OneWay}">
+                                    <CommandBar 
+                                        OverflowButtonVisibility="Collapsed"
+                                        Background="{ThemeResource ShellAcrylicWindowBrush}"
+                                        DefaultLabelPosition="Right">
+                                        <CommandBar.Content>
+                                            <Grid>
+                                                <unocontrols:RadialProgressBar
+                                Value="{x:Bind TwoFADataService.TempDeletedTFAModel.Seconds,Mode=OneWay}" 
+                                Maximum="{x:Bind TwoFADataService.TempDeletedTFAModel.Period, Mode=OneWay}" 
+                                Width="40"
+                                Height="40"
+                                IsIndeterminate="False"
+                                Foreground="{ThemeResource SystemAccentColor}"/>
+                                                <TextBlock 
+                                Opacity="0.6"
+                                Text="{x:Bind TwoFADataService.TempDeletedTFAModel.Seconds,Mode=OneWay}"
+                                FontSize="12"
+                                VerticalAlignment="Center" 
+                                HorizontalAlignment="Center"/>
+                                            </Grid>
+                                        </CommandBar.Content>
+                                        <CommandBar.PrimaryCommands>
+                                            <AppBarButton  
+                                            x:Name="ABB_UndoDelete"
+                                            x:Uid="AccountCodePageABBUndoDelete" 
+                                            Command="{x:Bind UndoDeleteCommand}">
+                                                <AppBarButton.Icon>
+                                                    <FontIcon Glyph="&#xE7A7;"/>
+                                                </AppBarButton.Icon>
+                                            </AppBarButton>
+                                        </CommandBar.PrimaryCommands>
+                                    </CommandBar>
+                                </AppBarElementContainer>
+                                <AppBarElementContainer>
+                                    <AutoSuggestBox 
+                                        Width="200"
+                                        Height="40"
+                                        VerticalAlignment="Center"
+                                        Text="{x:Bind SearchedAccountLabel,Mode=TwoWay}"
+                                        ItemsSource="{x:Bind SearchAccountCollection,Mode=OneWay}"
+                                        PlaceholderText="{x:Bind strings:Resources.AccountCodePageAutoSuggestBoxPlaceholder}" 
+                                        ItemTemplate="{StaticResource SuggestBoxDataTemplate}"
+                                        TextChanged="AutoSuggestBox_TextChanged" 
+                                        VerticalContentAlignment="Center"
+                                        SuggestionChosen="AutoSuggestBox_SuggestionChosen"
+                                        UpdateTextOnSelect="False"
+                                        TextMemberPath="Name"
+                                        GotFocus="AutoSuggestBox_GotFocus"
+                                        AllowFocusOnInteraction="True"
+                                        Margin="0,0,1,0" >
+                                        <AutoSuggestBox.QueryIcon>
+                                            <FontIcon Glyph="&#xE721;" FontSize="18"/>
+                                        </AutoSuggestBox.QueryIcon>
+                                    </AutoSuggestBox>
+                                </AppBarElementContainer>
+                                <AppBarButton 
+                                    x:Name="ABB_ManageFilterInfo"
+                                    Visibility="{x:Bind ShowAvailableProFeatures}"
+                                    Command="{x:Bind ShowProFeatureCommand}"
+                                    x:Uid="AccountCodePageManageFilterInfo">
+                                    <AppBarButton.Content>
+                                        <StackPanel Orientation="Horizontal">
+                                            <FontIcon Glyph="&#xE16E;"/>
+                                            <FontIcon Glyph="&#xE946;"/>
+                                        </StackPanel>
+                                    </AppBarButton.Content>
+                                </AppBarButton>
+                                <!--<AppBarButton
+                                    Margin="0"
+                                    Padding="4,4,4,4"
+                                    Width="48"
+                                    ToolTipService.ToolTip="{x:Bind strings:Resources.AccountCodePageProFeatureToolTip, FallbackValue=''}"
+                                    VerticalAlignment="Center" 
+                                    Click="HLBTN_ProFeature">
+                                    <FontIcon
+                                        Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                        Glyph="&#xE946;"  />
+                                </AppBarButton>-->
+                                <!--<AppBarToggleButton
+                                    IsEnabled="False"
+                                    ToolTipService.ToolTip="{x:Bind strings:Resources.AccountCodePageProFeatureToolTip, FallbackValue=''}"
+                                    x:Uid="AccountCodePageSearchFilter" >
+                                    <AppBarToggleButton.Icon>
+                                        <FontIcon Glyph="&#xE16E;"/>
+                                    </AppBarToggleButton.Icon>
+                                </AppBarToggleButton>-->
+                                <AppBarButton 
+                                x:Name="ABB_Logout"
+                                x:Uid="AccountCodePageABBLogout"
+                                Command="{x:Bind LogoutCommand}">
+                                    <AppBarButton.Icon>
+                                        <FontIcon Glyph="&#xE1F6;"/>
+                                    </AppBarButton.Icon>
+                                </AppBarButton>
+                                <AppBarButton 
+                                x:Name="ABB_Refresh"
+                                x:Uid="AccountCodePageReloadDatafile"
+                                Command="{x:Bind RefreshCommand}">
+                                    <AppBarButton.Icon>
+                                        <FontIcon Glyph="&#xE895;"/>
+                                    </AppBarButton.Icon>
+                                </AppBarButton>
+                            </CommandBar.PrimaryCommands>
+                        </CommandBar>
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="WindowStates">
+                                <VisualState x:Name="NarrowState">
+                                    <VisualState.StateTriggers>
+                                        <AdaptiveTrigger MinWindowWidth="0" />
+                                    </VisualState.StateTriggers>
+                                    <VisualState.Setters>
+                                        <Setter Target="ABB_Logout.LabelPosition" Value="Collapsed"/>
+                                        <Setter Target="ABB_Refresh.LabelPosition" Value="Collapsed"/>
+                                        <Setter Target="ABB_ManageFilterInfo.LabelPosition" Value="Collapsed"/>
+                                        <Setter Target="ABB_AddAccount.LabelPosition" Value="Collapsed"/>
+                                        <Setter Target="ABB_ImportAccount.LabelPosition" Value="Collapsed"/>
+                                        <Setter Target="ABB_UndoDelete.LabelPosition" Value="Collapsed"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="MediumState">
+                                    <VisualState.StateTriggers>
+                                        <AdaptiveTrigger MinWindowWidth="1120" />
+                                    </VisualState.StateTriggers>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                    </Grid>
+                </UserControl>
+            </DataTemplate>
+            
+            <DataTemplate x:Key="TwoFACodeCustomTemplate" x:DataType="models:TwoFACodeModel">
+                <UserControl
+                    x:Name="Root" 
+                    MaxWidth="660"
+                    RightTapped="TwoFACodeItem_RightTapped" 
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    HorizontalContentAlignment="Stretch"
+                    VerticalContentAlignment="Stretch" >
+                    <Grid 
+                        HorizontalAlignment="Stretch"
+                        CornerRadius="{ThemeResource ControlCornerRadius}"
+                        Background="{ThemeResource TwoFABackgroundBrush}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="auto"/>
+                            <ColumnDefinition Width="auto"/>
+                            <ColumnDefinition Width="auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Grid Grid.RowSpan="3" >
+                            <Border 
+                                Width="2.5" 
+                                ui:Effects.Shadow="{StaticResource SignShadow}"
+                                Background="{StaticResource SystemAccentColor}" />
+                        </Grid>
+
+                        <muxc:PersonPicture 
+                            Height="48"
+                            Width="48"
+                            DisplayName="{x:Bind Model, 
+                            Converter={StaticResource PersonalPictureInitialsVisibilityConverter},
+                            Mode=OneWay}"
+                            Margin="15,10,20,0"
+                            Grid.Column="1"
+                            Grid.Row="0"
+                            Grid.RowSpan="2"
+                            Tag="{x:Bind AccountIconName, Mode=OneWay}"/>
+
+                        <RelativePanel 
+                            Grid.Column="2" 
+                            Grid.RowSpan="2" 
+                            Grid.ColumnSpan="2">
+                            <TextBlock
+                                x:Name="AccountName"
+                                MaxWidth="400"
+                                FontSize="{ThemeResource HubSectionHeaderThemeFontSize}"
+                                ToolTipService.ToolTip="{x:Bind Label,Mode=OneWay}"
+                                Margin="0,10,10,0" 
+                                TextTrimming="CharacterEllipsis"
+                                TextWrapping="Wrap"
+                                MaxLines="1"
+                                VerticalAlignment="Center">
+                                <Bold>
+                                    <Run Text="{x:Bind Label,Mode=OneWay}"/>
+                                </Bold>
+                            </TextBlock>
+                            <TextBlock 
+                                x:Name="IssuerName"
+                                FontWeight="Thin"
+                                Text="{x:Bind Issuer,Mode=OneWay}" 
+                                ToolTipService.ToolTip="{x:Bind Issuer,Mode=OneWay}"
+                                FontSize="{ThemeResource HubSectionHeaderThemeFontSize}"
+                                TextTrimming="CharacterEllipsis"
+                                TextWrapping="Wrap"
+                                MaxLines="2"
+                                VerticalAlignment="Center"/>
+                        </RelativePanel>
+
+                        <StackPanel
+                            Orientation="Horizontal"
+                            Grid.Row="3"
+                            Grid.Column="2"
+                            Margin="0,0,0,4">
+
+                            <Button
+                                x:Name="BTN_ShowCode"
+                                Click="BTN_ShowCode_Click"
+                                ToolTipService.ToolTip="{x:Bind HideTOTPCode, Mode=OneWay, Converter={StaticResource TOTPVisibilityTooltipConverter}}"
+                                Width="48"
+                                Height="48"
+                                Margin="0,0,4,0"
+                                Visibility="{x:Bind CodeVisibilityOptionEnabled, Mode=OneWay}"
+                                Style="{StaticResource TransparentButtonStyle}"
+                                HorizontalAlignment="Stretch" >
+                                <FontIcon 
+                                    Glyph="{x:Bind HideTOTPCode, Converter={StaticResource ShowCodeToIconConverter},Mode=OneWay}"
+                                    FontSize="24"
+                                    Style="{StaticResource FullFluentFontIconStyle}"
+                                    VerticalAlignment="Center"
+                                    HorizontalAlignment="Center"/>
+                            </Button>
+                            <Grid>
+                                <TextBlock
+                                    x:Name="TwoFACodeTextBlock"
+                                    Text="{x:Bind TwoFACode,Mode=OneWay}"
+                                    FontSize="{ThemeResource PivotHeaderItemFontSize}"
+                                    Visibility="{x:Bind HideTOTPCode, Mode=OneWay, Converter={StaticResource VisibleWhenFalseConverter}}"
+                                    VerticalAlignment="Center"
+                                    CharacterSpacing="60"
+                                    Foreground="{ThemeResource SystemAccentColor}" >
+                                    <TextBlock.Resources>
+                                        <Storyboard x:Name="TextChangeAnimation" >
+                                            <DoubleAnimation 
+                                                Storyboard.TargetName="TwoFACodeTextBlock"
+                                                Storyboard.TargetProperty="Opacity" 
+                                                From="1" 
+                                                To="0" 
+                                                AutoReverse="True" 
+                                                Duration="0:0:0.5" 
+                                                RepeatBehavior="Forever" />
+                                        </Storyboard>
+                                        <Storyboard x:Name="TextChangeNormal" >
+                                            <DoubleAnimation 
+                                                Storyboard.TargetName="TwoFACodeTextBlock"
+                                                Storyboard.TargetProperty="Opacity" 
+                                                To="1" 
+                                                Duration="0:0:0.1"  />
+                                        </Storyboard>
+                                    </TextBlock.Resources>
+                                    <TextBlock.RenderTransform>
+                                        <CompositeTransform/>
+                                    </TextBlock.RenderTransform>
+                                    <interactivity:Interaction.Behaviors>
+                                        <interactivity:DataTriggerBehavior Binding="{x:Bind Seconds,Mode=OneWay}" ComparisonCondition="LessThan" Value="3">
+                                            <appbehaviors:SafeControlStoryboardAction Storyboard="{StaticResource TextChangeAnimation}"/>
+                                        </interactivity:DataTriggerBehavior>
+                                        <interactivity:DataTriggerBehavior Binding="{x:Bind Seconds,Mode=OneWay}" ComparisonCondition="GreaterThan" Value="3">
+                                            <appbehaviors:SafeControlStoryboardAction Storyboard="{StaticResource TextChangeNormal}"/>
+                                        </interactivity:DataTriggerBehavior>
+                                    </interactivity:Interaction.Behaviors>
+                                </TextBlock>
+                                <TextBlock
+                                Text="______"
+                                Visibility="{x:Bind HideTOTPCode, Mode=OneWay}"
+                                FontSize="28"
+                                CharacterSpacing="205"
+                                VerticalAlignment="Center" 
+                                Foreground="{ThemeResource SystemAccentColor}" />
+                            </Grid>
+
+                            <appcontrols:CopyButton
+                                x:Name="BTN_CopyCode"
+                                x:Uid="AccountCopyCodeButton"
+                                Width="48"
+                                Height="48"
+                                Click="BTN_CopyCode_Click"
+                                Margin="8,0,4,0"
+                                HorizontalAlignment="Stretch" >
+                                <FontIcon 
+                                    Style="{StaticResource DefaultFontIconStyle}" 
+                                    Glyph="&#xE8C8;" 
+                                    FontSize="20"/>
+                            </appcontrols:CopyButton>
+                            <Grid VerticalAlignment="Center">
+                                <unocontrols:RadialProgressBar
+                                Value="{x:Bind Seconds,Mode=OneWay}"
+                                Maximum="{x:Bind Period,Mode=OneWay}"
+                                Minimum="0"
+                                IsIndeterminate="False"
+                                Width="42"
+                                Height="42"
+                                x:Uid="AccountCodePageRemainingSeconds"
+                                IsTabStop="False"
+                                Foreground="{ThemeResource SystemControlHighlightAltAccentBrush}"/>
+                                <TextBlock 
+                                x:Uid="AccountCodePageRemainingSeconds"
+                                Opacity="0.6"
+                                IsTextScaleFactorEnabled="False"
+                                Text="{x:Bind Seconds, Mode=OneWay, Converter={StaticResource DoubleToInt32ToStringConverter}}"
+                                FontSize="16"
+                                VerticalAlignment="Center"
+                                HorizontalAlignment="Center"/>
+                            </Grid>
+                            <Button
+                                x:Name="BTN_SetFavourite"
+                                Width="48"
+                                Height="48"
+                                Click="BTN_SetFavourite_Click"
+                                Style="{StaticResource TransparentButtonStyle}"
+                                Margin="8,0,4,0"
+                                ToolTipService.ToolTip="{x:Bind IsFavourite, Mode=OneWay, Converter={StaticResource FavouriteTooltipConverter}}"
+                                HorizontalAlignment="Stretch" >
+                                <FontIcon 
+                                    Glyph="{x:Bind IsFavourite, Converter={StaticResource FavouriteToIconConverter},Mode=OneWay}"
+                                    FontSize="20"
+                                    Foreground="{ThemeResource SystemControlHighlightAltAccentBrush}"
+                                    VerticalAlignment="Center"
+                                    HorizontalAlignment="Center"/>
+                            </Button>
+                        </StackPanel>
+
+                        <Button
+                            x:Uid="AccountCodePageItemMoreBTN"
+                            Grid.Column="4" 
+                            Margin="8,0,0,0" 
+                            VerticalAlignment="Top"
+                            Flyout="{StaticResource MF_AccountMoreOptionsFlyout}"
+                            Style="{StaticResource TransparentButtonStyle}">
+                            <FontIcon Glyph="&#xE712;"/>
+                        </Button>
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="WindowStates">
+                                <VisualState x:Name="NarrowState">
+                                    <VisualState.StateTriggers>
+                                        <AdaptiveTrigger MinWindowWidth="0" />
+                                    </VisualState.StateTriggers>
+                                    <VisualState.Setters>
+                                        <Setter Target="IssuerName.(RelativePanel.Below)" Value="AccountName"/>
+                                        <Setter Target="IssuerName.Margin" Value="0,10,10,0"/>
+                                        <Setter Target="Root.MinWidth" Value="478"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="MediumState">
+                                    <VisualState.StateTriggers>
+                                        <AdaptiveTrigger MinWindowWidth="720" />
+                                    </VisualState.StateTriggers>
+                                    <VisualState.Setters>
+                                        <Setter Target="Root.MinWidth" Value="660"/>
+                                        <Setter Target="IssuerName.(RelativePanel.RightOf)" Value="AccountName"/>
+                                        <Setter Target="IssuerName.Margin" Value="10,10,10,0"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                    </Grid>
+                </UserControl>
+            </DataTemplate>
+
+            <DataTemplate x:Key="TwoFACodeCustomAccentTemplate" x:DataType="models:TwoFACodeModel">
+                <UserControl
+                    x:Name="Root" 
+                    MaxWidth="660"
+                    RightTapped="TwoFACodeItem_RightTapped" 
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    HorizontalContentAlignment="Stretch"
+                    VerticalContentAlignment="Stretch">
+                    <Grid 
+                        HorizontalAlignment="Stretch"
+                        CornerRadius="{ThemeResource ControlCornerRadius}"
+                        Background="{ThemeResource TwoFABackgroundBrush}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="auto"/>
+                            <ColumnDefinition Width="auto"/>
+                            <ColumnDefinition Width="auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Grid Grid.RowSpan="3" >
+                            <Border 
+                                Width="2.5" 
+                                ui:Effects.Shadow="{StaticResource SignShadow}"
+                                Background="{StaticResource SystemAccentColor}" />
+                        </Grid>
+
+                        <!--Favourite design-->
+                        <muxc:PersonPicture 
+                            Height="48"
+                            Width="48"
+                            DisplayName="{x:Bind Model, 
+                            Converter={StaticResource PersonalPictureInitialsVisibilityConverter},
+                            Mode=OneWay}"
+                            Margin="15,10,20,0"
+                            Grid.Column="1"
+                            Grid.Row="0"
+                            Style="{StaticResource PersonPictureWithAccentShadow}"
+                            Tag="{x:Bind AccountIconName, Mode=OneWay}"
+                            Grid.RowSpan="2">
+                        </muxc:PersonPicture>
+
+                        <RelativePanel 
+                            Grid.Column="2" 
+                            Grid.RowSpan="2" 
+                            Grid.ColumnSpan="2">
+                            <TextBlock
+                                x:Name="AccountName"
+                                MaxWidth="400"
+                                FontSize="{ThemeResource HubSectionHeaderThemeFontSize}"
+                                ToolTipService.ToolTip="{x:Bind Label,Mode=OneWay}"
+                                Margin="0,10,10,0"
+                                TextTrimming="CharacterEllipsis"
+                                TextWrapping="Wrap"
+                                MaxLines="1"
+                                VerticalAlignment="Center">
+                                <Bold>
+                                    <Run Text="{x:Bind Label,Mode=OneWay}"/>
+                                </Bold>
+                            </TextBlock>
+                            <TextBlock 
+                                x:Name="IssuerName"
+                                FontWeight="Thin"
+                                Text="{x:Bind Issuer,Mode=OneWay}" 
+                                ToolTipService.ToolTip="{x:Bind Issuer,Mode=OneWay}"
+                                FontSize="{ThemeResource HubSectionHeaderThemeFontSize}"
+                                TextTrimming="CharacterEllipsis"
+                                TextWrapping="Wrap"
+                                MaxLines="2"
+                                VerticalAlignment="Center"/>
+                        </RelativePanel>
+
+                        <StackPanel
+                            Orientation="Horizontal"
+                            Grid.Row="3"
+                            Grid.Column="2"
+                            Margin="0,0,0,4">
+
+                            <Button
+                                x:Name="BTN_ShowCode"
+                                Click="BTN_ShowCode_Click"
+                                ToolTipService.ToolTip="{x:Bind HideTOTPCode, Mode=OneWay, Converter={StaticResource TOTPVisibilityTooltipConverter}}"
+                                Width="48"
+                                Height="48"
+                                Margin="0,0,4,0"
+                                Visibility="{x:Bind CodeVisibilityOptionEnabled, Mode=OneWay}"
+                                Style="{StaticResource TransparentButtonStyle}"
+                                HorizontalAlignment="Stretch" >
+                                <FontIcon 
+                                    Glyph="{x:Bind HideTOTPCode, Converter={StaticResource ShowCodeToIconConverter},Mode=OneWay}"
+                                    FontSize="24"
+                                    Style="{StaticResource FullFluentFontIconStyle}"
+                                    VerticalAlignment="Center"
+                                    HorizontalAlignment="Center"/>
+                            </Button>
+                            <Grid>
+                                <TextBlock
+                                x:Name="TwoFACodeTextBlock"
+                                Text="{x:Bind TwoFACode,Mode=OneWay}"
+                                FontSize="{ThemeResource PivotHeaderItemFontSize}"
+                                Visibility="{x:Bind HideTOTPCode, Mode=OneWay, Converter={StaticResource VisibleWhenFalseConverter}}"
+                                VerticalAlignment="Center"
+                                CharacterSpacing="60"
+                                Foreground="{ThemeResource SystemAccentColor}" >
+                                    <TextBlock.Resources>
+                                        <Storyboard x:Name="TextChangeAnimation" >
+                                            <DoubleAnimation 
+                                                Storyboard.TargetName="TwoFACodeTextBlock"
+                                                Storyboard.TargetProperty="Opacity" 
+                                                From="1" 
+                                                To="0" 
+                                                AutoReverse="True" 
+                                                Duration="0:0:0.5" 
+                                                RepeatBehavior="Forever" />
+                                        </Storyboard>
+                                        <Storyboard x:Name="TextChangeNormal" >
+                                            <DoubleAnimation 
+                                                Storyboard.TargetName="TwoFACodeTextBlock"
+                                                Storyboard.TargetProperty="Opacity" 
+                                                To="1" 
+                                                Duration="0:0:0.1"  />
+                                        </Storyboard>
+                                    </TextBlock.Resources>
+                                    <TextBlock.RenderTransform>
+                                        <CompositeTransform/>
+                                    </TextBlock.RenderTransform>
+                                    <interactivity:Interaction.Behaviors>
+                                        <interactivity:DataTriggerBehavior Binding="{x:Bind Seconds,Mode=OneWay}" ComparisonCondition="LessThan" Value="3">
+                                            <appbehaviors:SafeControlStoryboardAction Storyboard="{StaticResource TextChangeAnimation}"/>
+                                        </interactivity:DataTriggerBehavior>
+                                        <interactivity:DataTriggerBehavior Binding="{x:Bind Seconds,Mode=OneWay}" ComparisonCondition="GreaterThan" Value="3">
+                                            <appbehaviors:SafeControlStoryboardAction Storyboard="{StaticResource TextChangeNormal}"/>
+                                        </interactivity:DataTriggerBehavior>
+                                    </interactivity:Interaction.Behaviors>
+                                </TextBlock>
+                                <TextBlock
+                                Text="______"
+                                Visibility="{x:Bind HideTOTPCode, Mode=OneWay}"
+                                FontSize="28"
+                                CharacterSpacing="205"
+                                VerticalAlignment="Center" 
+                                Foreground="{ThemeResource SystemAccentColor}" />
+                            </Grid>
+
+                            <appcontrols:CopyButton
+                                x:Name="BTN_CopyCode"
+                                x:Uid="AccountCopyCodeButton"
+                                Width="48"
+                                Height="48"
+                                Click="BTN_CopyCode_Click"
+                                Margin="8,0,4,0"
+                                HorizontalAlignment="Stretch" >
+                                <FontIcon 
+                                    Style="{StaticResource DefaultFontIconStyle}" 
+                                    Glyph="&#xE8C8;" 
+                                    FontSize="20"/>
+                            </appcontrols:CopyButton>
+                            <Grid VerticalAlignment="Center">
+                                <unocontrols:RadialProgressBar
+                                Value="{x:Bind Seconds,Mode=OneWay}" 
+                                Maximum="{x:Bind Period,Mode=OneWay}"
+                                Minimum="0"
+                                IsIndeterminate="False"
+                                Width="42"
+                                Height="42"
+                                x:Uid="AccountCodePageRemainingSeconds"
+                                IsTabStop="False"
+                                Foreground="{ThemeResource SystemControlHighlightAltAccentBrush}"/>
+                                <TextBlock 
+                                x:Uid="AccountCodePageRemainingSeconds"
+                                Opacity="0.6"
+                                Text="{x:Bind Seconds, Mode=OneWay, Converter={StaticResource DoubleToInt32ToStringConverter}}"
+                                FontSize="16"
+                                IsTextScaleFactorEnabled="False"
+                                VerticalAlignment="Center" 
+                                HorizontalAlignment="Center"/>
+                            </Grid>
+                            <Button
+                                x:Name="BTN_SetFavourite"
+                                Width="48"
+                                Height="48"
+                                Click="BTN_SetFavourite_Click"
+                                Style="{StaticResource TransparentButtonStyle}"
+                                Margin="8,0,4,0"
+                                ToolTipService.ToolTip="{x:Bind IsFavourite, Mode=OneWay, Converter={StaticResource FavouriteTooltipConverter}}"
+                                HorizontalAlignment="Stretch" >
+                                <FontIcon 
+                                    Glyph="{x:Bind IsFavourite, Converter={StaticResource FavouriteToIconConverter},Mode=OneWay}"
+                                    FontSize="20"
+                                    Foreground="{ThemeResource SystemControlHighlightAltAccentBrush}"
+                                    VerticalAlignment="Center"
+                                    HorizontalAlignment="Center"/>
+                            </Button>
+                        </StackPanel>
+
+                        <Button
+                            x:Uid="AccountCodePageItemMoreBTN"
+                            Grid.Column="4" 
+                            Margin="8,0,0,0" 
+                            VerticalAlignment="Top" 
+                            Flyout="{StaticResource MF_AccountMoreOptionsFlyout}"
+                            Style="{StaticResource TransparentButtonStyle}">
+                            <FontIcon Glyph="&#xE712;"/>
+                        </Button>
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="WindowStates">
+                                <VisualState x:Name="NarrowState">
+                                    <VisualState.StateTriggers>
+                                        <AdaptiveTrigger MinWindowWidth="0" />
+                                    </VisualState.StateTriggers>
+                                    <VisualState.Setters>
+                                        <Setter Target="IssuerName.(RelativePanel.Below)" Value="AccountName"/>
+                                        <Setter Target="IssuerName.Margin" Value="0,10,10,0"/>
+                                        <Setter Target="Root.MinWidth" Value="478"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="MediumState">
+                                    <VisualState.StateTriggers>
+                                        <AdaptiveTrigger MinWindowWidth="720" />
+                                    </VisualState.StateTriggers>
+                                    <VisualState.Setters>
+                                        <Setter Target="Root.MinWidth" Value="660"/>
+                                        <Setter Target="IssuerName.(RelativePanel.RightOf)" Value="AccountName"/>
+                                        <Setter Target="IssuerName.Margin" Value="10,10,10,0"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                    </Grid>
+                </UserControl>
+            </DataTemplate>
+
+            <DataTemplate x:Name="ShimmerTemplate">
+                <UserControl
+                    x:Name="Root" 
+                    MaxWidth="660"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    HorizontalContentAlignment="Stretch"
+                    VerticalContentAlignment="Stretch" >
+                    <Grid 
+                        HorizontalAlignment="Stretch"
+                        CornerRadius="{ThemeResource ControlCornerRadius}"
+                        >
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="auto"/>
+                            <ColumnDefinition Width="auto"/>
+                            <ColumnDefinition Width="auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Grid Grid.RowSpan="3" >
+
+                        </Grid>
+
+                        <unocontrols:Shimmer 
+                        Height="48"
+                        Width="48"
+                        CornerRadius="96"
+                        Margin="15,10,20,0"
+                        Grid.Column="1"
+                        Grid.Row="0"
+                        Grid.RowSpan="2">
+                        </unocontrols:Shimmer>
+
+
+                        <RelativePanel 
+                            Grid.Column="2" 
+                            Grid.RowSpan="2" 
+                            Grid.ColumnSpan="2"
+                            Margin="0,0,0,8">
+
+                            <unocontrols:Shimmer 
+                            x:Name="AccountName" 
+                            Width="200"
+                            Height="18"
+                            Margin="0,10,10,0" />
+
+                            <unocontrols:Shimmer 
+                            x:Name="IssuerName" 
+                            Width="200"
+                            Height="18"
+                            Margin="0,10,10,0" />
+                        </RelativePanel>
+
+                        <StackPanel
+                            Orientation="Horizontal"
+                            Grid.Row="3"
+                            Grid.Column="2"
+                            Margin="0,0,0,4">
+
+                            <unocontrols:Shimmer Width="120"  />
+
+                            <unocontrols:Shimmer 
+                            Width="48"
+                            Height="32" 
+                            Margin="8,0,4,0"/>
+
+                            <unocontrols:Shimmer 
+                            Width="48"
+                            Height="32" 
+                            Margin="8,0,4,0"/>
+
+                        </StackPanel>
+
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="WindowStates">
+                                <VisualState x:Name="NarrowState">
+                                    <VisualState.StateTriggers>
+                                        <AdaptiveTrigger MinWindowWidth="0" />
+                                    </VisualState.StateTriggers>
+                                    <VisualState.Setters>
+                                        <Setter Target="IssuerName.(RelativePanel.Below)" Value="AccountName"/>
+                                        <Setter Target="IssuerName.Margin" Value="0,10,10,0"/>
+                                        <Setter Target="Root.MinWidth" Value="478"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="MediumState">
+                                    <VisualState.StateTriggers>
+                                        <AdaptiveTrigger MinWindowWidth="720" />
+                                    </VisualState.StateTriggers>
+                                    <VisualState.Setters>
+                                        <Setter Target="Root.MinWidth" Value="660"/>
+                                        <Setter Target="IssuerName.(RelativePanel.RightOf)" Value="AccountName"/>
+                                        <Setter Target="IssuerName.Margin" Value="10,10,10,0"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                    </Grid>
+                </UserControl>
+            </DataTemplate>
+
+        </ResourceDictionary>
+    </Page.Resources>
+
+    <!--<interactivity:Interaction.Behaviors>
+        <behaviors:FocusBehavior>
+            <behaviors:FocusTarget Control="{x:Bind LV_AccountCollection}" />
+        </behaviors:FocusBehavior>
+    </interactivity:Interaction.Behaviors>-->
+
+    <Grid 
+        x:Name="MainGrid">
+        <ListView 
+            x:Name="LV_AccountCollection"
+            AutomationProperties.Name="Accounts"
+            ItemsSource="{x:Bind ViewModel.TwoFADataService.ACVCollection, Mode=OneWay}"
+            SelectedIndex="{x:Bind ViewModel.SelectedIndex, Mode=TwoWay}"
+            ItemTemplateSelector="{StaticResource AccountAvatarTemplateSelector}" 
+            IsItemClickEnabled="False"
+            ItemContainerStyle="{StaticResource TwoFASelectionListViewItemStyle}"
+            HorizontalContentAlignment="Stretch"
+            helpers:TemplateSelector.ChangedItem="{x:Bind ViewModel.ChangedItem, Mode=OneWay}"
+            HorizontalAlignment="Stretch" 
+            Margin="0,8,0,12">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <wctc:WrapPanel 
+                        HorizontalSpacing="16"
+                        VerticalSpacing="16"
+                        Orientation="Horizontal" 
+                        HorizontalAlignment="Stretch"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+        </ListView>
+        <ListView 
+            Visibility="{x:Bind ViewModel.TwoFADataService.IsLoading, Mode=OneWay}"
+            ItemContainerStyle="{StaticResource TwoFASelectionListViewItemStyle}"
+            ItemTemplate="{StaticResource ShimmerTemplate}">
+            <!--<ListView.ItemContainerStyle>
+                    <Setter Property="animations:Implicit.Animations" Value="{StaticResource ImplicitOffset}"/>
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                    <Setter Property="Padding" Value="2,16,20,0"/>
+                </ListView.ItemContainerStyle>-->
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <wctc:WrapPanel 
+                        Orientation="Horizontal" 
+                        HorizontalAlignment="Stretch"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <Grid></Grid>
+            <Grid></Grid>
+            <Grid></Grid>
+        </ListView>
+        <!--<appcontrols:AutoCloseInfoBar
+            IsOpen="{x:Bind ViewModel.DatafileWebDAVUpdated,Mode=TwoWay}"
+            Severity="Success"
+            Title=""
+            MaxWidth="450"
+            Message="" />-->
+        <appcontrols:AutoCloseInfoBar
+            IsOpen="{x:Bind ViewModel.DatafileUpdated,Mode=TwoWay}"
+            Severity="Success"
+            Title="{x:Bind strings:Resources.InfoBarDatafileTitleUpdated}"
+            MaxWidth="450"
+            Message="{x:Bind strings:Resources.InfoBarDatafileUpdated}" />
+        
+        <appcontrols:AutoCloseInfoBar
+            IsOpen="{x:Bind ViewModel.DatafileNoInternetConnection,Mode=TwoWay}"
+            Severity="Warning"
+            Title="{x:Bind strings:Resources.InfoBarDatafileTitleNoInternet}"
+            MaxWidth="450"
+            Message="{x:Bind strings:Resources.InfoBarDatafileNoInternet}" />
+    </Grid>
+</Page>

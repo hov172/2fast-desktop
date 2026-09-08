@@ -1,0 +1,355 @@
+using System.Threading.Tasks;
+using System.Windows.Input;
+using Project2FA.Core;
+using Project2FA.Repository.Models;
+using System;
+using Windows.Storage;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using UNOversal.Services.Dialogs;
+using UNOversal.Services.Secrets;
+using UNOversal.Services.File;
+using Project2FA.Services;
+using Project2FA.Core.Utils;
+using Project2FA.Core.Services.Crypto;
+using System.Text;
+using UNOversal.Services.Logging;
+using UNOversal.Services.Serialization;
+
+
+#if WINDOWS_UWP
+using Project2FA.UWP;
+using Windows.Security.Cryptography;
+using Windows.Storage.Streams;
+#else
+using Project2FA.UnoApp;
+using Microsoft.UI.Xaml.Data;
+#endif
+
+namespace Project2FA.ViewModels
+{
+#if !WINDOWS_UWP
+    [Bindable]
+#endif
+    /// <summary>
+    /// View model for the content dialog to change the password of the current datafile
+    /// </summary>
+    public class ChangeDatafilePasswordContentDialogViewModel : ObservableObject, IDialogInitialize
+    {
+        private string _currentPassword, _newPassword, _newPasswordRepeat;
+        private bool _isPrimaryBTNEnable;
+        private bool _showError;
+        private bool _invalidPassword = false;
+        private bool _passwordChanged;
+        private ISecretService SecretService { get; }
+
+        private IFileService FileService { get; }
+
+        private ISerializationService SerializationService { get; }
+        private ISerializationCryptoService SerializationCryptoService { get; }
+        private ILoggingService LoggingService { get; }
+        public ICommand ConfirmErrorCommand { get; }
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        public ChangeDatafilePasswordContentDialogViewModel(
+            ISecretService secretService, 
+            IFileService fileService,
+            ISerializationService serializationService,
+            ISerializationCryptoService serializationCryptoService,
+            ILoggingService loggingService)
+        {
+            SecretService = secretService;
+            FileService = fileService;
+            SerializationService = serializationService;
+            SerializationCryptoService = serializationCryptoService;
+            LoggingService = loggingService;
+            ConfirmErrorCommand = new RelayCommand(() =>
+            {
+                ShowError = false;
+                CurrentPassword = string.Empty;
+            });
+        }
+
+        public void Initialize(IDialogParameters parameters)
+        {
+            if (parameters.TryGetValue<bool>("isInvalid", out bool isInvalid))
+            {
+                InvalidPassword = isInvalid;
+            }
+        }
+
+        /// <summary>
+        /// Changing the password in the datafile and local database
+        /// </summary>
+        public async Task ChangePasswordInFileAndDB()
+        {
+#if TWOFAST_DESKTOP
+            PasswordChanged = await DataService.Instance.ChangeMacOSPassword(CurrentPassword, NewPassword, InvalidPassword);
+            if (PasswordChanged && InvalidPassword)
+                await DataService.Instance.ReloadDatafile();
+            return;
+#else
+            string hash = string.Empty;
+            if (DataService.Instance.ActivatedDatafile != null)
+            {
+                SecretService.Helper.RemoveSecret(Constants.ContainerName, Constants.ActivatedDatafileHashName);
+                byte[] encryptedBytes;
+
+                encryptedBytes = Encoding.UTF8.GetBytes(NewPassword);
+#if WINDOWS_UWP
+                SecretService.Helper.WriteSecret(
+                    Constants.ContainerName,
+                    Constants.ActivatedDatafileHashName,
+                    SerializationService.Serialize(ProtectData.Protect(encryptedBytes)));
+#else
+                SecretService.Helper.WriteSecret(
+                    Constants.ContainerName,
+                    Constants.ActivatedDatafileHashName,
+                    SerializationService.Serialize(encryptedBytes));
+#endif
+            }
+            else
+            {
+                //delete password in the secret vault
+                SecretService.Helper.RemoveSecret(Constants.ContainerName, SettingsService.Instance.DataFilePasswordHash);
+                //set new hash
+                hash = CryptoService.CreateStringHash(NewPassword);
+                // update setting with new pw hash
+                SettingsService.Instance.DataFilePasswordHash = hash;
+                // save new pw in the secret vault
+                SecretService.Helper.WriteSecret(Constants.ContainerName, hash, NewPassword);
+            }
+
+            //datafile must not changed when password was invalid (written already by other app)
+            if (InvalidPassword == false)
+            {
+                await DataService.Instance.WriteLocalDatafile();
+            }
+            else
+            {
+                // reload collection
+                await DataService.Instance.ReloadDatafile();
+            }
+            PasswordChanged = true;
+#endif
+        }
+
+        /// <summary>
+        /// Checks if the password is correct or not and displays an error message
+        /// </summary>
+        /// <returns>boolean</returns>
+        public async Task<bool> TestPassword()
+        {
+
+            if (DataService.Instance.ActivatedDatafile != null)
+            {
+                StorageFolder storageFolder = await DataService.Instance.ActivatedDatafile.GetParentAsync();
+                return await TestPassword(DataService.Instance.ActivatedDatafile, storageFolder);
+            }
+            else
+            {
+#if TWOFAST_DESKTOP
+                StorageFile file = await Project2FA.Services.MacOS.MacOSVaultLocation.OpenAsync(SettingsService.Instance.DataFilePath, SettingsService.Instance.DataFileName, SettingsService.Instance.DataFileWebDAVEnabled);
+                StorageFolder folder = await file.GetParentAsync();
+#else
+                StorageFolder folder = SettingsService.Instance.DataFileWebDAVEnabled ?
+                                    ApplicationData.Current.LocalFolder :
+                                    await StorageFolder.GetFolderFromPathAsync(SettingsService.Instance.DataFilePath);
+                StorageFile file = await folder.GetFileAsync(SettingsService.Instance.DataFileName);
+#endif
+                return await TestPassword(file, folder);
+            }
+        }
+
+        public async Task<string> GetCurrentPasswordHash()
+        {
+            string hash = string.Empty;
+            if (DataService.Instance.ActivatedDatafile != null)
+            {
+#if WINDOWS_UWP
+                hash = CryptoService.CreateStringHash(ProtectData.Unprotect(SerializationService.Deserialize<byte[]>(SecretService.Helper.ReadSecret(Constants.ContainerName, Constants.ActivatedDatafileHashName))));
+#else
+                // TODO encrypted password via ProtectData is not supported
+                hash = CryptoService.CreateStringHash(SerializationService.Deserialize<byte[]>(SecretService.Helper.ReadSecret(Constants.ContainerName, Constants.ActivatedDatafileHashName)));
+#endif
+            }
+            else
+            {
+                hash = SettingsService.Instance.DataFilePasswordHash;
+            }
+            return hash;
+        }
+
+        /// <summary>
+        /// Test the new password, if the current password is invalid, or test the current password, if a new password will be set
+        /// </summary>
+        /// <param name="storageFile"></param>
+        /// <param name="storageFolder"></param>
+        /// <returns></returns>
+        private async Task<bool> TestPassword(StorageFile storageFile, StorageFolder storageFolder)
+        {
+            string datafileStr = await FileService.ReadStringAsync(storageFile.Name, storageFolder);
+            //read the iv for AES
+#if !TWOFAST_DESKTOP
+            DatafileModel datafile = SerializationService.Deserialize<DatafileModel>(datafileStr);
+#endif
+#if !TWOFAST_DESKTOP
+            byte[] iv = datafile.IV;
+#endif
+
+            try
+            {
+#if TWOFAST_DESKTOP
+                await Task.Run(() => Project2FA.Services.MacOS.MacOSVaultCodec.Decrypt(datafileStr, InvalidPassword ? NewPassword : CurrentPassword));
+#else
+                // if the current password is invalid, try to load the datafile with the new password
+                if (InvalidPassword)
+                {
+                    DatafileModel deserializeCollection = SerializationCryptoService.DeserializeDecrypt<DatafileModel>(CreatePasswordKey(datafile,NewPassword), iv, datafileStr, datafile.Version);
+                }
+                else
+                {
+                    // check the current password, if the file can be decrypted
+                    DatafileModel deserializeCollection = SerializationCryptoService.DeserializeDecrypt<DatafileModel>(CreatePasswordKey(datafile, CurrentPassword), iv, datafileStr, datafile.Version);
+                }
+
+#endif
+                return true;
+            }
+            catch (Exception exc)
+            {
+                await LoggingService.LogException(exc, SettingsService.Instance.LoggingSetting);
+                ShowError = true;
+                if (InvalidPassword)
+                {
+                    NewPassword = string.Empty;
+                    NewPasswordRepeat = string.Empty;
+                }
+                else
+                {
+                    CurrentPassword = string.Empty;
+                }
+                return false;
+            }
+        }
+
+        private byte[] CreatePasswordKey(DatafileModel datafile, string password)
+        {
+            switch (datafile.Version)
+            {
+                case 0:
+                case 1:
+                default:
+                    return CryptoService.CreateByteArrayKeyV1(Encoding.UTF8.GetBytes(password));
+                case 2:
+                    return CryptoService.CreateByteArrayKeyV2(Encoding.UTF8.GetBytes(password));
+            }
+        }
+
+        #region GetSetter
+        public string CurrentPassword 
+        { 
+            get => _currentPassword;
+            set
+            {
+                if (SetProperty(ref _currentPassword, value))
+                {
+                    CheckInputs();
+                }
+            }
+        }
+        public string NewPassword 
+        { 
+            get => _newPassword;
+            set
+            {
+                if (SetProperty(ref _newPassword, value))
+                {
+                    CheckInputs();
+                }
+            }
+        }
+        public string NewPasswordRepeat 
+        { 
+            get => _newPasswordRepeat;
+            set
+            {
+                if(SetProperty(ref _newPasswordRepeat, value))
+                {
+                    CheckInputs();
+                }
+            }
+        }
+
+        private void CheckInputs()
+        {
+            if (InvalidPassword)
+            {
+                if (NewPassword == NewPasswordRepeat &&
+                    (!string.IsNullOrWhiteSpace(NewPassword) && !string.IsNullOrWhiteSpace(NewPasswordRepeat)))
+                {
+                    IsPrimaryBTNEnable = true;
+                }
+                else
+                {
+                    IsPrimaryBTNEnable = false;
+                }
+            }
+            else
+            {
+                if (!string.IsNullOrWhiteSpace(CurrentPassword))
+                {
+                    if (NewPassword == NewPasswordRepeat &&
+                        (!string.IsNullOrWhiteSpace(NewPassword) && !string.IsNullOrWhiteSpace(NewPasswordRepeat)))
+                    {
+                        IsPrimaryBTNEnable = true;
+                    }
+                    else
+                    {
+                        IsPrimaryBTNEnable = false;
+                    }
+                }
+                else
+                {
+                    IsPrimaryBTNEnable = false;
+                }
+            }
+        }
+
+        public bool PasswordIsNotInvalid
+        {
+            get => !InvalidPassword;
+        }
+
+        public bool IsPrimaryBTNEnable
+        {
+            get => _isPrimaryBTNEnable;
+            set => SetProperty(ref _isPrimaryBTNEnable, value);
+        }
+
+        public bool ShowError
+        {
+            get => _showError;
+            set => SetProperty(ref _showError, value);
+        }
+        public bool InvalidPassword
+        { 
+            get => _invalidPassword;
+            set
+            {
+                if(SetProperty(ref _invalidPassword, value))
+                {
+                    OnPropertyChanged(nameof(PasswordIsNotInvalid));
+                }
+            }
+        }
+        public bool PasswordChanged 
+        { 
+            get => _passwordChanged;
+            set => _passwordChanged = value;
+        }
+        #endregion
+    }
+}

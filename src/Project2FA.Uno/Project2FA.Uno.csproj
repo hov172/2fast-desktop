@@ -1,0 +1,243 @@
+<Project Sdk="Uno.Sdk">
+  <!-- Disable BindableTypeLinkerGenerator for mobile platforms early in the build -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0-android' or '$(TargetFramework)' == 'net10.0-ios' or '$(TargetFramework)' == 'net10.0-maccatalyst'">
+	<UnoUIDisableBindableTypeLinkGenerator>true</UnoUIDisableBindableTypeLinkGenerator>
+	<BindableTypeLinkerGeneratorSkip>true</BindableTypeLinkerGeneratorSkip>
+  </PropertyGroup>
+
+  <PropertyGroup>
+	<TargetFrameworks>net10.0-android;net10.0-ios;net10.0-desktop</TargetFrameworks>
+
+	<OutputType>Exe</OutputType>
+	<UnoSingleProject>true</UnoSingleProject>
+
+    <!-- Display name -->
+    <ApplicationTitle>Project2FA.Uno</ApplicationTitle>
+    <!-- App Identifier -->
+    <ApplicationId>jpweber.it.Project2FA.Uno</ApplicationId>
+    <!-- Versions -->
+    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+    <ApplicationVersion>1</ApplicationVersion>
+    <!-- Package Publisher -->
+    <ApplicationPublisher>Jan Philipp Weber</ApplicationPublisher>
+    <!-- Package Description -->
+    <Description>Project2FA.Uno powered by Uno Platform.</Description>
+
+    <!--
+      UnoFeatures let's you quickly add and manage implicit package references based on the features you want to use.
+      https://aka.platform.uno/singleproject-features
+    -->
+    <UnoFeatures>
+		Material;
+		Dsp;
+		Toolkit;
+		Cupertino;
+		Lottie;
+		Svg;
+		Skia;
+	</UnoFeatures>
+	<PackageCertificateThumbprint>D17FB9F254A915E499415F614115D6D86A448B38</PackageCertificateThumbprint>
+	<AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
+	<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">29.0</SupportedOSPlatformVersion>
+	<!-- Platforms should only apply to desktop builds, not mobile/cross-platform -->
+	<Platforms Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">AnyCPU;ARM64;x64</Platforms>
+  </PropertyGroup>
+
+	<PropertyGroup>
+		<PublishAot Condition=" $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios' ">true</PublishAot>
+		<PublishAot Condition=" $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst' ">true</PublishAot>
+		<PublishAot Condition=" $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android' ">true</PublishAot>
+		<!-- repeat for any other platforms that Native AOT should be enabled on… -->
+	</PropertyGroup>
+
+	<!-- Android RuntimeIdentifier Configuration for AOT -->
+	<PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
+		<RuntimeIdentifier>android-arm64</RuntimeIdentifier>
+		<!-- Disable HotDesign for Android to avoid NativeAOT compatibility issues with Anthropic.SDK.dll -->
+		<UnoDisableHotDesign>true</UnoDisableHotDesign>
+	</PropertyGroup>
+
+  <!-- Android RuntimeIdentifier Configuration for AOT -->
+  <!--<PropertyGroup Condition="'$(TargetFramework)' == 'net10.0-android'">
+	--><!-- Enable Full AOT Compilation for Release builds --><!--
+	<RunAOTCompilation Condition="'$(Configuration)' == 'Release'">true</RunAOTCompilation>
+	--><!-- Use interpreter for Debug builds for faster development --><!--
+	<UseInterpreter Condition="'$(Configuration)' == 'Debug'">true</UseInterpreter>
+	--><!-- Enable Trimming for Release builds to reduce APK size --><!--
+	<PublishTrimmed Condition="'$(Configuration)' == 'Release'">true</PublishTrimmed>
+	<TrimMode Condition="'$(Configuration)' == 'Release'">full</TrimMode>
+	--><!-- Android Linking Mode --><!--
+	<AndroidLinkMode Condition="'$(Configuration)' == 'Release'">Full</AndroidLinkMode>
+	<AndroidLinkMode Condition="'$(Configuration)' == 'Debug'">None</AndroidLinkMode>
+	--><!-- Optional: Enable LLVM for better performance (uncomment if needed) --><!--
+	 <EnableLLVM>true</EnableLLVM> 
+  </PropertyGroup>-->
+
+  <!-- Trimming Protection: Preserve assemblies that use Reflection -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-android'">
+	<!-- Protect DryIoc from being trimmed (IoC container uses Reflection) -->
+	<TrimmerRootAssembly Include="DryIoc">
+	  <RootMode>All</RootMode>
+	</TrimmerRootAssembly>
+  </ItemGroup>
+
+
+  <Import Project="..\..\UNOversalTemplate\UNOversalTemplate.Services\UNOversalTemplate.Services.projitems" Label="Shared" />
+  <Import Project="..\..\UNOversalTemplate\UNOversalTemplate.IoC.DryIoC\UNOversalTemplate.IoC.DryIoC.projitems" Label="Shared" />
+  <Import Project="..\..\UNOversalTemplate\UNOversalTemplate.Core\UNOversalTemplate.Core.projitems" Label="Shared" />
+  <Import Project="..\..\Project2FA.Shared\Project2FA.Shared.projitems" Label="Shared" />
+  <ItemGroup>
+    <ProjectReference Include="..\..\BiometryService\src\BiometryService\BiometryService.csproj" />
+    <ProjectReference Include="..\..\Otp.NET\src\Otp.NET\Otp.NET.csproj" />
+    <ProjectReference Include="..\..\Project2FA.Core\Project2FA.Core.csproj" />
+    <ProjectReference Include="..\..\WebDAVClientPortable\WebDAVClientPortable.csproj" />
+    <ProjectReference Include="..\..\ZXing.Net.Uno\src\CommunityToolkit.Uno.Camera\CommunityToolkit.Uno.Camera.csproj" />
+    <ProjectReference Include="..\UnoLibrary.Controls\UnoLibrary.Controls.csproj" />
+  </ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="BouncyCastle.Cryptography" Version="2.7.0" />
+		<PackageReference Include="CommunityToolkit.Labs.WinUI.TokenView" Version="0.1.250828-build.2223" />
+		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+		<PackageReference Include="CommunityToolkit.WinUI.Animations" Version="8.2.251219" />
+		<PackageReference Include="CommunityToolkit.WinUI.Behaviors" Version="8.2.251219" />
+		<PackageReference Include="CommunityToolkit.WinUI.Collections" Version="8.2.251219" />
+		<PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" Version="8.2.251219" />
+		<PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.2.251219" />
+		<PackageReference Include="CommunityToolkit.WinUI.Extensions" Version="8.2.251219" />
+		<PackageReference Include="CommunityToolkit.WinUI.Helpers" Version="8.2.251219" />
+		<PackageReference Include="CommunityToolkit.WinUI.Triggers" Version="8.2.251219" />
+		<PackageReference Include="DryIoc.dll" Version="5.4.3" />
+		<!--<PackageReference Include="System.Private.Uri" Version="4.3.2" />
+		<PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />-->
+		<PackageReference Include="protobuf-net" Version="3.2.56" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net10.0-android'">
+		<PackageReference Include="Xamarin.AndroidX.Activity" Version="1.12.4.1" />
+		<PackageReference Include="Xamarin.AndroidX.AppCompat" Version="1.7.1.3" />
+		<!-- Explicitly pin to 2.10.0.2 to avoid NU1608 version conflicts -->
+		<PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" Version="2.10.0.2" />
+		<PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData.Core" Version="2.10.0.2" />
+		<PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData.Core.Ktx" Version="2.10.0.2" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net10.0-windows10.0.26100' or '$(TargetFramework)' == 'net10.0-windows10.0.26100'">
+		<PackageReference Include="System.Security.Cryptography.ProtectedData" Version="9.0.5" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<UnoIcon Include="..\..\Project2FA.Shared\Assets\Icons\schluessel.svg" Color="#FF009BC1" ForegroundScale="0.5" />
+		<UnoSplashScreen Include="..\..\Project2FA.Shared\Assets\Splashcreen\splash_screen.svg" ForegroundScale="0.6" BaseSize="128,128" Color="#FF009BC1" />
+	</ItemGroup>
+
+
+    <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0-desktop' and $([System.String]::Copy('$(RuntimeIdentifier)').StartsWith('win-'))">
+        <ApplicationTitle>2fast</ApplicationTitle>
+        <DefineConstants>$(DefineConstants);TWOFAST_WINDOWS;TWOFAST_DESKTOP</DefineConstants>
+    </PropertyGroup>
+    <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-desktop' and $([System.String]::Copy('$(RuntimeIdentifier)').StartsWith('win-'))">
+        <Compile Remove="../../UNOversalTemplate/UNOversalTemplate.Services/Secrets/Default/SecretHelper.cs" />
+        <PackageReference Include="OpenCvSharp4" Version="4.13.0.20260627" />
+        <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.13.0.20260627" Condition="'$(RuntimeIdentifier)' == 'win-x64'" />
+        <PackageReference Include="OpenCvSharp4.runtime.win-arm64" Version="4.13.0.20260627" Condition="'$(RuntimeIdentifier)' == 'win-arm64'" />
+    </ItemGroup>
+	<!-- Uno's macOS packager expects generated images named icon16x16, etc. -->
+	<ItemGroup Condition="'$(TargetFramework)' == 'net10.0-desktop' and $([System.String]::Copy('$(RuntimeIdentifier)').StartsWith('osx-'))">
+		<UnoIcon Remove="@(UnoIcon)" />
+		<UnoIcon Include="Platforms/Desktop/icon.svg" Color="#FF009BC1" ForegroundScale="0.5" />
+	</ItemGroup>
+	<PropertyGroup Condition="'$(TargetFramework)' == 'net10.0-desktop' and $([System.String]::Copy('$(RuntimeIdentifier)').StartsWith('osx-'))">
+		<ApplicationTitle>2fast</ApplicationTitle>
+		<DefineConstants>$(DefineConstants);TWOFAST_MACOS;TWOFAST_DESKTOP</DefineConstants>
+		<UnoMacOSCustomInfoPlist>$(MSBuildProjectDirectory)/Platforms/Desktop/Native/Info.plist</UnoMacOSCustomInfoPlist>
+		<UnoMacOSEntitlements>$(MSBuildProjectDirectory)/Platforms/Desktop/Native/Entitlements.plist</UnoMacOSEntitlements>
+	</PropertyGroup>
+	<Import Project="../../build/macos-signing/Signing.props" Condition="'$(TargetFramework)' == 'net10.0-desktop' and $([System.String]::Copy('$(RuntimeIdentifier)').StartsWith('osx-')) and Exists('../../build/macos-signing/Signing.props')" />
+	<Target Name="ValidateMacOSSigning" BeforeTargets="PrepareForBuild"
+		Condition="'$(TargetFramework)' == 'net10.0-desktop' and $([System.String]::Copy('$(RuntimeIdentifier)').StartsWith('osx-'))">
+		<Error Condition="'$(MacOSProvisioningProfile)' == '' or !Exists('$(MacOSProvisioningProfile)')" Text="Touch ID requires a signed Keychain entitlement. Run scripts/setup-macos-signing.sh YOUR_APPLE_TEAM_ID first." />
+	</Target>
+	<ItemGroup Condition="'$(TargetFramework)' == 'net10.0-desktop' and $([System.String]::Copy('$(RuntimeIdentifier)').StartsWith('osx-'))">
+		<Compile Remove="../../UNOversalTemplate/UNOversalTemplate.Services/Secrets/Default/SecretHelper.cs" />
+		<None Include="$(MSBuildProjectDirectory)/obj/native/$(RuntimeIdentifier)/libTwoFastMac.dylib" Link="libTwoFastMac.dylib" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+	</ItemGroup>
+	<Target Name="BuildMacOSNativeServices" BeforeTargets="PrepareForBuild"
+		Condition="'$(TargetFramework)' == 'net10.0-desktop' and $([System.String]::Copy('$(RuntimeIdentifier)').StartsWith('osx-'))"
+		Inputs="$(MSBuildProjectDirectory)/Platforms/Desktop/Native/TwoFastMac.m"
+		Outputs="$(MSBuildProjectDirectory)/obj/native/$(RuntimeIdentifier)/libTwoFastMac.dylib">
+		<PropertyGroup>
+			<MacOSNativeArch Condition="'$(RuntimeIdentifier)' == 'osx-arm64'">arm64</MacOSNativeArch>
+			<MacOSNativeArch Condition="'$(RuntimeIdentifier)' == 'osx-x64'">x86_64</MacOSNativeArch>
+		</PropertyGroup>
+		<MakeDir Directories="$(MSBuildProjectDirectory)/obj/native/$(RuntimeIdentifier)" />
+		<Exec Command="xcrun clang -dynamiclib -fobjc-arc -fblocks -Wall -Wextra -Werror -Wno-unused-parameter -arch $(MacOSNativeArch) -mmacosx-version-min=15.0 -install_name @rpath/libTwoFastMac.dylib -framework AppKit -framework AVFoundation -framework LocalAuthentication -framework Security -framework Vision -framework CoreMedia -framework QuartzCore -framework ScreenCaptureKit -framework CoreImage &quot;$(MSBuildProjectDirectory)/Platforms/Desktop/Native/TwoFastMac.m&quot; -o &quot;$(MSBuildProjectDirectory)/obj/native/$(RuntimeIdentifier)/libTwoFastMac.dylib&quot;" />
+	</Target>
+	<Target Name="CleanMacOSPublishAttributes" BeforeTargets="_UnoPublishAppBundle"
+		Condition="'$(TargetFramework)' == 'net10.0-desktop' and $([System.String]::Copy('$(RuntimeIdentifier)').StartsWith('osx-'))">
+		<!-- Source archives may carry Finder metadata that codesign rejects. Only clean generated output. -->
+		<Exec Command="/usr/bin/xattr -cr &quot;$(PublishDir)&quot;" />
+	</Target>
+	<Target Name="EmbedMacOSProvisioningProfile" AfterTargets="_UnoPublishAppBundle"
+		Condition="'$(MacOSProvisioningProfile)' != '' and '$(AppBundlePath)' != ''">
+		<Copy SourceFiles="$(MacOSProvisioningProfile)" DestinationFiles="$(AppBundlePath)/Contents/embedded.provisionprofile" />
+		<Exec Command="/usr/bin/codesign --force --sign &quot;$(CodesignKey)&quot; --options runtime --entitlements &quot;$(UnoMacOSEntitlements)&quot; --timestamp=none &quot;$(AppBundlePath)&quot;" />
+	</Target>
+
+	<PropertyGroup Condition="'$(Configuration)'=='Release' and '$(System_PullRequest_IsFork)'!='True' and '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'ios' ">
+		<CodesignKey>iPhone Distribution</CodesignKey>
+		<RuntimeIdentifier>ios-arm64</RuntimeIdentifier>
+	</PropertyGroup>
+
+	<ItemGroup Condition=" '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'ios' ">
+		<TrimmerRootDescriptor Include="Platforms/iOS/LinkerConfig.xml" />
+	</ItemGroup>
+
+	<!-- Use CoreCLR on Android -->
+	<!--<PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
+		<UseMonoRuntime>false</UseMonoRuntime>
+	</PropertyGroup>-->
+
+	<ItemGroup>
+		<Page Update="Themes\Generic.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</Page>
+	</ItemGroup>
+
+
+	<ItemGroup>
+	  <Page Update="Views\Flyouts\ResponsiveDrawerFlyout.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </Page>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Page Update="Controls\RadialProgressBar\RadialProgressBar.xaml">
+		  <SubType>Designer</SubType>
+		  <Generator>MSBuild:Compile</Generator>
+	  </Page>
+	</ItemGroup>
+
+
+	<ItemGroup>
+	  <Page Include="Controls\Shimmer\Shimmer.xaml">
+		  <SubType>Designer</SubType>
+		  <Generator>MSBuild:Compile</Generator>
+	  </Page>
+	</ItemGroup>
+
+
+	<ItemGroup>
+	  <Page Update="Views\ContentDialog\WebDAVAuthContentDialog.xaml">
+		<Generator>MSBuild:Compile</Generator>
+	  </Page>
+	</ItemGroup>
+
+	<!-- Override to disable BindableTypeLinkerGenerator for mobile platforms -->
+	<Target Name="DisableBindableTypeLinkerGeneratorForMobile" BeforeTargets="Build" Condition="'$(TargetFramework)' == 'net10.0-android' or '$(TargetFramework)' == 'net10.0-ios' or '$(TargetFramework)' == 'net10.0-maccatalyst'">
+	  <PropertyGroup>
+		<BindableTypeLinkerGeneratorSkip>true</BindableTypeLinkerGeneratorSkip>
+		<UnoUIDisableBindableTypeLinkGenerator>true</UnoUIDisableBindableTypeLinkGenerator>
+	  </PropertyGroup>
+	</Target>
+</Project>

@@ -1,0 +1,64 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29411.108
+MinimumVisualStudioVersion = 15.0.26124.0
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{D0E9D08A-7F66-426A-8645-C2D92DB4D200}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Otp.NET", "src\Otp.NET\Otp.NET.csproj", "{EF104BCD-4F86-494E-81E1-D69A5C851430}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Otp.NET.Test", "test\Otp.NET.Test\Otp.NET.Test.csproj", "{1843EE6C-16A4-4A2F-B961-8FC8B0157414}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{81C89CBC-23CE-40F7-904E-C7AA07A2981C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{2A4A70D0-4968-4E0C-9E42-4AF2C076D38B}"
+	ProjectSection(SolutionItems) = preProject
+		appveyor.yml = appveyor.yml
+		README.md = README.md
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EF104BCD-4F86-494E-81E1-D69A5C851430}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF104BCD-4F86-494E-81E1-D69A5C851430}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF104BCD-4F86-494E-81E1-D69A5C851430}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{EF104BCD-4F86-494E-81E1-D69A5C851430}.Debug|x64.Build.0 = Debug|Any CPU
+		{EF104BCD-4F86-494E-81E1-D69A5C851430}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{EF104BCD-4F86-494E-81E1-D69A5C851430}.Debug|x86.Build.0 = Debug|Any CPU
+		{EF104BCD-4F86-494E-81E1-D69A5C851430}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF104BCD-4F86-494E-81E1-D69A5C851430}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF104BCD-4F86-494E-81E1-D69A5C851430}.Release|x64.ActiveCfg = Release|Any CPU
+		{EF104BCD-4F86-494E-81E1-D69A5C851430}.Release|x64.Build.0 = Release|Any CPU
+		{EF104BCD-4F86-494E-81E1-D69A5C851430}.Release|x86.ActiveCfg = Release|Any CPU
+		{EF104BCD-4F86-494E-81E1-D69A5C851430}.Release|x86.Build.0 = Release|Any CPU
+		{1843EE6C-16A4-4A2F-B961-8FC8B0157414}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1843EE6C-16A4-4A2F-B961-8FC8B0157414}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1843EE6C-16A4-4A2F-B961-8FC8B0157414}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{1843EE6C-16A4-4A2F-B961-8FC8B0157414}.Debug|x64.Build.0 = Debug|Any CPU
+		{1843EE6C-16A4-4A2F-B961-8FC8B0157414}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{1843EE6C-16A4-4A2F-B961-8FC8B0157414}.Debug|x86.Build.0 = Debug|Any CPU
+		{1843EE6C-16A4-4A2F-B961-8FC8B0157414}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1843EE6C-16A4-4A2F-B961-8FC8B0157414}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1843EE6C-16A4-4A2F-B961-8FC8B0157414}.Release|x64.ActiveCfg = Release|Any CPU
+		{1843EE6C-16A4-4A2F-B961-8FC8B0157414}.Release|x64.Build.0 = Release|Any CPU
+		{1843EE6C-16A4-4A2F-B961-8FC8B0157414}.Release|x86.ActiveCfg = Release|Any CPU
+		{1843EE6C-16A4-4A2F-B961-8FC8B0157414}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{EF104BCD-4F86-494E-81E1-D69A5C851430} = {D0E9D08A-7F66-426A-8645-C2D92DB4D200}
+		{1843EE6C-16A4-4A2F-B961-8FC8B0157414} = {81C89CBC-23CE-40F7-904E-C7AA07A2981C}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3B2B9DFE-9F37-430C-A647-93A81A31D8B3}
+	EndGlobalSection
+EndGlobal
