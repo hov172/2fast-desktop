@@ -5,6 +5,8 @@ built with Uno Platform. Upstream licensing and attribution are retained.
 
 ## Downloads
 
+Current release: **1.3.6** (app title **2fast**).
+
 Get the builds from [Releases](https://github.com/hov172/2fast-desktop/releases).
 
 | Package | Platform |
