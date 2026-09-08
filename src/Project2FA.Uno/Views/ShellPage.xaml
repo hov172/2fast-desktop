@@ -11,7 +11,7 @@
     xmlns:wasm="http://uno.ui/wasm"
     xmlns:win="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     mc:Ignorable="d ios android wasm win"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    Background="{ThemeResource DesktopCanvasBrush}">
 
     <Page.Resources>
         <ResourceDictionary>
@@ -146,20 +146,22 @@
         <NavigationView
             x:Name="ShellView"
             ItemInvoked="ShellView_ItemInvoked"
-            IsPaneToggleButtonVisible="False"
+            IsPaneToggleButtonVisible="True"
+            PaneTitle="2fast"
+            OpenPaneLength="208"
             IsBackButtonVisible="Collapsed"
             CompactModeThresholdWidth="540"
             IsSettingsVisible="{x:Bind ViewModel.NavigationIsAllowed,Mode=OneWay}"
-            IsPaneOpen="False">
+            IsPaneOpen="True">
 
             <NavigationView.MenuItems>
                 <NavigationViewItem
-                    x:Uid="ShellPageAccountsNavigation"
+                    Content="Accounts" x:Uid="ShellPageAccountsNavigation"
                     IsEnabled="{x:Bind ViewModel.NavigationIsAllowed,Mode=OneWay}"
                     Tag="/AccountCodePage"
                     Icon="Permissions" />
-                <NavigationViewItem 
-                    x:Uid="ShellPageDatafileNavigation" 
+                <NavigationViewItem
+                    Content="Data file" x:Uid="ShellPageDatafileNavigation"
                     IsEnabled="{x:Bind ViewModel.NavigationIsAllowed,Mode=OneWay}"
                     Tag="SettingPage?PivotItem=1">
                     <NavigationViewItem.Icon>
@@ -175,8 +177,8 @@
                         x:Uid="ShellPageFeedbackNavigation"
                         Icon="Flag"
                         Tapped="FeedbackItem_Tapped" />-->
-                <NavigationViewItem 
-                    x:Uid="ShellPageAboutAppNavigation"
+                <NavigationViewItem
+                    Content="About" x:Uid="ShellPageAboutAppNavigation"
                     IsEnabled="{x:Bind ViewModel.NavigationIsAllowed,Mode=OneWay}"
                     Tag="SettingPage?PivotItem=2">
                     <NavigationViewItem.Icon>
@@ -186,10 +188,10 @@
             </NavigationView.FooterMenuItems>
         </NavigationView>
 
-        <Grid 
+        <Grid
             Grid.Row="1"
             Visibility="{x:Bind ViewModel.IsMobile, Mode=OneWay}">
-            <utu:TabBar 
+            <utu:TabBar
                 x:Name="MobileTabBar"
                 utu:SafeArea.Insets="Bottom"
                 utu:SafeArea.Mode="Margin"
@@ -200,8 +202,8 @@
                 SelectedIndex="{x:Bind ViewModel.SelectedIndex, Mode=TwoWay}"
                 Style="{StaticResource CupertinoBottomTabBarStyle}">
                 <utu:TabBar.Items>
-                    <utu:TabBarItem 
-            x:Uid="ShellPageAccountsNavigation"
+                    <utu:TabBarItem
+            Content="Accounts" x:Uid="ShellPageAccountsNavigation"
             Tag="/AccountCodePage"
             Command="{x:Bind ViewModel.AccountCodePageCommand}"
             IsEnabled="{x:Bind ViewModel.NavigationIsAllowed,Mode=OneWay}">
@@ -209,7 +211,7 @@
                             <FontIcon Glyph="&#xE192;" />
                         </utu:TabBarItem.Icon>
                     </utu:TabBarItem>
-                    <utu:TabBarItem 
+                    <utu:TabBarItem
             x:Uid="ShellPageSearchNavigation"
             Tag="SearchPage"
             Command="{x:Bind ViewModel.SearchPageCommand}"
@@ -218,14 +220,14 @@
                             <FontIcon Glyph="&#xe721;" />
                         </utu:TabBarItem.Icon>
                     </utu:TabBarItem>
-                    <!--<utu:TabBarItem 
+                    <!--<utu:TabBarItem
             Content="Add"
             Tag="Add"
             IsEnabled="{x:Bind ViewModel.NavigationIsAllowed,Mode=OneWay}">
             <utu:TabBarItem.Flyout>
                 <MenuFlyout MenuFlyoutPresenterStyle="{StaticResource MenuFlyoutPresenterStyle}"
                     Placement="Top">
-                    <MenuFlyoutItem 
+                    <MenuFlyoutItem
                         x:Uid="AccountCodePageAddCamera"
                         Text="AccountCodePageAddCamera.Text~"
                         >
@@ -233,7 +235,7 @@
                             <FontIcon Glyph="&#xE70F;"/>
                         </MenuFlyoutItem.Icon>
                     </MenuFlyoutItem>
-                    <MenuFlyoutItem 
+                    <MenuFlyoutItem
                         x:Uid="AccountCodePageAddManual"
                         Text="AccountCodePageAddManual.Text~"
                         >
@@ -253,7 +255,7 @@
                 <FontIcon Glyph="&#xE946;" />
             </utu:TabBarItem.Icon>
         </utu:TabBarItem>-->
-                    <utu:TabBarItem 
+                    <utu:TabBarItem
             x:Uid="ShellPageSettingsNavigation"
             Tag="SettingPage"
             Command="{x:Bind ViewModel.SettingsPageCommand}"
@@ -265,7 +267,7 @@
                 </utu:TabBar.Items>
             </utu:TabBar>
         </Grid>
-        
+
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="WindowStates">
                 <VisualState x:Name="NarrowState">
@@ -273,7 +275,7 @@
                         <AdaptiveTrigger MinWindowWidth="0" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <Setter Target="ShellView.(PaneDisplayMode)" Value="LeftMinimal"/>
+                        <Setter Target="ShellView.PaneDisplayMode" Value="LeftMinimal"/><Setter Target="ShellView.IsPaneOpen" Value="False"/>
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="WidewState">
@@ -281,9 +283,10 @@
                         <AdaptiveTrigger MinWindowWidth="540" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <Setter Target="ShellView.(PaneDisplayMode)" Value="LeftCompact"/>
+                        <Setter Target="ShellView.PaneDisplayMode" Value="LeftCompact"/><Setter Target="ShellView.IsPaneOpen" Value="False"/>
                     </VisualState.Setters>
                 </VisualState>
+            <VisualState x:Name="DesktopExpandedState"><VisualState.StateTriggers><AdaptiveTrigger MinWindowWidth="1000"/></VisualState.StateTriggers><VisualState.Setters><Setter Target="ShellView.PaneDisplayMode" Value="Left"/><Setter Target="ShellView.IsPaneOpen" Value="True"/></VisualState.Setters></VisualState>
             </VisualStateGroup>
         </VisualStateManager.VisualStateGroups>
     </Grid>

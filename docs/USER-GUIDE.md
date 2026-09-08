@@ -1,4 +1,4 @@
-# 2fast 1.3.6 user guide
+# 2fast 1.4.0 user guide
 
 This guide describes the updated Uno desktop app for Windows and macOS. It does
 not describe the older Windows Store/UWP app or mobile clients. Button wording
@@ -7,7 +7,7 @@ and additional actions are available from the **+** and **…** menus.
 
 ## 1. Install and open the app
 
-Download from the private repository's [1.3.6 release](https://github.com/hov172/2fast-desktop/releases/tag/v1.3.6).
+Download from the private repository's [1.4.0 release](https://github.com/hov172/2fast-desktop/releases/tag/v1.4.0).
 GitHub access requires an account authorized for this private repository.
 
 | Download | Use on |
@@ -263,3 +263,39 @@ passwords. Save a backup and record the file location before resetting so you
 know which file to reopen. Reset is not password recovery and is not secure file
 erasure. To build a separate collection after reset, choose Create new data file
 with a different filename.
+
+
+## Desktop workspace in 1.4.0
+
+Accounts is the main workspace. Each card shows the account name, service,
+verification code, and remaining seconds. Use **Copy code** to copy the current
+code, **Edit** to change the account name/service/notes, and **View QR** to show
+its supported provisioning QR. Treat an exported setup QR like the original
+secret. Use the star to mark a favorite and **More → Delete account…** to remove
+an account after confirmation. Supported OCRA accounts also show the challenge
+action; follow the OCRA section for the server challenge and device restrictions.
+
+The toolbar offers **Scan screen**, **Scan camera**, **Add manually**, **Add
+OCRA**, and **Sync**. Screen scanning captures the selected window/display
+locally and uses the same account-review flow as camera scanning. The search box
+matches both account and service names without case sensitivity. Clear it to
+restore the full list. The count distinguishes all accounts from search results.
+With no accounts, the page explains how to add the first one; an unsuccessful
+search displays a different message.
+
+The left navigation shows labels in wide windows and collapses in smaller
+windows. Use the menu button to reveal labels. **Lock vault** ends the current
+unlocked session. **Settings** contains preferences and Data file management;
+the Data file actions are grouped into location, protection, and other vaults,
+with a description beneath each action. The separate **Datafile** navigation
+entry retains the existing vault navigation workflow. Unlock and creation forms
+use narrower panels for easier reading. The desktop palette follows the chosen
+light/dark theme; high-contrast resources use system window/text colors.
+
+If saving fails, the message now distinguishes a locked/expired session, a
+missing file, denied access, changed authentication, and network or I/O failure.
+Unlock again after session expiry. If another client changed a shared file,
+reload before trying again and preserve recovery copies. These messages do not
+remove the need to verify file access or resolve a WebDAV conflict.
+
+Press **Enter/Return** in a single-line field to submit the unlock, new-vault, open-vault, or add-account form when its submit button is enabled. Multiline notes retain Enter for new lines, and autocomplete fields retain their suggestion behavior. Rename, password-change, MobileID import, and OCRA dialogs use their primary action as the default button.

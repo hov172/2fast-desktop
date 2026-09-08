@@ -14,6 +14,7 @@ public sealed partial class AddAccountPage : Page
     public AddAccountPage()
     {
         this.InitializeComponent();
+        FormKeyboard.Attach(this, () => PrimaryButton);
         // Refresh x:Bind when the DataContext changes.
         DataContextChanged += (s, e) => Bindings.Update();
     }

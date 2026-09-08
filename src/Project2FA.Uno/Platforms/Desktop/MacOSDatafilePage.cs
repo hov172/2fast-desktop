@@ -46,7 +46,7 @@ public sealed partial class SettingPage
         if (!await ConfirmLocalMove()) return;
         var file = await DataService.Instance.CurrentMacOSVault();
         var name = new TextBox { Header = "New filename", Text = file.Name };
-        var dialog = new ContentDialog { Title = "Rename data file", Content = name, PrimaryButtonText = "Rename", CloseButtonText = "Cancel", XamlRoot = XamlRoot };
+        var dialog = new ContentDialog { DefaultButton = ContentDialogButton.Primary, Title = "Rename data file", Content = name, PrimaryButtonText = "Rename", CloseButtonText = "Cancel", XamlRoot = XamlRoot };
         if (await dialog.ShowAsync() != ContentDialogResult.Primary) return;
         await DataService.Instance.CopyMacOSVault(Path.GetDirectoryName(file.Path), name.Text, true);
         await RefreshFileDetails(); DatafileStatus.Text = "Data file renamed. Enable biometric unlock again if you use it.";

@@ -63,13 +63,21 @@ namespace Project2FA.UnoApp
 #endif
 
             this.InitializeComponent();
+#if TWOFAST_UI_PREVIEW
+            RequestedTheme = Environment.GetEnvironmentVariable("TWOFAST_UI_THEME") == "light" ? ApplicationTheme.Light : ApplicationTheme.Dark;
+#else
             RequestedTheme = SettingsService.Instance.AppStartSetTheme(RequestedTheme);
+#endif
 
         }
 
         public override async Task OnStartAsync(IApplicationArgs args)
         {
             MainWindow = WinUIWindow.Current;
+#if TWOFAST_UI_PREVIEW
+            DesktopUiPreview.Show(MainWindow);
+            return;
+#endif
 #if DEBUG && !(__ANDROID__ || __IOS__ || __MACCATALYST__)
             //WinUIWindow.Current.EnableHotReload(); // obsolete
             MainWindow.UseStudio();

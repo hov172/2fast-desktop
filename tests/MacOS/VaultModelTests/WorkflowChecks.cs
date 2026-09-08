@@ -7,6 +7,11 @@ internal static class WorkflowChecks
     {
         XNamespace x = "http://schemas.microsoft.com/winfx/2006/xaml";
         var views = Path.Combine(root, "src/Project2FA.Uno/Views");
+        if (app.GetType("Project2FA.Uno.Views.FormKeyboard")?.GetMethod("Attach", BindingFlags.Static | BindingFlags.NonPublic) == null)
+            throw new Exception("Compiled form keyboard behavior is missing.");
+        foreach (var form in new[] { "LoginPage", "NewDataFilePage", "UseDataFilePage", "AddAccountPage" })
+            if (!File.ReadAllText(Path.Combine(views, form + ".xaml.cs")).Contains("FormKeyboard.Attach(this,"))
+                throw new Exception("Enter submission is not attached to " + form);
         var shell = XDocument.Load(Path.Combine(views, "ShellPage.xaml"));
         var nav = shell.Descendants().Single(e => (string)e.Attribute(x + "Name") == "ShellView");
         var handler = (string)nav.Attribute("ItemInvoked");
@@ -17,6 +22,8 @@ internal static class WorkflowChecks
             if (!settings.Descendants().Any(e => (string)e.Attribute("Click") == action) || app.GetType("Project2FA.Uno.Views.SettingPage")!.GetMethod(action, BindingFlags.NonPublic | BindingFlags.Instance) == null)
                 throw new Exception("Missing data-file action: " + action);
         var passwordDialog = XDocument.Load(Path.Combine(views, "ContentDialog/ChangeDatafilePasswordContentDialog.xaml"));
+        if ((string)passwordDialog.Root!.Attribute("DefaultButton") != "Primary")
+            throw new Exception("Password change has no Enter default action.");
         if (passwordDialog.Descendants().Count(e => e.Name.LocalName == "PasswordBox") != 3 ||
             (string)passwordDialog.Root!.Attribute("PrimaryButtonClick") != "ChangePassword_Click" ||
             string.IsNullOrEmpty((string)passwordDialog.Root!.Attribute("CloseButtonText")))
@@ -33,6 +40,26 @@ internal static class WorkflowChecks
                 throw new Exception("Edit field has no writable view-model property: " + property);
         }
         var accounts = XDocument.Load(Path.Combine(views, "AccountCodePage.xaml"));
+        var list = accounts.Descendants().Single(e => e.Name.LocalName == "ListView");
+        if ((string)list.Attribute("IsSynchronizedWithCurrentItem") != "False")
+            throw new Exception("Account list must not synchronize selection with AdvancedCollectionView's current position on Uno.");
+        var listStyle = accounts.Descendants().First(e => e.Name.LocalName == "ListView.ItemContainerStyle").Elements().Single();
+        if (listStyle.Attribute("BasedOn") == null && !listStyle.Descendants().Any(e => e.Name.LocalName == "ControlTemplate"))
+            throw new Exception("Account container style removed its content template; cards render blank on Uno.");
+        var accountType = app.GetType("Project2FA.Repository.Models.TwoFACodeModel", true)!;
+        var searchAccount = Activator.CreateInstance(accountType)!;
+        accountType.GetProperty("Label")!.SetValue(searchAccount, "Personal");
+        accountType.GetProperty("Issuer")!.SetValue(searchAccount, "Example Mail");
+        var matches = app.GetType("Project2FA.ViewModels.AccountCodePageViewModel")!.GetMethod("MatchesSearch", BindingFlags.NonPublic | BindingFlags.Static)!;
+        if (!(bool)matches.Invoke(null, new[] { searchAccount, "MAIL" })! || (bool)matches.Invoke(null, new[] { searchAccount, "no match" })!)
+            throw new Exception("Search must match issuer as well as account name, ignoring case.");
+        accountType.GetProperty("Label")!.SetValue(searchAccount, null);
+        if (!(bool)matches.Invoke(null, new[] { searchAccount, "mail" })!) throw new Exception("Missing labels must not break issuer search.");
+        if (app.GetType("DesktopUiPreview") != null) throw new Exception("A preview build must not be distributed as the application.");
+        var describe = app.GetType("Project2FA.Services.MacOS.VaultSaveErrors", true)!.GetMethod("Describe", BindingFlags.Static | BindingFlags.NonPublic)!;
+        foreach (Exception failure in new Exception[] { new IOException("synthetic-sensitive-text"), new UnauthorizedAccessException("synthetic-sensitive-text"), new System.Security.Cryptography.CryptographicException("synthetic-sensitive-text"), new Exception("synthetic-sensitive-text") })
+            if (((string)describe.Invoke(null, new[] { failure })!).Contains("synthetic-sensitive-text")) throw new Exception("Save error UI leaked raw exception data.");
+        Console.WriteLine("Desktop presentation: content template retained, issuer search works, production preview absent, save errors redact raw exception text.");
         foreach (var template in accounts.Descendants().Where(e => new[] { "TwoFACodeCustomTemplate", "TwoFACodeCustomAccentTemplate" }.Contains((string)e.Attribute(x + "Key"))))
         {
             foreach (var grid in template.Descendants().Where(e => e.Name.LocalName == "Grid"))
@@ -54,7 +81,7 @@ internal static class WorkflowChecks
         }
         Console.WriteLine("Both account templates retain names, code, countdown, content-sized rows, and uninterrupted grid content.");
         var actions = accounts.Descendants().Where(e => new[] { "MFI_EditAccount_Click", "MFI_ExportAccount_Click", "MFI_DeleteAccount_Click", "BTN_CopyCode_Click", "BTN_SetFavourite_Click", "OcraChallenge_Click" }.Contains((string)e.Attribute("Click"))).ToList();
-        if (actions.Count != 20 || actions.Any(e => (string)e.Attribute("Tag") != "{x:Bind}"))
+        if (actions.Count != 12 || actions.Any(e => (string)e.Attribute("Tag") != "{x:Bind}"))
             throw new Exception("Account actions must carry their account explicitly in both templates.");
         var png = (byte[])app.GetType("Project2FA.Services.QrImageRenderer")!.GetMethod("RenderPng", BindingFlags.NonPublic | BindingFlags.Static)!.Invoke(null, new object[] { "otpauth://totp/Regression:Account?secret=JBSWY3DPEHPK3PXP&issuer=Regression" })!;
         if (!png.Take(8).SequenceEqual(new byte[] { 137, 80, 78, 71, 13, 10, 26, 10 })) throw new Exception("QR renderer did not produce a PNG.");
@@ -63,6 +90,6 @@ internal static class WorkflowChecks
         if (!qrDialog.Descendants().Any(e => e.Name.LocalName == "Image" && ((string)e.Attribute("Source"))?.Contains("ViewModel.QRImage") == true))
             throw new Exception("QR dialog is not connected to the PNG image source.");
         Console.WriteLine("QR PNG rendered by compiled app and dialog image binding verified.");
-        Console.WriteLine("Workflow contracts: sidebar handler, editable/closable dialog, and 20 account-action bindings passed.");
+        Console.WriteLine("Workflow contracts: sidebar handler, editable/closable dialog, and 12 account-action bindings passed.");
     }
 }

@@ -10,6 +10,7 @@ namespace Project2FA.Uno.Views
         public LoginPage()
         {
             this.InitializeComponent();
+            FormKeyboard.Attach(this, () => LoginSubmitButton);
             // Refresh x:Bind when the DataContext changes.
             DataContextChanged += (s, e) => Bindings.Update();
             this.Loaded += LoginPage_Loaded;

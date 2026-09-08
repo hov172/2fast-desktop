@@ -709,6 +709,10 @@ namespace Project2FA.Services
         /// </summary>
         public async Task<bool> WriteLocalDatafile()
         {
+#if TWOFAST_UI_PREVIEW
+            // Developer previews can never write vaults, even via keyboard commands.
+            return false;
+#endif
             string fileName = string.Empty;
             StorageFolder folder = Windows.Storage.ApplicationData.Current.LocalFolder;
 #if !WINDOWS_UWP
@@ -790,9 +794,12 @@ namespace Project2FA.Services
                 // read the current encrypted file content as backup before overwriting
                 encryptedBackup = await FileService.ReadStringAsync(fileName, folder);
 #if TWOFAST_DESKTOP
+                string sessionCredential = SecretService.Helper.ReadSecret(Constants.ContainerName, passwordHashName);
+                if (string.IsNullOrEmpty(sessionCredential))
+                    throw new Project2FA.Services.MacOS.VaultSessionExpiredException();
                 var passwordBytes = ActivatedDatafile != null
-                    ? SerializationService.Deserialize<byte[]>(SecretService.Helper.ReadSecret(Constants.ContainerName, passwordHashName))
-                    : Encoding.UTF8.GetBytes(SecretService.Helper.ReadSecret(Constants.ContainerName, passwordHashName));
+                    ? SerializationService.Deserialize<byte[]>(sessionCredential)
+                    : Encoding.UTF8.GetBytes(sessionCredential);
                 try
                 {
                     string password = Encoding.UTF8.GetString(passwordBytes);
@@ -898,13 +905,16 @@ namespace Project2FA.Services
             }
             catch (Exception exc)
             {
+#if !TWOFAST_DESKTOP
                 await LoggingService.LogException(exc, SettingsService.Instance.LoggingSetting);
+#endif
 #if WINDOWS_UWP
                 TrackingManager.TrackExceptionCatched(nameof(WriteLocalDatafile), exc);
 #endif
 #if TWOFAST_DESKTOP
                 // Atomic writes/remote transactions already preserve recovery state. Do not overwrite an external change here.
-                await Project2FA.Services.MacOS.MacOSSession.Message(DialogService, "Unable to save", exc is IOException ? exc.Message : "The vault could not be saved. Check the password, connection and file access, then retry.");
+                Project2FA.Services.MacOS.MacOSScanDiagnostics.Record("saving vault", exc);
+                await Project2FA.Services.MacOS.MacOSSession.Message(DialogService, "Unable to save", Project2FA.Services.MacOS.VaultSaveErrors.Describe(exc));
 #else
                 await HandleWriteError(encryptedBackup, fileName, folder);
 #endif

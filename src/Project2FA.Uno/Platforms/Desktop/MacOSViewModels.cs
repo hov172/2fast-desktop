@@ -198,7 +198,7 @@ namespace Project2FA.ViewModels
                     if (!parsed && parseError == "Authorization code required")
                     {
                         var password = new PasswordBox { Header = "Deepnet authorization code", MaxLength = 0, PasswordRevealMode = PasswordRevealMode.Peek };
-                        var prompt = new ContentDialog { Title = "Unlock MobileID token", Content = password, PrimaryButtonText = "Import", CloseButtonText = "Cancel", XamlRoot = App.ShellPageInstance.XamlRoot };
+                        var prompt = new ContentDialog { DefaultButton = ContentDialogButton.Primary, Title = "Unlock MobileID token", Content = password, PrimaryButtonText = "Import", CloseButtonText = "Cancel", XamlRoot = App.ShellPageInstance.XamlRoot };
                         using var cancelPrompt = token.Register(() => prompt.DispatcherQueue.TryEnqueue(() => prompt.Hide()));
                         try
                         {

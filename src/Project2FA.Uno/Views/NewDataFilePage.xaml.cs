@@ -22,6 +22,7 @@ namespace Project2FA.Uno.Views
         public NewDataFilePage()
         {
             this.InitializeComponent();
+            FormKeyboard.Attach(this, () => NewVaultSubmitButton);
             // Refresh x:Bind when the DataContext changes.
             DataContextChanged += (s, e) => Bindings.Update();
             Unloaded += (_, _) => ShowPasswords.IsChecked = false;

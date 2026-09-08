@@ -14,7 +14,7 @@
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:strings="using:Project2FA.Strings"
     mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    Background="{ThemeResource DesktopCanvasBrush}">
 
     <Grid>
         <Grid.RowDefinitions>
@@ -40,7 +40,7 @@
             x:Name="RootGrid"
             utu:SafeArea.Insets="SoftInput"
             Grid.Row="1">
-            <ScrollViewer>
+            <ScrollViewer MaxWidth="720" HorizontalAlignment="Stretch">
                 <StackPanel Margin="8,0,8,0">
                     <TextBlock Text="{Binding Model.DeviceBindingNotice}" TextWrapping="Wrap" Margin="0,8,0,0" />
                     <TextBlock Text="{Binding Model.ImportNotice}" TextWrapping="Wrap" Margin="0,8,0,0" />

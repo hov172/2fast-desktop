@@ -27,8 +27,9 @@ public sealed partial class AccountCodePage : Page
             Project2FA.Services.MacOS.MacOSSession.CancelOperations();
         };
 #endif
-        // Refresh x:Bind when the DataContext changes.
-        DataContextChanged += (s, e) => Bindings.Update();
+        Loaded += (_, _) => ObserveAccounts();
+        Unloaded += (_, _) => StopObservingAccounts();
+        DataContextChanged += (_, _) => { Bindings.Update(); ObserveAccounts(); };
         // Evcnt for the native back behavior which currently skips the framework extension
 #if __ANDROID__ || __IOS__
         App.ShellPageInstance.MainFrame.Navigated -= MainFrame_Navigated;
@@ -38,6 +39,46 @@ public sealed partial class AccountCodePage : Page
         MobileAutoSuggestBox.RegisterDisposablePropertyChangedCallback(VisibilityProperty, SelectedTabBarIndexChanged);
         //App.ShellPageInstance.ViewModel.TabBarIsVisible = true;
 #endif
+    }
+
+    private CommunityToolkit.WinUI.Collections.AdvancedCollectionView observedAccounts;
+
+    private void StopObservingAccounts()
+    {
+        if (observedAccounts != null) observedAccounts.VectorChanged -= AccountsChanged;
+        observedAccounts = null;
+    }
+
+    private void ObserveAccounts()
+    {
+        StopObservingAccounts();
+        observedAccounts = ViewModel?.TwoFADataService?.ACVCollection;
+        // These page controls can load before the navigation framework assigns
+        // a view model. Attach the current instance explicitly on each transition.
+        LV_AccountCollection.ItemsSource = observedAccounts;
+        ABB_Logout.Command = ViewModel?.LogoutCommand;
+        ABB_Refresh.Command = ViewModel?.RefreshCommand;
+        CameraAction.Command = ViewModel?.CameraCommand;
+        ManualAction.Command = ViewModel?.AddAccountCommand;
+        MobileAutoSuggestBox.ItemsSource = ViewModel?.SearchAccountCollection;
+        if (observedAccounts != null) observedAccounts.VectorChanged += AccountsChanged;
+        UpdateCollectionSummary();
+    }
+
+    private void AccountsChanged(Windows.Foundation.Collections.IObservableVector<object> sender, Windows.Foundation.Collections.IVectorChangedEventArgs e)
+        => UpdateCollectionSummary();
+
+    private void UpdateCollectionSummary()
+    {
+        if (ViewModel?.TwoFADataService == null) return;
+        int total = ViewModel.TwoFADataService.Collection.Count;
+        int shown = ViewModel.TwoFADataService.ACVCollection.Count;
+        CollectionSummary.Text = shown == total ? $"{total} account{(total == 1 ? "" : "s")}" : $"{shown} of {total} accounts";
+        EmptyState.Visibility = shown == 0 ? Visibility.Visible : Visibility.Collapsed;
+        EmptyTitle.Text = total == 0 ? "Add your first account" : "No matching accounts";
+        EmptyDescription.Text = total == 0
+            ? "Scan a setup QR from your screen or camera, or enter a setup key manually."
+            : "Try another account name or clear the search field.";
     }
 
     private static TwoFACodeModel AccountFromSender(object sender) =>
@@ -167,7 +208,8 @@ public sealed partial class AccountCodePage : Page
     {
         if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
         {
-            ViewModel.SetSuggestionList(sender.Text,true);
+            ViewModel?.SetSuggestionList(sender.Text,true);
+            UpdateCollectionSummary();
         }
     }
 

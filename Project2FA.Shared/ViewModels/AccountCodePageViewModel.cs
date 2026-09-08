@@ -645,6 +645,10 @@ namespace Project2FA.ViewModels
 #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
         }
 
+        private static bool MatchesSearch(TwoFACodeModel account, string searchText) =>
+            (account.Label?.Contains(searchText, StringComparison.OrdinalIgnoreCase) ?? false) ||
+            (account.Issuer?.Contains(searchText, StringComparison.OrdinalIgnoreCase) ?? false);
+
         public void SetSuggestionList(string searchText, bool showpoup)
         {
             if (string.IsNullOrWhiteSpace(searchText) == false)
@@ -652,7 +656,7 @@ namespace Project2FA.ViewModels
                 try
                 {
                     // search the labels
-                    var listSuggestion = TwoFADataService.Collection.Where(x => x.Label.Contains(searchText, System.StringComparison.OrdinalIgnoreCase)).ToList();
+                    var listSuggestion = TwoFADataService.Collection.Where(x => MatchesSearch(x, searchText)).ToList();
                     if (listSuggestion.Count == 0)
                     {
                         if (showpoup)
@@ -670,11 +674,11 @@ namespace Project2FA.ViewModels
                         {
                             // filter where the models have the selected categories and the input label
                             TwoFADataService.ACVCollection.Filter = model => ((TwoFACodeModel)model).SelectedCategories.Where(sc =>
-                            selectedGlobalCategories.Any(gc => gc.Guid == sc.Guid)).Any() && ((TwoFACodeModel)model).Label.Contains(searchText, System.StringComparison.OrdinalIgnoreCase);
+                            selectedGlobalCategories.Any(gc => gc.Guid == sc.Guid)).Any() && MatchesSearch((TwoFACodeModel)model, searchText);
 
                             // set suggetion where the models have the selected categories and the input label
                             var filteredCollection = TwoFADataService.Collection.Where(model => model.SelectedCategories.Where(sc =>
-                                selectedGlobalCategories.Any(gc => gc.Guid == sc.Guid)).Any() && model.Label.Contains(searchText, System.StringComparison.OrdinalIgnoreCase));
+                                selectedGlobalCategories.Any(gc => gc.Guid == sc.Guid)).Any() && MatchesSearch(model, searchText));
                             listSuggestion = listSuggestion.Where(ls => filteredCollection.Where(fc => fc.Label == ls.Label).Any()).ToList();
 
                             // add filtered collection to suggestion list
@@ -683,7 +687,7 @@ namespace Project2FA.ViewModels
                         // no categories selected
                         else
                         {
-                            TwoFADataService.ACVCollection.Filter = x => ((TwoFACodeModel)x).Label.Contains(searchText, System.StringComparison.OrdinalIgnoreCase);
+                            TwoFADataService.ACVCollection.Filter = x => MatchesSearch((TwoFACodeModel)x, searchText);
                             // add filtered collection to suggestion list
                             if (showpoup)
                             {
@@ -694,7 +698,7 @@ namespace Project2FA.ViewModels
                     // no categories set
                     else
                     {
-                        TwoFADataService.ACVCollection.Filter = x => ((TwoFACodeModel)x).Label.Contains(searchText, System.StringComparison.OrdinalIgnoreCase);
+                        TwoFADataService.ACVCollection.Filter = x => MatchesSearch((TwoFACodeModel)x, searchText);
                         // add filtered collection to suggestion list
                         if (showpoup)
                         {

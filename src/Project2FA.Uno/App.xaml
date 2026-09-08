@@ -21,6 +21,7 @@
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
                 <ResourceDictionary Source="ms-appx:///Themes/AppColors.xaml"/>
                 <ResourceDictionary Source="ms-appx:///Styles/Styles.xaml" />
+                <ResourceDictionary Source="ms-appx:///Styles/Desktop.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <Color x:Key="SystemAccentColor">#FF009BC1</Color>
             <Converters:BytesToHumanReadableConverter x:Key="BytesToHumanReadableConverter"/>

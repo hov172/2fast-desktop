@@ -1,7 +1,7 @@
 # Desktop releases
 
-The current desktop release is `v1.3.6`, following `v0.1.0-beta.1`. Its app
-version is 1.3.6, above the previous embedded manifest version 1.3.5.
+The current desktop release is `v1.4.0`, following `v1.3.6`. Its app
+version is 1.4.0 and build number is 140.
 This private distribution does not replace upstream version history.
 
 1. Run the documented platform builds and regression checks. Mac packaging needs
@@ -34,3 +34,5 @@ Before uploading, check relative links in source and in the flattened release
 bundle. Include the user guide, both platform guides, compatibility, vault format,
 verification, release notes, license, and release process. Leave historical audits
 and upstream documentation clearly identified as historical material.
+
+After all platform builds finish, run `python3 scripts/package-release-docs.py` to assemble the current-version guides, refresh the Windows packages with those guides, and checksum exactly the four current release archives.

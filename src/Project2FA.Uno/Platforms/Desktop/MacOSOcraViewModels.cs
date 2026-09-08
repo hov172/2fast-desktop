@@ -22,7 +22,7 @@ public partial class AccountCodePageViewModel
         var panel = new StackPanel { Spacing = 10 };
         panel.Children.Add(new TextBlock { Text = MacOSOcra.Suite + "\nUse the raw seed and encoding supplied by your administrator. This token requires a login challenge.", TextWrapping = TextWrapping.Wrap });
         panel.Children.Add(name); panel.Children.Add(seed); panel.Children.Add(encoding); panel.Children.Add(error);
-        var dialog = new ContentDialog { Title = "Add OCRA token", Content = panel, PrimaryButtonText = "Continue", CloseButtonText = "Cancel", XamlRoot = App.ShellPageInstance.XamlRoot };
+        var dialog = new ContentDialog { DefaultButton = ContentDialogButton.Primary, Title = "Add OCRA token", Content = panel, PrimaryButtonText = "Continue", CloseButtonText = "Cancel", XamlRoot = App.ShellPageInstance.XamlRoot };
         List<KeyValuePair<string, string>>? values = null;
         dialog.PrimaryButtonClick += (_, e) =>
         {
@@ -68,7 +68,7 @@ public partial class AccountCodePageViewModel
         var status = new TextBlock { TextWrapping = TextWrapping.Wrap };
         var panel = new StackPanel { Spacing = 12 };
         panel.Children.Add(challenge); panel.Children.Add(response); panel.Children.Add(status);
-        var dialog = new ContentDialog { Title = model.Issuer + " — OCRA", Content = panel,
+        var dialog = new ContentDialog { DefaultButton = ContentDialogButton.Primary, Title = model.Issuer + " — OCRA", Content = panel,
             PrimaryButtonText = "Generate", SecondaryButtonText = "Copy response", CloseButtonText = "Close", XamlRoot = App.ShellPageInstance.XamlRoot };
         long responseMinute = -1;
         bool Generate()

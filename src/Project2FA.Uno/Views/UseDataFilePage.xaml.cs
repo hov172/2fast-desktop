@@ -25,6 +25,7 @@ namespace Project2FA.Uno.Views
         public UseDataFilePage()
         {
             this.InitializeComponent();
+            FormKeyboard.Attach(this, () => OpenVaultSubmitButton);
             // Refresh x:Bind when the DataContext changes.
             DataContextChanged += (s, e) => Bindings.Update();
             this.Loaded += UseDataFilePage_Loaded;
@@ -33,14 +34,6 @@ namespace Project2FA.Uno.Views
         private void UseDataFilePage_Loaded(object sender, RoutedEventArgs e)
         {
             //MainPivot.Items.Remove(FolderPivotItem);
-        }
-
-        private async void PB_LocalPassword_KeyDown(object sender, KeyRoutedEventArgs e)
-        {
-            if (e.Key == Windows.System.VirtualKey.Enter && !string.IsNullOrEmpty(ViewModel.Password))
-            {
-                await ViewModel.SetAndCheckLocalDatafile();
-            }
         }
 
         private async void BTN_LocalFile_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)

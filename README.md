@@ -5,7 +5,7 @@ built with Uno Platform. Upstream licensing and attribution are retained.
 
 ## Downloads
 
-Current release: **1.3.6** (app title **2fast**).
+Current release: **1.4.0** (app title **2fast**).
 
 Get the builds from [Releases](https://github.com/hov172/2fast-desktop/releases).
 
@@ -19,6 +19,9 @@ Extract the Windows archive before launching `Project2FA.Uno.exe`. Windows
 packages are unsigned portable builds. Mac builds use development signing.
 
 ## Features
+
+- Adaptive desktop navigation, light/dark themes, readable account cards and
+  visible copy/edit/QR actions. Search by account name or service.
 
 - Shared encrypted vaults, account editing, QR display, and countdowns.
 - **Scan QR codes directly from your desktop through screen sharing**: select a
@@ -71,6 +74,7 @@ backup/restore, WebDAV and troubleshooting.
 - [Desktop compatibility](docs/DESKTOP-COMPATIBILITY.md)
 - [Vault format and recovery](docs/MACOS-VAULT-FORMAT.md)
 - [Verification and outstanding hardware acceptance](docs/audits/2026-09-08-desktop-parity.md)
+- [Desktop UI review and verification](docs/audits/2026-09-08-desktop-ui.md)
 - [Release process](docs/RELEASING.md)
 - [Original upstream README](docs/UPSTREAM-README.md)
 

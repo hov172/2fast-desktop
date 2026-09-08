@@ -15,7 +15,7 @@
     xmlns:ios="http://uno.ui/ios"
     xmlns:not_ios="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     mc:Ignorable="d android ios not_ios"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    Background="{ThemeResource DesktopCanvasBrush}">
 
     <Grid>
         <Grid.RowDefinitions>
@@ -44,28 +44,31 @@
         </utu:NavigationBar>
 
         <ScrollViewer Grid.Row="1">
-            <Grid>
-            <StackPanel x:Name="DatafileSection" Visibility="Collapsed" Spacing="12" Margin="24">
-                <TextBlock Text="Data file" FontSize="24" />
+            <Grid MaxWidth="800" HorizontalAlignment="Stretch" Margin="24">
+            <StackPanel x:Name="DatafileSection" Visibility="Collapsed" Spacing="16" Margin="0">
+                <TextBlock Text="Data file" Style="{StaticResource DesktopHeadingStyle}" />
+                <TextBlock Text="Manage where your accounts are stored and how they are protected." Style="{StaticResource DesktopCaptionStyle}" />
                 <TextBlock Text="{x:Bind ViewModel.DatafilePartViewModel.DatafileName, Mode=OneWay}" />
                 <TextBlock Text="{x:Bind ViewModel.DatafilePartViewModel.DatafilePath, Mode=OneWay}" TextWrapping="Wrap" IsTextSelectionEnabled="True" />
-                <StackPanel x:Name="DatafileActions" Spacing="10" HorizontalAlignment="Left">
-                    <Button Content="Rename data file" Click="RenameVault_Click" />
-                    <Button Content="Move to another folder" Click="MoveVault_Click" />
-                    <Button Content="Save encrypted backup" Click="BackupVault_Click" />
-                    <Button Content="Change password" Click="PasswordVault_Click" />
-                    <Button Content="Upgrade vault encryption" Click="UpgradeVault_Click" />
-                    <Button Content="Open another data file" Click="OpenVault_Click" />
-                    <Button Content="Create new data file" Click="NewVault_Click" />
+                <StackPanel x:Name="DatafileActions" Spacing="10" HorizontalAlignment="Stretch">
+                    <TextBlock Text="Location" FontSize="16" FontWeight="SemiBold" Margin="0,14,0,2" /><Button Click="RenameVault_Click" Style="{StaticResource DesktopButtonStyle}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Background="{ThemeResource DesktopSurfaceBrush}" BorderBrush="{ThemeResource DesktopBorderBrush}"><StackPanel Spacing="4"><TextBlock Text="Rename data file" FontWeight="SemiBold"/><TextBlock Text="Change the filename without changing account names." Style="{StaticResource DesktopCaptionStyle}"/></StackPanel></Button>
+                    <Button Click="MoveVault_Click" Style="{StaticResource DesktopButtonStyle}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Background="{ThemeResource DesktopSurfaceBrush}" BorderBrush="{ThemeResource DesktopBorderBrush}"><StackPanel Spacing="4"><TextBlock Text="Move to another folder" FontWeight="SemiBold"/><TextBlock Text="Choose where this vault is stored on your computer." Style="{StaticResource DesktopCaptionStyle}"/></StackPanel></Button>
+                    <TextBlock Text="Protection" FontSize="16" FontWeight="SemiBold" Margin="0,14,0,2" /><Button Click="BackupVault_Click" Style="{StaticResource DesktopButtonStyle}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Background="{ThemeResource DesktopSurfaceBrush}" BorderBrush="{ThemeResource DesktopBorderBrush}"><StackPanel Spacing="4"><TextBlock Text="Save encrypted backup" FontWeight="SemiBold"/><TextBlock Text="Keep a recoverable copy protected by the current password." Style="{StaticResource DesktopCaptionStyle}"/></StackPanel></Button>
+                    <Button Click="PasswordVault_Click" Style="{StaticResource DesktopButtonStyle}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Background="{ThemeResource DesktopSurfaceBrush}" BorderBrush="{ThemeResource DesktopBorderBrush}"><StackPanel Spacing="4"><TextBlock Text="Change password" FontWeight="SemiBold"/><TextBlock Text="Set a new vault password and use authenticated encryption." Style="{StaticResource DesktopCaptionStyle}"/></StackPanel></Button>
+                    <Button Click="UpgradeVault_Click" Style="{StaticResource DesktopButtonStyle}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Background="{ThemeResource DesktopSurfaceBrush}" BorderBrush="{ThemeResource DesktopBorderBrush}"><StackPanel Spacing="4"><TextBlock Text="Upgrade vault encryption" FontWeight="SemiBold"/><TextBlock Text="Upgrade a legacy vault; preserve an encrypted legacy copy." Style="{StaticResource DesktopCaptionStyle}"/></StackPanel></Button>
+                    <TextBlock Text="Other vaults" FontSize="16" FontWeight="SemiBold" Margin="0,14,0,2" /><Button Click="OpenVault_Click" Style="{StaticResource DesktopButtonStyle}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Background="{ThemeResource DesktopSurfaceBrush}" BorderBrush="{ThemeResource DesktopBorderBrush}"><StackPanel Spacing="4"><TextBlock Text="Open another data file" FontWeight="SemiBold"/><TextBlock Text="Switch to an existing encrypted vault." Style="{StaticResource DesktopCaptionStyle}"/></StackPanel></Button>
+                    <Button Click="NewVault_Click" Style="{StaticResource DesktopButtonStyle}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Background="{ThemeResource DesktopSurfaceBrush}" BorderBrush="{ThemeResource DesktopBorderBrush}"><StackPanel Spacing="4"><TextBlock Text="Create new data file" FontWeight="SemiBold"/><TextBlock Text="Start a separate collection of accounts." Style="{StaticResource DesktopCaptionStyle}"/></StackPanel></Button>
                 </StackPanel>
                 <TextBlock x:Name="DatafileStatus" TextWrapping="Wrap" />
             </StackPanel>
-            <StackPanel x:Name="AboutSection" Visibility="Collapsed" Spacing="12" Margin="24">
+            <StackPanel x:Name="AboutSection" Visibility="Collapsed" Spacing="16" Margin="0">
                 <TextBlock x:Name="PlatformTitle" Text="2fast" FontSize="24" />
                 <TextBlock Text="An Uno Platform port of 2fast. Licensed under GPL-3.0." TextWrapping="Wrap" />
                 <Button Content="Source code" Command="{x:Bind ViewModel.SeeSourceCodeCommand}" HorizontalAlignment="Left" />
             </StackPanel>
-            <StackPanel x:Name="GeneralSettingsSection" Spacing="12">
+            <StackPanel x:Name="GeneralSettingsSection" Spacing="16">
+                <TextBlock Text="Preferences" Style="{StaticResource DesktopHeadingStyle}" />
+                <TextBlock Text="Appearance, privacy and unlock options for this device." Style="{StaticResource DesktopCaptionStyle}" />
 
                 <!--<toolkitcontrols:SettingsCard x:Uid="SettingsBackButtonCard">
                 <ToggleSwitch 

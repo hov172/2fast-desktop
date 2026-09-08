@@ -1,4 +1,4 @@
-# Windows and macOS vault compatibility — 1.3.6
+# Windows and macOS vault compatibility — 1.4.0
 
 The updated **Uno desktop builds for Windows and macOS share one V4 vault codec**.
 They can open, edit, save, back up, change the password of, and upgrade the same
@@ -68,3 +68,5 @@ hardware validation. For step-by-step instructions see the [user guide](USER-GUI
 For installation and build prerequisites use [macOS](../MACOS.md) or
 [Windows](WINDOWS.md). Historical audit reports retain their original dates;
 release 1.3.6 branding/version checks are recorded below the current audit report.
+
+The 1.4.0 UI update retains this vault format. See [the UI review](audits/2026-09-08-desktop-ui.md) for current presentation changes and acceptance limits.
