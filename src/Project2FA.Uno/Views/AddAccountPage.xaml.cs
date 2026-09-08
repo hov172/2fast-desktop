@@ -5,6 +5,8 @@ using Microsoft.UI.Xaml.Media;
 using Project2FA.ViewModels;
 using Project2FA.Repository.Models;
 using Project2FA.UnoApp;
+using UNOversal.Ioc;
+using UNOversal.Services.Dialogs;
 
 namespace Project2FA.Uno.Views;
 
@@ -86,6 +88,24 @@ public sealed partial class AddAccountPage : Page
             IsOpen = true
         };
         RootGrid.Children.Add(teachingTip);
+    }
+
+    private async void BTN_ManageCategories_Click(object sender, RoutedEventArgs e)
+    {
+        var dialogService = App.Current.Container.Resolve<UNOversal.Services.Dialogs.IDialogService>();
+        await dialogService.ShowDialogAsync(new ManageCategoriesContentDialog(), new UNOversal.Services.Dialogs.DialogParameters());
+        // Refresh the selectable tokens with the latest global categories, keeping current selections.
+        var selected = System.Linq.Enumerable.ToHashSet(
+            System.Linq.Enumerable.Select(
+                System.Linq.Enumerable.Where(ViewModel.GlobalTempCategories, x => x.IsSelected), x => x.Guid));
+        ViewModel.GlobalTempCategories.Clear();
+        foreach (var category in Project2FA.Services.DataService.Instance.GlobalCategories)
+        {
+            var clone = (CategoryModel)category.Clone();
+            clone.IsSelected = selected.Contains(clone.Guid);
+            ViewModel.GlobalTempCategories.Add(clone);
+        }
+        Bindings.Update();
     }
 
     /// <summary>

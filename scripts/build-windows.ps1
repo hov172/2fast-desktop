@@ -1,9 +1,18 @@
-param([ValidateSet('win-x64','win-arm64')][string]$Runtime = 'win-x64')
+param([ValidateSet('win-x64','win-arm64')][string]$Runtime = 'win-x64', [switch]$SingleFile)
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
 Push-Location $root
 try {
     $arch = $Runtime.Substring(4)
+    if ($SingleFile) {
+        # Fully self-contained single .exe: runtime, native libraries and all
+        # content assets (icons, JSONs) are embedded and self-extracted.
+        dotnet publish src/Project2FA.Uno/Project2FA.Uno.csproj -c Release -f net10.0-desktop -r $Runtime "-p:DirectoryBuildTargetsPath=$root/build/Desktop.targets" -p:SelfContained=true -p:UseMonoRuntime=false -p:PublishSingleFile=true -p:IncludeAllContentForSelfExtract=true -o "dist/windows-$arch-singlefile"
+        if ($LASTEXITCODE -ne 0) { throw 'Windows single-file build failed.' }
+        Get-ChildItem "dist/windows-$arch-singlefile/*.pdb" | Remove-Item
+        Copy-Item "dist/windows-$arch-singlefile/Project2FA.Uno.exe" "dist/2fast-windows-$arch.exe" -Force
+        return
+    }
     dotnet publish src/Project2FA.Uno/Project2FA.Uno.csproj -c Release -f net10.0-desktop -r $Runtime "-p:DirectoryBuildTargetsPath=$root/build/Desktop.targets" -p:SelfContained=true -p:UseMonoRuntime=false -o "dist/windows-$arch"
     if ($LASTEXITCODE -ne 0) { throw 'Windows build failed.' }
     Get-ChildItem "dist/windows-$arch/opencv_videoio_ffmpeg*.dll" | Remove-Item

@@ -1,6 +1,6 @@
-# 2fast 1.4.0 for Windows — Uno desktop
+# 2fast 1.4.1 for Windows — Uno desktop
 
-The app title is **2fast**, version **1.4.0**, build **140**.
+The app title is **2fast**, version **1.4.1**, build **141**.
 See the [complete user guide](USER-GUIDE.md) for step-by-step vault setup, account
 editing, OCRA/Deepnet, backup/restore, WebDAV and troubleshooting.
 
@@ -71,6 +71,20 @@ capture can fail for protected/GPU content; selecting the display is the fallbac
 Camera and screen frames are processed locally. No camera is required for screen
 scanning. See the user guide for the distinction between successful QR decoding
 and successful account import.
+
+## Fixes in this build (2026-09-08)
+
+- **Vault saves failed on Windows** with "The changes could not be saved":
+  the atomic file writer set a Unix-only file mode, which .NET rejects on
+  Windows. The mode is now applied only on Unix-like systems; saving vaults
+  and creating new data files works on Windows.
+- **New-vault retry loop**: a failed first attempt left an empty `.2fa`
+  placeholder that made every retry fail. Empty leftovers are reused or
+  cleaned up automatically; non-empty vaults are never overwritten.
+- **Scanner preview showed nothing**: the preview relied on a WinRT
+  `DataWriter` API not implemented in the Uno desktop target. Frames are now
+  written to the preview stream directly, so camera/window/screen previews
+  display and QR detection proceeds, matching macOS behavior.
 
 ## Build and test
 

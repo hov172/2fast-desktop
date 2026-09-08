@@ -210,7 +210,15 @@
                 HeaderIcon="{ui:FontIcon Glyph=&#xE912;}"
                 x:Uid="EditAccountContentDialogAccountCategories" 
                 Header="~EditAccountContentDialogAccountCategories.Header">
-                        <Button
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <Button
+                    Height="36"
+                    Padding="10,4"
+                    x:Name="BTN_ManageCategories"
+                    Content="Manage categories"
+                    VerticalAlignment="Bottom"
+                    Click="BTN_ManageCategories_Click" />
+                            <Button
                     Grid.Column="1"
                     Height="36"
                     Width="48"
@@ -220,11 +228,12 @@
                     ToolTipService.ToolTip="{x:Bind strings:Resources.ToolTipShowHelp}"
                     VerticalAlignment="Bottom" 
                     Click="HLBTN_CategoryInfo" >
-                            <FontIcon
+                                <FontIcon
                         FontSize="20"
                         Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                         Glyph="&#xE946;"/>
-                        </Button>
+                            </Button>
+                        </StackPanel>
                         <ctwc:SettingsExpander.ItemsHeader>
                             <Grid Background="{ThemeResource SystemControlPageBackgroundChromeLowBrush}">
                                 <labs:TokenView

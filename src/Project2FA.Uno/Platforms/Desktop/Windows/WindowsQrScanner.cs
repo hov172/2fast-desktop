@@ -120,7 +120,8 @@ internal static class WindowsQrScanner
                             try
                             {
                                 if (closed || current != generation || token.IsCancellationRequested) return;
-                                using var stream = new InMemoryRandomAccessStream(); using (var writer = new DataWriter(stream)) { writer.WriteBytes(bytes); await writer.StoreAsync(); writer.DetachStream(); }
+                                // DataWriter.DetachStream is not implemented in Uno desktop; write the buffer directly.
+                                using var stream = new InMemoryRandomAccessStream(); await stream.WriteAsync(System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.AsBuffer(bytes));
                                 stream.Seek(0); var sourceImage = new BitmapImage(); await sourceImage.SetSourceAsync(stream);
                                 if (closed || current != generation || token.IsCancellationRequested) return;
                                 preview.Source = sourceImage;

@@ -5,18 +5,148 @@
     xmlns:local="using:Project2FA.Uno.Views"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:utu="clr-namespace:Uno.Toolkit.UI;assembly=Uno.Toolkit.WinUI"
+    xmlns:models="using:Project2FA.Repository.Models"
+    xmlns:ctwc="using:CommunityToolkit.WinUI.Controls"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    x:Name="Page"
     mc:Ignorable="d"
+    Title="~ManageCategoriesContentDialogHeader.Title"
+    x:Uid="ManageCategoriesContentDialogHeader"
+    IsPrimaryButtonEnabled="{x:Bind ViewModel.DataChanged, Mode=OneWay}"
+    PrimaryButtonText="~ManageCategoriesContentDialogHeader.PrimaryButtonText"
+    PrimaryButtonCommand="{x:Bind ViewModel.PrimaryCommand}"
+    SecondaryButtonText="~ManageCategoriesContentDialogHeader.SecondaryButtonText"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
-        <utu:NavigationBar 
-            Grid.Row="0"
-            Background="{ThemeResource TwoFABackgroundBrush}"/>
+    <ContentDialog.Resources>
+        <DataTemplate x:Key="SymbolListTemplate" x:DataType="models:FontIdentifikationModel">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="30" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <FontIcon
+                    Margin="4,0,0,0"
+                    FontSize="16"
+                    FontFamily="{StaticResource SegoeFluentIconsFilled}"
+                    Glyph="{x:Bind UnicodeIndex, Mode=OneWay, Converter={StaticResource FontIconUnicodeIndexToGlyphConverter}}"/>
+                <TextBlock
+                    Grid.Column="1"
+                    Text="{x:Bind Name, Mode=OneWay}"
+                    Margin="0,0,10,0"/>
+            </Grid>
+        </DataTemplate>
+    </ContentDialog.Resources>
 
+    <Grid MinWidth="350" MinHeight="450">
+        <ScrollViewer>
+            <StackPanel>
+                <ctwc:SettingsExpander
+                    HeaderIcon="{ui:FontIcon Glyph=&#xE713;}"
+                    x:Uid="ManageCategoriesAddGlobalCategories"
+                    Header="~ManageCategoriesAddGlobalCategories.Header">
+                    <ctwc:SettingsExpander.Items>
+                        <ctwc:SettingsCard>
+                            <ctwc:SettingsCard.Description>
+                                <StackPanel>
+                                    <TextBox
+                                        Header="~ManageCategoriesContentDialogLabel.Header"
+                                        x:Uid="ManageCategoriesContentDialogLabel"
+                                        Text="{x:Bind ViewModel.Label, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                    <ComboBox
+                                        VerticalAlignment="Stretch"
+                                        Margin="0,10,0,20"
+                                        HorizontalAlignment="Stretch"
+                                        x:Uid="ManageCategoriesContentDialogIcon"
+                                        MaxDropDownHeight="210"
+                                        ItemTemplate="{StaticResource SymbolListTemplate}"
+                                        SelectedItem="{x:Bind ViewModel.SelectedIconItem, Mode=TwoWay}"
+                                        ItemsSource="{x:Bind ViewModel.IconSourceCollection, Mode=OneWay}"
+                                        Header="~ManageCategoriesContentDialogIcon.Header"/>
+                                    <Button
+                                        Command="{x:Bind ViewModel.CreateCategoryCommand}"
+                                        x:Uid="ManageCategoriesContentDialogIconCreateBTN"
+                                        Margin="0,10,0,20"
+                                        Style="{StaticResource AccentButtonStyle}"
+                                        IsEnabled="{x:Bind ViewModel.CanCreate, Mode=OneWay}"
+                                        Content="~ManageCategoriesContentDialogIconCreateBTN.Content"/>
+                                </StackPanel>
+                            </ctwc:SettingsCard.Description>
+                        </ctwc:SettingsCard>
+                    </ctwc:SettingsExpander.Items>
+                </ctwc:SettingsExpander>
+
+                <ListView
+                    x:Name="LV_Categories"
+                    SelectionMode="None"
+                    ItemsSource="{x:Bind ViewModel.TempGlobalCategories, Mode=OneWay}"
+                    Margin="0,10,0,0">
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="models:CategoryModel">
+                            <Grid Margin="0,4">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="auto"/>
+                                    <ColumnDefinition Width="auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="auto"/>
+                                </Grid.ColumnDefinitions>
+                                <FontIcon
+                                    FontFamily="{StaticResource SegoeFluentIconsFilled}"
+                                    FontSize="32"
+                                    Glyph="{x:Bind UnicodeIndex, Mode=OneWay, Converter={StaticResource FontIconUnicodeIndexToGlyphConverter}}"/>
+                                <Button
+                                    x:Name="BTN_ShowIcons"
+                                    Margin="4,0,0,0"
+                                    Grid.Column="1"
+                                    CornerRadius="99"
+                                    Width="40"
+                                    Height="40"
+                                    Click="BTN_ShowIcons_Click">
+                                    <FontIcon FontSize="12" Glyph="&#xE70F;"/>
+                                    <FlyoutBase.AttachedFlyout>
+                                        <Flyout Placement="Right">
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <ComboBox
+                                                    x:Name="CB_CategoryModel"
+                                                    BorderBrush="{ThemeResource SystemAccentColor}"
+                                                    MinWidth="220"
+                                                    VerticalAlignment="Center"
+                                                    HorizontalAlignment="Stretch"
+                                                    MinHeight="34"
+                                                    SelectedValuePath="UnicodeIndex"
+                                                    MaxDropDownHeight="250"
+                                                    SelectedItem="{Binding DataContext.SelectedComboBoxItem, ElementName=Page, Mode=TwoWay}"
+                                                    ItemTemplate="{StaticResource SymbolListTemplate}"
+                                                    ItemsSource="{Binding DataContext.ACVCollection, ElementName=Page, Mode=OneWay}"
+                                                    Loaded="CB_CategoryModel_Loaded"/>
+                                                <Button Click="AcceptIcon_Click" VerticalAlignment="Center">
+                                                    <FontIcon FontSize="12" Glyph="&#xE73E;"/>
+                                                </Button>
+                                            </StackPanel>
+                                        </Flyout>
+                                    </FlyoutBase.AttachedFlyout>
+                                </Button>
+                                <TextBox
+                                    TextChanged="TextBox_TextChanged"
+                                    Text="{x:Bind Name, Mode=TwoWay}"
+                                    MinWidth="250"
+                                    Grid.Column="2"
+                                    Margin="12,0,0,0"/>
+                                <Button
+                                    Margin="4,0,0,0"
+                                    Grid.Column="3"
+                                    CornerRadius="99"
+                                    Width="40"
+                                    Height="40"
+                                    CommandParameter="{Binding}"
+                                    Command="{Binding DataContext.DeleteCategoryCommand, ElementName=Page, Mode=OneWay}">
+                                    <FontIcon FontSize="12" Glyph="&#xE74D;"/>
+                                </Button>
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </StackPanel>
+        </ScrollViewer>
     </Grid>
 </ContentDialog>

@@ -15,11 +15,16 @@ internal static class MacOSVaultLocation
         string temporary = Path.Combine(folder, ".2fast-" + System.Guid.NewGuid().ToString("N") + ".tmp");
         try
         {
-            await using (var stream = new FileStream(temporary, new FileStreamOptions
+            // FileStreamOptions.UnixCreateMode throws PlatformNotSupportedException on Windows,
+            // even when assigned null, so only set it on Unix-like platforms.
+            var options = new FileStreamOptions
             {
                 Mode = FileMode.CreateNew, Access = FileAccess.Write, Share = FileShare.None,
-                Options = FileOptions.Asynchronous, UnixCreateMode = OperatingSystem.IsWindows() ? null : UnixFileMode.UserRead | UnixFileMode.UserWrite
-            }))
+                Options = FileOptions.Asynchronous
+            };
+            if (!OperatingSystem.IsWindows())
+                options.UnixCreateMode = UnixFileMode.UserRead | UnixFileMode.UserWrite;
+            await using (var stream = new FileStream(temporary, options))
             {
                 byte[] bytes = System.Text.Encoding.UTF8.GetBytes(content);
                 await stream.WriteAsync(bytes);

@@ -205,9 +205,35 @@ namespace Project2FA.ViewModels
                 {
 #if TWOFAST_DESKTOP
                     // Reserve a new file without overwriting another vault.
-                    LocalStorageFile = await LocalStorageFolder.CreateFileAsync(DateFileName, CreationCollisionOption.FailIfExists);
-                    string encrypted = await Task.Run(() => Project2FA.Services.MacOS.MacOSVaultCodec.Encrypt(model, Password));
-                    await Project2FA.Services.MacOS.MacOSVaultLocation.WriteAtomicAsync(LocalStorageFolder.Path, DateFileName, encrypted);
+                    // Reuse an empty leftover file from a previously failed creation attempt,
+                    // otherwise retrying would always fail with a file-exists error.
+                    string reservedPath = System.IO.Path.Combine(LocalStorageFolder.Path, DateFileName);
+                    if (System.IO.File.Exists(reservedPath) && new System.IO.FileInfo(reservedPath).Length == 0)
+                    {
+                        LocalStorageFile = await LocalStorageFolder.GetFileAsync(DateFileName);
+                    }
+                    else
+                    {
+                        LocalStorageFile = await LocalStorageFolder.CreateFileAsync(DateFileName, CreationCollisionOption.FailIfExists);
+                    }
+                    try
+                    {
+                        string encrypted = await Task.Run(() => Project2FA.Services.MacOS.MacOSVaultCodec.Encrypt(model, Password));
+                        await Project2FA.Services.MacOS.MacOSVaultLocation.WriteAtomicAsync(LocalStorageFolder.Path, DateFileName, encrypted);
+                    }
+                    catch
+                    {
+                        // Remove the reserved placeholder so a retry starts from a clean state.
+                        try
+                        {
+                            if (System.IO.File.Exists(reservedPath) && new System.IO.FileInfo(reservedPath).Length == 0)
+                            {
+                                System.IO.File.Delete(reservedPath);
+                            }
+                        }
+                        catch { /* best effort cleanup */ }
+                        throw;
+                    }
                     created = true;
 #else
                     created = await FileService.WriteStringAsync(

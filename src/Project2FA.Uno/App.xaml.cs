@@ -469,6 +469,7 @@ namespace Project2FA.UnoApp
             container.RegisterDialog<UseDatafileContentDialog, UseDatafileContentDialogViewModel>();
             container.RegisterDialog<WebViewDatafileContentDialog, WebViewDatafileContentDialogViewModel>();
             container.RegisterDialog<DisplayQRCodeContentDialog, DisplayQRCodeContentDialogViewModel>();
+            container.RegisterDialog<ManageCategoriesContentDialog, ManageCategoriesContentDialogViewModel>();
             //containerRegistry.RegisterDialog<TutorialContentDialog, TutorialContentDialogViewModel>();
         }
     }
