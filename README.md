@@ -21,7 +21,9 @@ packages are unsigned portable builds. Mac builds use development signing.
 ## Features
 
 - Shared encrypted vaults, account editing, QR display, and countdowns.
-- Camera and screen QR scanning, TOTP, supported OCRA and Deepnet MobileID imports.
+- **Scan QR codes directly from your desktop through screen sharing**: select a
+  browser window or display and import an authenticator QR without a camera.
+- Live camera QR scanning, TOTP, supported OCRA and Deepnet MobileID imports.
 - Touch ID on enrolled Macs and Windows Hello integration on Windows.
 - Authenticated V4 vault encryption, legacy import/upgrade, backups and WebDAV.
 
@@ -29,6 +31,34 @@ Update both desktop apps before selecting **Settings → Data file → Upgrade v
  encryption**. Updated Windows and Mac builds share V4 files. Older Windows
 releases and mobile clients cannot read upgraded files. Device-bound tokens and
 biometric credentials remain device-specific.
+
+## Scan a QR code from a webpage or your desktop
+
+You can scan an authenticator setup QR displayed on the **same computer** using
+**Scan screen**. A camera or a second device is not required.
+
+1. Open the webpage containing the authenticator setup QR and keep the full code
+   visible.
+2. Open **Accounts → Scan screen** in 2fast. You can also choose the screen option
+   inside the camera scanner.
+3. Choose what to share/capture:
+   - **macOS:** use Apple's screen-sharing picker to select the browser window or
+     an entire display.
+   - **Windows:** select a window or display from the scanner's source list.
+4. Check the live preview. When capturing an entire display, move 2fast out of
+   the way so it does not cover the QR. If a window preview is black, try selecting
+   its display instead.
+5. The scanner reads successive frames until it finds a QR. Review the imported
+   account, then save it to your vault.
+
+Screen frames are processed locally; they are not uploaded to a screen-sharing
+service. Both scan sources use the same supported TOTP, OCRA and Deepnet MobileID
+import workflow. Unsupported QR profiles cannot be imported simply by sharing
+the screen. Use **Cancel** to stop scanning, or Apple's **Stop Sharing** on Mac.
+
+Windows native screen-capture acceptance still requires testing on a Windows PC;
+see [verification limits](docs/audits/2026-09-08-desktop-parity.md). More scanning
+and troubleshooting instructions are in the [user guide](docs/USER-GUIDE.md).
 
 ## Documentation
 
