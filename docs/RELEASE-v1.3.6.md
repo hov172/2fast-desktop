@@ -25,4 +25,18 @@ fingerprint and was not exercised on the available Mac.
 
 All three packages are rebuilt from this tag's application source. See the
 attached platform guides, compatibility and verification documents. SHA256SUMS
-covers exactly the three attached build archives.
+covers the three attached build archives and the documentation archive.
+
+## Documentation
+
+The attached USER-GUIDE.md explains installation, vault setup, camera and screen
+scanning, manual entry, account editing, OCRA/Deepnet challenges, Touch ID/Hello,
+backup/restore, WebDAV and troubleshooting. MACOS.md and WINDOWS.md cover platform
+setup and building; DESKTOP-COMPATIBILITY.md and MACOS-VAULT-FORMAT.md explain
+sharing and encryption. DESKTOP-VERIFICATION.md records testing limits. The
+consolidated documentation ZIP contains these guides together with working local
+links. Documentation was expanded after tagging; the application binaries remain
+the 1.3.6 builds and the tag is unchanged.
+
+The Windows ZIPs now include the expanded guides; only their documentation was
+refreshed, so their archive checksums changed while application binaries did not.

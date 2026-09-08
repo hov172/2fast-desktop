@@ -1,4 +1,8 @@
-# 2fast for Windows — Uno desktop
+# 2fast 1.3.6 for Windows — Uno desktop
+
+The app title is **2fast**, version **1.3.6**, build **136**.
+See the [complete user guide](USER-GUIDE.md) for step-by-step vault setup, account
+editing, OCRA/Deepnet, backup/restore, WebDAV and troubleshooting.
 
 Extract the complete architecture-specific ZIP and run `Project2FA.Uno.exe`.
 Use x64 for Intel/AMD PCs and ARM64 for ARM Windows PCs. The .NET runtime and
@@ -8,7 +12,7 @@ Use a supported Windows 10/11 x64 or Windows 11 ARM64 system. Windows-native
 acceptance testing remains outstanding.
 
 Open your existing `.2fa` file using the application's file-selection flow.
-See **DESKTOP-COMPATIBILITY.md** before upgrading a vault shared with other clients.
+See [desktop compatibility](DESKTOP-COMPATIBILITY.md) before upgrading a vault shared with other clients.
 The updated Windows and macOS desktop apps read and write the same V4 format.
 
 - **Scan camera** opens continuous scanning with a preview and device selection.
@@ -30,7 +34,49 @@ native runtime components, install Microsoft's supported Visual C++ runtime for
 this architecture from the official page below. The unused FFmpeg video-file
 backend is omitted from these archives.
 
-Build from source on Windows:
+## Install an update
+
+Quit the old app. Extract the new archive into a fresh folder and launch the new
+Project2FA.Uno.exe. Do not mix DLLs from different releases or architectures. Keep
+your vault and backups outside the application folder. App replacement does not
+automatically upgrade vault encryption. This release does not update the old
+Microsoft Store application; open your vault using the new Uno desktop executable.
+
+## Windows Hello
+
+Configure Windows Hello under Windows Settings → Accounts → Sign-in options.
+Unlock the vault by password before enabling **Use Windows Hello** in 2fast. Enter
+the vault password when asked and complete the Windows prompt. A PIN, fingerprint,
+or face may be offered by Windows. Canceling leaves password login available.
+Re-enroll after changing the vault password/path or invalidating platform keys.
+Disabling the option revokes its protected saved credential without deleting accounts.
+
+The implementation wraps an AES key using a nonexportable Windows Passport RSA
+key requiring authentication; per-user DPAPI also protects the stored credential
+envelope. Neither copying the vault nor copying an app folder transfers Hello
+registration. Native Windows Hello acceptance has not been run on a Windows PC.
+
+## Scanning tips
+
+The source list includes available cameras, windows and displays. **Refresh sources**
+updates it after device/window changes. Check the live preview before positioning
+a QR. Blank frames continue scanning; a decoded supported QR opens account review.
+Save that review to commit the account. Cancel closes the scanner. If a camera
+driver stalls, the dialog can close while the worker finishes releasing the driver;
+try a display source or close other camera applications before trying again.
+
+Camera access for desktop applications must be permitted in Windows privacy
+settings. Windows uses its own source list, not Apple's sharing picker. Window
+capture can fail for protected/GPU content; selecting the display is the fallback.
+Camera and screen frames are processed locally. No camera is required for screen
+scanning. See the user guide for the distinction between successful QR decoding
+and successful account import.
+
+## Build and test
+
+Use the .NET SDK pinned in the root global.json. Dependencies are restored through
+NuGet and vendored source; no Git submodule setup is required. Run from the
+repository root on Windows:
 
 ```powershell
 ./scripts/build-windows.ps1 -Runtime win-x64

@@ -32,6 +32,10 @@ biometric credentials remain device-specific.
 
 ## Documentation
 
+Start with the [complete user guide](docs/USER-GUIDE.md): installation, first vault,
+camera/screen scanning, manual accounts, editing, OCRA/Deepnet, biometrics,
+backup/restore, WebDAV and troubleshooting.
+
 - [macOS setup, building and use](MACOS.md)
 - [Windows setup, building and use](docs/WINDOWS.md)
 - [Desktop compatibility](docs/DESKTOP-COMPATIBILITY.md)

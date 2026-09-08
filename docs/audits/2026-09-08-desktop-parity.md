@@ -55,3 +55,14 @@ Windows Hello. Those require a Windows PC; use scripts/test-windows.ps1 and the
 manual workflow in docs/WINDOWS.md. Windows packages are unsigned portable builds.
 The available ARM Mac has no enrolled Touch ID, so successful biometric unlock
 was not exercised. Physical Intel Mac acceptance is also outstanding.
+
+## Release 1.3.6 follow-up
+
+The application display name is now 2fast (without Beta), with display/assembly
+version 1.3.6, manifest version 1.3.6.0, and build 136. All three archives were
+rebuilt. Outer and embedded Mac bundle metadata, Windows executable versions,
+Mac strict/deep signatures, universal launcher behavior, and archive CRC checks
+passed. Compiled Mac ARM and Windows x64 managed workflow/encryption checks
+passed on the Mac host. Release status is no longer prerelease; the hardware and
+signing limitations above still apply. Documentation was subsequently expanded
+on main; the application source tag remains v1.3.6.

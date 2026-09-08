@@ -1,4 +1,4 @@
-# Authenticated Windows and macOS desktop vaults
+# Authenticated Windows and macOS desktop vaults — 1.3.6
 
 New vaults use format V4. The complete account/category document is encrypted with
 .NET AES-256-GCM, including metadata and empty collections. Each write generates
@@ -31,10 +31,10 @@ read V4. Older releases (including the old Windows UWP app) and mobile clients
 remain incompatible. See [desktop compatibility](DESKTOP-COMPATIBILITY.md).
 Do not upgrade a shared vault until every client that must read it supports V4.
 
-Migration verifies the staged document and retains an owner-readable encrypted
+Migration verifies the staged document and retains an encrypted
 `.legacy-<id>.2fa` copy beside the original. It preserves account types, OCRA and
 MobileID settings, categories, seeds and metadata. File/credential commits use an
-encrypted recovery copy and rollback on failure. Touch ID must be enrolled again.
+encrypted recovery copy and rollback on failure. Touch ID/Windows Hello must be enrolled again.
 Legacy files, old backups, and legacy password verifiers remain weak until they
 are replaced; creating a new encrypted file cannot strengthen existing copies.
 After verifying migration and any required compatibility, manage old copies using
@@ -76,3 +76,17 @@ ETag requirements, create collisions, and retained recovery copies.
 - [.NET AES-GCM](https://learn.microsoft.com/en-us/dotnet/api/system.security.cryptography.aesgcm.encrypt)
 - [OWASP password derivation guidance](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html)
 - [OWASP cryptographic storage guidance](https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html)
+
+## User-facing recovery procedure
+
+1. Preserve the original vault and any recovery path reported by the app.
+2. Use Settings → Data file → Open another data file to inspect a backup copy.
+3. Supply the password in effect when that copy was written, not necessarily the
+   current vault password. Confirm the expected accounts before replacing files.
+4. For WebDAV, stop making concurrent changes and resolve remote/local versions
+   before resuming writes. Moving to local use does not delete the server copy.
+5. Re-enable biometric unlock for the selected file after recovery if needed.
+
+No password reset service or decryption bypass is provided. Backup filenames do
+not prove which copy has the newest account data. User instructions are in the
+[user guide](USER-GUIDE.md); this document describes format/transaction behavior.

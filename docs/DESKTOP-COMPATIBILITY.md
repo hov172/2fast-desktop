@@ -1,4 +1,4 @@
-# Windows and macOS vault compatibility
+# Windows and macOS vault compatibility — 1.3.6
 
 The updated **Uno desktop builds for Windows and macOS share one V4 vault codec**.
 They can open, edit, save, back up, change the password of, and upgrade the same
@@ -49,3 +49,22 @@ progression, and URI preservation. Native Windows credential tests are provided
 in `scripts/test-windows.ps1` (`-Hello` requires a person and enrolled Windows Hello).
 Actual Windows camera/window capture, Hello and full UI acceptance still require
 execution on a Windows PC. No user's vault was modified by these checks.
+
+## Feature comparison
+
+| Feature | macOS | Windows |
+| --- | --- | --- |
+| Shared V4 vaults and V0–V3 import | Included | Included |
+| TOTP, supported OCRA/MobileID import | Shared implementation | Shared implementation |
+| Account edit, copy, countdown, TOTP QR display | Shared workflows | Shared workflows |
+| Camera scan | AVFoundation/Vision | DirectShow/OpenCV/ZXing |
+| Window/display scan | Apple sharing picker | App source list and GDI capture |
+| Saved unlock credential | Touch ID Keychain | Windows Hello/Passport plus DPAPI |
+| Universal Mac / native Windows packages | One ARM/Intel archive | Separate x64 and ARM64 archives |
+| Normal distribution trust | Development-signed, not notarized | Unsigned portable build |
+
+Matching workflows does not mean identical operating-system dialogs or complete
+hardware validation. For step-by-step instructions see the [user guide](USER-GUIDE.md).
+For installation and build prerequisites use [macOS](../MACOS.md) or
+[Windows](WINDOWS.md). Historical audit reports retain their original dates;
+release 1.3.6 branding/version checks are recorded below the current audit report.
