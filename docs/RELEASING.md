@@ -1,7 +1,8 @@
 # Desktop releases
 
-The current desktop release is `v1.4.1`, following `v1.4.0`. Its app
-version is 1.4.1 and build number is 141.
+The current desktop release is `v1.4.2`, following `v1.4.1`. Its app
+version is 1.4.2 and build number is 142. This release publishes macOS packages;
+Windows downloads remain available from earlier releases.
 This private distribution does not replace upstream version history.
 
 1. Run the documented platform builds and regression checks. Mac packaging needs

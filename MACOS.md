@@ -1,8 +1,8 @@
-# 2fast 1.4.0 for macOS
+# 2fast 1.4.2 for macOS
 
-The app is named **2fast**, version **1.4.0**, build **140**. Download
-`2fast-macos-universal.zip` from the private repository's
-[release page](https://github.com/hov172/2fast-desktop/releases/tag/v1.4.0).
+The app is named **2fast**, version **1.4.2**, build **142**. Download
+`2fast-macos-universal.dmg` from the private repository's
+[release page](https://github.com/hov172/2fast-desktop/releases/tag/v1.4.2).
 
 ## Requirements and installation
 
@@ -11,16 +11,23 @@ The app is named **2fast**, version **1.4.0**, build **140**. Download
 - Camera scanning needs an accessible camera and camera permission.
 - Touch ID needs compatible hardware and an enrolled fingerprint.
 
-Extract the ZIP to obtain `2fast.app`. Quit an older running copy before replacing
+Open the DMG and drag `2fast.app` into Applications. A ZIP containing the same
+app is also available. Quit an older running copy before replacing
 it. Keep your `.2fa` vault and backup files separate from the application. Replacing
 the app does not replace the vault or automatically upgrade its encryption.
 
-**Signing limitation:** this release is signed with an Apple Development identity.
-Deep/strict signature verification passes, but it is not Developer ID signed or
-notarized for normal distribution. Gatekeeper currently rejects the development
-build. Installing on another Mac may need a properly provisioned distribution
-build; a GitHub release label does not change that. Do not treat clearing download
-quarantine as a replacement for correct signing or Keychain entitlements.
+**Release signing:** the published app and DMG are Developer ID Application
+signed, notarized by Apple, and stapled with their notarization tickets. Local
+source builds using the setup below initially use Apple Development signing;
+release packaging requires Developer ID signing and notarization before upload.
+
+## About the app
+
+Open **About the app** in the navigation menu for the version, build number, OS
+and architecture details. **Copy app details** copies those fields for a support
+report. The page also links to the user guide, releases, issues, source code and
+GPL-3.0 license, and credits the original 2fast project. Private project links
+require repository access.
 
 ## First use and daily operation
 
@@ -151,7 +158,7 @@ checked, successful Touch ID unlock remains untested. Intel compiled checks run
 under Rosetta; physical Intel acceptance remains outstanding. Live capture and
 Deepnet server interoperability need platform acceptance beyond managed tests.
 See the [verification report](docs/audits/2026-09-08-desktop-parity.md) and
-[release notes](docs/RELEASE-v1.4.0.md).
+[release notes](docs/RELEASE-v1.4.2.md).
 
 ## Licensing and provenance
 

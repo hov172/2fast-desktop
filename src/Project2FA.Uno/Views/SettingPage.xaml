@@ -62,9 +62,44 @@
                 <TextBlock x:Name="DatafileStatus" TextWrapping="Wrap" />
             </StackPanel>
             <StackPanel x:Name="AboutSection" Visibility="Collapsed" Spacing="16" Margin="0">
-                <TextBlock x:Name="PlatformTitle" Text="2fast" FontSize="24" />
-                <TextBlock Text="An Uno Platform port of 2fast. Licensed under GPL-3.0." TextWrapping="Wrap" />
-                <Button Content="Source code" Command="{x:Bind ViewModel.SeeSourceCodeCommand}" HorizontalAlignment="Left" />
+                <TextBlock x:Name="PlatformTitle" Text="2fast" Style="{StaticResource DesktopHeadingStyle}" />
+                <TextBlock Text="Keep your two-factor authentication accounts in an encrypted vault." Style="{StaticResource DesktopCaptionStyle}" TextWrapping="Wrap" />
+                <Border Background="{ThemeResource DesktopSurfaceBrush}" BorderBrush="{ThemeResource DesktopBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="20">
+                    <StackPanel Spacing="12">
+                        <TextBlock Text="App information" FontSize="18" FontWeight="SemiBold" />
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Version" Style="{StaticResource DesktopCaptionStyle}" />
+                            <TextBlock x:Name="AboutVersionText" FontSize="20" FontWeight="SemiBold" IsTextSelectionEnabled="True" />
+                            <TextBlock x:Name="AboutBuildText" IsTextSelectionEnabled="True" />
+                        </StackPanel>
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="System" Style="{StaticResource DesktopCaptionStyle}" />
+                            <TextBlock x:Name="AboutSystemText" TextWrapping="Wrap" IsTextSelectionEnabled="True" />
+                            <TextBlock x:Name="AboutArchitectureText" TextWrapping="Wrap" IsTextSelectionEnabled="True" />
+                        </StackPanel>
+                        <Button Content="Copy app details" Click="CopyAppDetails_Click" Style="{StaticResource DesktopButtonStyle}" HorizontalAlignment="Left" />
+                        <TextBlock x:Name="AboutCopyStatus" Visibility="Collapsed" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite" />
+                    </StackPanel>
+                </Border>
+                <Border Background="{ThemeResource DesktopSurfaceBrush}" BorderBrush="{ThemeResource DesktopBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="20">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Help and updates" FontSize="18" FontWeight="SemiBold" />
+                        <HyperlinkButton Content="User guide" NavigateUri="https://github.com/hov172/2fast-desktop/blob/main/docs/USER-GUIDE.md" HorizontalAlignment="Left" />
+                        <HyperlinkButton Content="Releases and downloads" NavigateUri="https://github.com/hov172/2fast-desktop/releases" HorizontalAlignment="Left" />
+                        <HyperlinkButton Content="Report an issue" NavigateUri="https://github.com/hov172/2fast-desktop/issues" HorizontalAlignment="Left" />
+                        <TextBlock Text="Project links may require GitHub access to this private repository." Style="{StaticResource DesktopCaptionStyle}" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+                <Border Background="{ThemeResource DesktopSurfaceBrush}" BorderBrush="{ThemeResource DesktopBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="20">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Credits and license" FontSize="18" FontWeight="SemiBold" />
+                        <TextBlock Text="A community desktop port of 2fast, built with Uno Platform. Based on the original work of Jan Philipp Weber and the 2fast contributors. This is an independent distribution." TextWrapping="Wrap" />
+                        <TextBlock Text="Free and open-source software licensed under the GNU General Public License v3.0." TextWrapping="Wrap" />
+                        <HyperlinkButton Content="Desktop source code" NavigateUri="https://github.com/hov172/2fast-desktop" HorizontalAlignment="Left" />
+                        <HyperlinkButton Content="Original 2fast project" NavigateUri="https://github.com/2fast-team/2fast" HorizontalAlignment="Left" />
+                        <HyperlinkButton Content="Read the license" NavigateUri="https://github.com/hov172/2fast-desktop/blob/main/LICENSE" HorizontalAlignment="Left" />
+                    </StackPanel>
+                </Border>
             </StackPanel>
             <StackPanel x:Name="GeneralSettingsSection" Spacing="16">
                 <TextBlock Text="Preferences" Style="{StaticResource DesktopHeadingStyle}" />

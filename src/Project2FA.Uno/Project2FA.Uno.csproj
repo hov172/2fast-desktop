@@ -16,9 +16,9 @@
     <!-- App Identifier -->
     <ApplicationId>jpweber.it.Project2FA.Uno</ApplicationId>
     <!-- Versions -->
-    <ApplicationDisplayVersion>1.4.1</ApplicationDisplayVersion>
-    <ApplicationVersion>141</ApplicationVersion>
-    <Version>1.4.1</Version>
+    <ApplicationDisplayVersion>1.4.2</ApplicationDisplayVersion>
+    <ApplicationVersion>142</ApplicationVersion>
+    <Version>1.4.2</Version>
     <!-- Package Publisher -->
     <ApplicationPublisher>Jan Philipp Weber</ApplicationPublisher>
     <!-- Package Description -->
@@ -43,6 +43,11 @@
 	<!-- Platforms should only apply to desktop builds, not mobile/cross-platform -->
 	<Platforms Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">AnyCPU;ARM64;x64</Platforms>
   </PropertyGroup>
+
+  <ItemGroup>
+    <AssemblyMetadata Include="ApplicationDisplayVersion" Value="$(ApplicationDisplayVersion)" />
+    <AssemblyMetadata Include="ApplicationBuildNumber" Value="$(ApplicationVersion)" />
+  </ItemGroup>
 
 	<PropertyGroup>
 		<PublishAot Condition=" $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios' ">true</PublishAot>

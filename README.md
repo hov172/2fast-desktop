@@ -5,18 +5,20 @@ built with Uno Platform. Upstream licensing and attribution are retained.
 
 ## Downloads
 
-Current release: **1.4.0** (app title **2fast**).
+Current macOS release: **1.4.2** (app title **2fast**).
 
 Get the builds from [Releases](https://github.com/hov172/2fast-desktop/releases).
 
 | Package | Platform |
 | --- | --- |
-| `2fast-macos-universal.zip` | macOS, Apple Silicon and Intel |
+| `2fast-macos-universal.dmg` / `.zip` | macOS, Apple Silicon and Intel |
 | `2fast-windows-x64.zip` | Windows, Intel/AMD x64 |
 | `2fast-windows-arm64.zip` | Windows ARM64 |
 
 Extract the Windows archive before launching `Project2FA.Uno.exe`. Windows
-packages are unsigned portable builds. Mac builds use development signing.
+packages are unsigned portable builds and remain in earlier releases. Open the
+Mac DMG and drag 2fast into Applications. The published Mac app and DMG use
+Developer ID signing with Apple notarization and stapled tickets.
 
 ## Features
 
