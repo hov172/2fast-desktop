@@ -1,10 +1,13 @@
-# 2fast 1.4.1 for Windows — Uno desktop
+# 2fast 1.4.2 for Windows — Uno desktop
 
-The app title is **2fast**, version **1.4.1**, build **141**.
+The app title is **2fast**, version **1.4.2**, build **142**.
 See the [complete user guide](USER-GUIDE.md) for step-by-step vault setup, account
 editing, OCRA/Deepnet, backup/restore, WebDAV and troubleshooting.
 
 Extract the complete architecture-specific ZIP and run `Project2FA.Uno.exe`.
+Alternatively, download the matching standalone `2fast-windows-x64.exe` or
+`2fast-windows-arm64.exe`; these embed the runtime, libraries, and app assets
+and extract them automatically when launched.
 Use x64 for Intel/AMD PCs and ARM64 for ARM Windows PCs. The .NET runtime and
 matching native camera library are included. Keep the DLLs beside the executable.
 This is a locally built, unsigned desktop distribution, not a Windows Store update.
@@ -72,7 +75,14 @@ Camera and screen frames are processed locally. No camera is required for screen
 scanning. See the user guide for the distinction between successful QR decoding
 and successful account import.
 
-## Fixes in this build (2026-09-08)
+## About the app in 1.4.2
+
+**About the app** now shows the version, build number, OS and app/system
+architectures. Use **Copy app details** for support reports. The page also links
+to the user guide, releases, issues, source code, and GPL-3.0 license, with credit
+to the upstream 2fast project.
+
+## Reliability fixes retained from 1.4.1 (2026-09-08)
 
 - **Vault saves failed on Windows** with "The changes could not be saved":
   the atomic file writer set a Unix-only file mode, which .NET rejects on

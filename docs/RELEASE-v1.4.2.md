@@ -1,7 +1,8 @@
 # 2fast 1.4.2 — App information and support links
 
-Version **1.4.2**, build **142**. This release publishes the universal macOS app
-for Apple Silicon and Intel, requiring macOS 15 or newer.
+Version **1.4.2**, build **142**. This release includes the universal macOS app
+for Apple Silicon and Intel (macOS 15 or newer), plus Windows x64 and ARM64
+ZIPs and standalone executables.
 
 ## Changes
 
@@ -30,6 +31,8 @@ secure timestamps, Apple notarization acceptance, ticket validation, and
 `syspolicy_check distribution` on the packaged app. The GitHub release notes
 record the notarization submission IDs and any remaining verification limits.
 
-Windows binaries are not included in this release; use the earlier Windows
-release assets. Physical Intel and Touch ID acceptance remain untested for this
+Windows ZIPs and standalone executables were added after the initial macOS
+publication, built from the same v1.4.2 source tag. They are unsigned.
+Native Windows launch, camera/screen capture, and Windows Hello checks have
+not been run on this macOS build host. Physical Intel and Touch ID acceptance remain untested for this
 update. See [the macOS guide](../MACOS.md) and [user guide](USER-GUIDE.md).
