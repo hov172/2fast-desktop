@@ -1,7 +1,24 @@
 # 2fast Desktop — Windows and macOS
 
-Private development distribution of [2fast](https://github.com/2fast-team/2fast),
-built with Uno Platform. Upstream licensing and attribution are retained.
+This Windows and macOS desktop version is built on top of the original
+[2fast project by the 2fast team](https://github.com/2fast-team/2fast), using Uno
+Platform.
+
+## Credit to the original project
+
+The original **2fast team and all of its contributors** deserve credit for
+creating 2fast and the excellent work that made this version possible. Their
+code, design, and ongoing contributions provide the foundation for this desktop
+version. Thank you for building and sharing such an awesome open-source project.
+
+This repository extends their work with desktop adaptations and additional
+features. It is an independent development distribution, not an official release
+from the original 2fast team. Original attribution and the [GPL-3.0 license](LICENSE)
+are retained.
+
+Please visit the [original repository](https://github.com/2fast-team/2fast) to
+learn more about their work and support the project. The
+[original upstream README](docs/UPSTREAM-README.md) is also preserved here.
 
 ## Downloads
 
