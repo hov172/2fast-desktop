@@ -6,8 +6,8 @@ cd "$repo_root"
 runtime="${1:-universal}"
 case "$runtime" in
   universal)
-    "$0" osx-arm64
-    "$0" osx-x64
+    bash "$0" osx-arm64
+    bash "$0" osx-x64
     /usr/bin/python3 "$repo_root/scripts/package-macos-universal.py"
     exit 0 ;;
   osx-arm64|osx-x64) ;;

@@ -1,7 +1,7 @@
 # Desktop releases
 
-The current desktop release is `v1.4.4`, following `v1.4.3`. Its app
-version is 1.4.4 and build number is 144. This release includes macOS packages and Windows x64/ARM64 ZIPs and standalone executables.
+The current desktop release is `v1.4.5`, following `v1.4.4`. Its app
+version is 1.4.5 and build number is 145. This release includes macOS packages and Windows x64/ARM64 ZIPs and standalone executables.
 This private distribution does not replace upstream version history.
 
 1. Run the documented platform builds and regression checks. Mac packaging needs
@@ -37,7 +37,34 @@ and upstream documentation clearly identified as historical material.
 
 After all platform builds finish, run `python3 scripts/package-release-docs.py` to assemble the current-version guides, refresh the Windows packages with those guides, and checksum all current release downloads.
 
-For 1.4.4, the asset set is the notarized Mac DMG and app ZIP, Windows x64/ARM64
+For 1.4.5, the asset set is the notarized Mac DMG and app ZIP, Windows x64/ARM64
 portable ZIPs and standalone EXEs, the versioned documentation ZIP, and SHA256SUMS.
 Upload the flattened guides alongside the archive. Verify remote asset digests
 against the local files before declaring the release complete.
+
+## Privacy gates
+
+Release targets disable generated debug symbols and map compiler source paths to
+`/_/src`. Publish into fresh output directories: deleting PDB files from an older
+build does not remove the CodeView paths already stored in assemblies or bundled
+EXEs. Run `python3 scripts/verify-release-privacy.py` on final app directories and
+standalone EXEs. Documentation packaging invokes the same gate automatically.
+
+Universal Mac packaging requires `APPLE_DEVELOPER_ID` (certificate SHA-1) and
+`APPLE_DISTRIBUTION_PROFILE` (local distribution profile path). It signs nested
+code with Developer ID, requires Hardened Runtime/timestamps, rejects profiles
+with registered devices and scans the signed app before creating its ZIP. Keep
+these local signing inputs outside Git. Submit the app and DMG separately for
+notarization, staple both, and regenerate the app ZIP from the stapled app.
+
+Use a GitHub noreply identity for new author, committer and tagger metadata.
+The 1.4.5 privacy cleanup rewrites prior maintainer identity metadata while
+preserving source trees, messages and upstream attribution. This is an explicit
+privacy exception to the normal immutable-tag policy. Old application/checksum
+assets are withdrawn; source tags and historical documentation remain. Re-clone
+after the rewrite instead of merging an old checkout, which could restore the
+old history. Existing clones and cached GitHub objects may still retain it.
+
+Developer ID signatures intentionally expose the certificate holder and Apple
+team. The maintainer accepts that disclosure; it is needed for this signed Mac
+distribution and is distinct from device provisioning lists and private keys.

@@ -1,102 +1,40 @@
-﻿using System;
+using System;
+using System.Threading;
 using System.Threading.Tasks;
 using UNOversal.Services.File;
 using Windows.Storage;
-using UNOversal.Helpers;
-using System.Threading;
 
 namespace UNOversal.Services.Logging
 {
-
-    /// <summary>
-    /// Service for logging of exception and custom messages
-    /// </summary>
     public class LoggingService : ILoggingService
     {
-        private const string _logName = "AppLog.log";
-        private string _timeStemp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " - ";
-
-        private SemaphoreSlim _accessSemaphore;
-        public SemaphoreSlim AccessSemaphore
-        {
-            get
-            {
-                if (_accessSemaphore == null)
-                {
-                    _accessSemaphore = new SemaphoreSlim(1);
-                }
-                return _accessSemaphore;
-            }
-        }
-
+        private const string LogName = "AppLog.safe.log";
+        private readonly SemaphoreSlim accessSemaphore = new SemaphoreSlim(1);
+        public SemaphoreSlim AccessSemaphore => accessSemaphore;
         private IFileService FileService { get; }
 
-        public LoggingService(IFileService fileService)
-        {
-            FileService = fileService;
-        }
+        public LoggingService(IFileService fileService) { FileService = fileService; }
 
-        /// <summary>
-        /// Log a custom message
-        /// </summary>
-        /// <param name="message"></param>
-        /// <returns></returns>
-        public async Task Log(string message, LoggingPreferEnum loggingPreferEnum)
-        {
-            await AccessSemaphore.WaitAsync();
-            if (loggingPreferEnum == LoggingPreferEnum.Full)
-            {
-                if (await FileService.FileExistsAsync(_logName, ApplicationData.Current.LocalFolder))
-                {
-                    var file = await ApplicationData.Current.LocalFolder.GetFileAsync(_logName);
-                    await FileIO.AppendTextAsync(file, _timeStemp + message + "\n");
-                }
-                else
-                {
-                    var file =  await ApplicationData.Current.LocalFolder.CreateFileAsync(_logName);
-                    await FileIO.AppendTextAsync(file, _timeStemp + message + "\n");
-                }
-            }
-            AccessSemaphore.Release();
-        }
+        public Task Log(string message, LoggingPreferEnum preference) =>
+            preference == LoggingPreferEnum.Full ? Append("Application event\n") : Task.CompletedTask;
 
-        /// <summary>
-        /// Log a exception
-        /// </summary>
-        /// <param name="exc"></param>
-        /// <returns></returns>
-        public async Task LogException(Exception exc, LoggingPreferEnum loggingPreferEnum)
-        {
-            if (loggingPreferEnum == LoggingPreferEnum.Simple ||
-                loggingPreferEnum == LoggingPreferEnum.Full)
-            {
-                if (await FileService.FileExistsAsync(_logName, ApplicationData.Current.LocalFolder))
-                {
-                    var file = await ApplicationData.Current.LocalFolder.GetFileAsync(_logName);
-                    await WriteExceptionLog(exc, file);
+        public Task LogException(Exception error, LoggingPreferEnum preference) =>
+            preference == LoggingPreferEnum.Simple || preference == LoggingPreferEnum.Full
+                ? Append(SafeLogRecord.Format(error)) : Task.CompletedTask;
 
-                }
-                else
-                {
-                    var file = await ApplicationData.Current.LocalFolder.CreateFileAsync(_logName);
-                    await WriteExceptionLog(exc, file);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Write the exception to a file
-        /// </summary>
-        /// <param name="exc"></param>
-        /// <param name="file"></param>
-        /// <returns></returns>
-        private async Task WriteExceptionLog(Exception exc, StorageFile file)
+        private async Task Append(string record)
         {
             await AccessSemaphore.WaitAsync();
-            await FileIO.AppendTextAsync(file, _timeStemp + "uptime " + SystemInformationHelper.Instance.AppUptime + "\n");
-            await FileIO.AppendTextAsync(file, _timeStemp + exc.Source + " - " + exc.Message + "\n");
-            await FileIO.AppendTextAsync(file, "Log - " + exc.ToString() + "\n");
-            AccessSemaphore.Release();
+            try
+            {
+                // Remove only this app's legacy unredacted diagnostic file.
+                if (await FileService.FileExistsAsync("AppLog.log", ApplicationData.Current.LocalFolder))
+                    await (await ApplicationData.Current.LocalFolder.GetFileAsync("AppLog.log")).DeleteAsync();
+                var file = await ApplicationData.Current.LocalFolder.CreateFileAsync(LogName, CreationCollisionOption.OpenIfExists);
+                await FileIO.AppendTextAsync(file, DateTimeOffset.UtcNow.ToString("O") + " " + record);
+            }
+            catch { /* Diagnostics must not break authentication or vault operations. */ }
+            finally { AccessSemaphore.Release(); }
         }
     }
 }

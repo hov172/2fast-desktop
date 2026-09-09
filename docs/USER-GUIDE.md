@@ -208,8 +208,10 @@ repeatedly overwrite copies while deciding which has the newest accounts. See
 ## 9. WebDAV and multiple computers
 
 Use the app's WebDAV setup flow with the server URL, credentials, and remote file
-location supplied by your administrator/provider. Use the canonical HTTPS URL:
-redirects are rejected. The server must supply strong ETags and support conditional
+location supplied by your administrator/provider. HTTPS is required, including during setup and server-status checks. HTTP addresses
+are rejected before credentials are sent. Use the canonical HTTPS URL: redirects
+are rejected, and login/polling endpoints must remain on that server. An existing
+HTTP configuration must be replaced with its provider’s HTTPS address. The server must supply strong ETags and support conditional
 writes. A server merely supporting file uploads is not sufficient.
 
 WebDAV edits, password changes, and encryption upgrades require connectivity.
@@ -251,7 +253,10 @@ Settings includes theme/design choices and a preference to hide OTPs. Use these
 for display/privacy preferences; they do not change the token enrolled with the
 provider. A hidden code is different from a missing account or an expired OCRA
 response. Settings also contains logging controls and a log-opening action;
-review logs before sharing them with a maintainer.
+from 1.4.5, diagnostics retain UTC timestamps, exception types and numeric error
+codes only. Messages, stack traces, vault filenames, credentials and private paths
+are omitted, even in Full mode. The app removes its legacy unredacted diagnostic
+file when it next writes a log. Previously exported copies are unaffected.
 
 To stop remembering an unlock credential, disable **Use Touch ID/Windows Hello**.
 To restart the application's setup, use the **Factory reset** action in Settings

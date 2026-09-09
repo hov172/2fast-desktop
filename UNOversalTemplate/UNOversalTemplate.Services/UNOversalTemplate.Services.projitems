@@ -28,6 +28,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Logging\ILoggingService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Logging\LoggingPreferEnum.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Logging\LoggingService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Logging\SafeLogRecord.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Network\Abstractions\AvailabilityChangedEventArgs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Network\Abstractions\ConnectionTypes.enum.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Network\Abstractions\INetworkService.cs" />

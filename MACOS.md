@@ -1,8 +1,8 @@
-# 2fast 1.4.4 for macOS
+# 2fast 1.4.5 for macOS
 
-The app is named **2fast**, version **1.4.4**, build **144**. Download
+The app is named **2fast**, version **1.4.5**, build **145**. Download
 `2fast-macos-universal.dmg` from the private repository's
-[release page](https://github.com/hov172/2fast-desktop/releases/tag/v1.4.4).
+[release page](https://github.com/hov172/2fast-desktop/releases/tag/v1.4.5).
 
 ## Requirements and installation
 
@@ -112,7 +112,9 @@ provisioning profile. Sign into Xcode with the appropriate Apple developer accou
 
 ```sh
 ./scripts/setup-macos-signing.sh YOUR_APPLE_TEAM_ID
-./scripts/build-macos.sh universal
+export APPLE_DEVELOPER_ID=YOUR_DEVELOPER_ID_CERTIFICATE_SHA1
+export APPLE_DISTRIBUTION_PROFILE=/path/to/distribution.provisionprofile
+bash scripts/build-macos.sh universal
 ```
 
 Setup provisions `jpweber.it.Project2FA.Uno` and writes local signing inputs under
@@ -158,7 +160,7 @@ checked, successful Touch ID unlock remains untested. Intel compiled checks run
 under Rosetta; physical Intel acceptance remains outstanding. Live capture and
 Deepnet server interoperability need platform acceptance beyond managed tests.
 See the [verification report](docs/audits/2026-09-08-desktop-parity.md) and
-[release notes](docs/RELEASE-v1.4.4.md).
+[release notes](docs/RELEASE-v1.4.5.md).
 
 ## Licensing and provenance
 
@@ -169,3 +171,16 @@ restored from BiometryService `c8e9aa11807e6df54a31109ead1a625fca25ab41`, Otp.NE
 `d09e40ab67f60dbf2cb1f0829d9c47f7c96424bd`, and ZXing.Net.Uno
 `cb9baedd1034a22248aca75ec74be975acf2cbfb`, then modified locally. Preserve each
 dependency's license when redistributing.
+
+## Release privacy in 1.4.5
+
+The release removes registered-device provisioning lists, debug-symbol files and
+maintainer workstation paths. Mac signatures still identify the accepted
+Developer ID certificate holder and team. Older application downloads have been
+withdrawn as part of this cleanup; use the current release.
+
+For universal release packaging, export `APPLE_DEVELOPER_ID` with your Developer
+ID certificate SHA-1 and `APPLE_DISTRIBUTION_PROFILE` with your local all-device
+profile path. The packager rejects development profiles and signs nested apps.
+The resulting ZIP still needs Apple notarization and stapling before publication;
+see [release procedure](docs/RELEASING.md).

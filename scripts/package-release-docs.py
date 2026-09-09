@@ -3,10 +3,13 @@ from pathlib import Path
 import hashlib
 import re
 import zipfile
+import subprocess
+import sys
 import xml.etree.ElementTree as ET
 
 root = Path(__file__).resolve().parent.parent
 dist = root / 'dist'
+subprocess.run([sys.executable, str(root / 'scripts/verify-release-privacy.py')], check=True)
 version = ET.parse(root / 'src/Project2FA.Uno/Project2FA.Uno.csproj').findtext('PropertyGroup/ApplicationDisplayVersion')
 assert version
 files = {
@@ -19,6 +22,7 @@ files = {
     'docs/audits/2026-09-08-desktop-ui.md': 'DESKTOP-UI-REVIEW.md',
     'docs/audits/2026-09-08-classic-layout.md': 'CLASSIC-LAYOUT-VERIFICATION.md',
     'docs/audits/2026-09-08-unlock-navigation.md': 'UNLOCK-VERIFICATION.md',
+    'docs/audits/2026-09-08-privacy-remediation.md': 'PRIVACY-VERIFICATION.md',
     f'docs/RELEASE-v{version}.md': f'RELEASE-v{version}.md',
 }
 resolved = {(root / source).resolve(): name for source, name in files.items()}

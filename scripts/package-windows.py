@@ -2,6 +2,8 @@ from pathlib import Path
 import hashlib
 import struct
 import zipfile
+import subprocess
+import sys
 root = Path(__file__).resolve().parent.parent
 dist = root / 'dist'
 for arch, machine in [('x64', 0x8664), ('arm64', 0xaa64)]:
@@ -23,6 +25,7 @@ for arch, machine in [('x64', 0x8664), ('arm64', 0xaa64)]:
         source = root / 'docs' / name
         if source.exists():
             (folder / name).write_bytes(source.read_bytes())
+    subprocess.run([sys.executable, str(root / 'scripts/verify-release-privacy.py'), str(folder)], check=True)
     with zipfile.ZipFile(dist / ('2fast-windows-' + arch + '.zip'), 'w', zipfile.ZIP_DEFLATED) as archive:
         for path in sorted(folder.rglob('*')):
             if path.is_file():

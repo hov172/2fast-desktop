@@ -3,16 +3,18 @@
 from pathlib import Path
 import datetime
 import hashlib
+import os
 import plistlib
 import shutil
 import subprocess
 import tempfile
-import xml.etree.ElementTree as ET
+import sys
 
 ROOT = Path(__file__).resolve().parent.parent
 DIST = ROOT / 'dist'
 DIST.mkdir(exist_ok=True)
-identity = ET.parse(ROOT / 'build/macos-signing/Signing.props').findtext('PropertyGroup/CodesignKey')
+if not os.environ.get('APPLE_DEVELOPER_ID') or not os.environ.get('APPLE_DISTRIBUTION_PROFILE'):
+    raise SystemExit('Set APPLE_DEVELOPER_ID (certificate SHA-1) and APPLE_DISTRIBUTION_PROFILE for release packaging.')
 
 def run(*args):
     subprocess.run([str(arg) for arg in args], check=True)
@@ -39,12 +41,10 @@ with tempfile.TemporaryDirectory(prefix='universal-', dir=ROOT / 'build') as sta
     info['LSArchitecturePriority'] = ['arm64', 'x86_64']
     info['LSMinimumSystemVersion'] = '15.0'
     (contents / 'Info.plist').write_bytes(plistlib.dumps(info))
-    shutil.copy2(ROOT / 'build/macos-signing/embedded.provisionprofile', contents / 'embedded.provisionprofile')
     run('xcrun', 'clang', '-Wall', '-Wextra', '-Werror', '-arch', 'arm64', '-arch', 'x86_64',
         '-mmacosx-version-min=15.0', ROOT / 'scripts/native/macos-universal-launcher.c',
         '-o', contents / 'MacOS/2fast-launcher')
-    run('codesign', '--force', '--options', 'runtime', '--sign', identity,
-        '--entitlements', ROOT / 'build/macos-signing/Entitlements.plist', app)
+    run(sys.executable, ROOT / 'scripts/sign-macos-release.py', app)
     run('codesign', '--verify', '--deep', '--strict', app)
     destination = DIST / '2fast.app'
     if destination.exists():

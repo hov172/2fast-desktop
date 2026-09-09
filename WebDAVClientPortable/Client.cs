@@ -113,10 +113,7 @@ namespace WebDAVClient
         /// <param name="httpClientHandler">The HTTP base protocol filter.</param>
         public Client(string url, NetworkCredential passwordCredential, bool ignoreServerCertificateErrors = false)
         {
-            if (url == null)
-            {
-                return;
-            }
+            WebDavTransport.RequireHttps(url);
 
             // In case URL has a trailing slash remove it
             if (url.EndsWith("/", StringComparison.InvariantCulture))
@@ -670,6 +667,7 @@ namespace WebDAVClient
         /// or</exception>
         public static async Task<(Status, HttpStatusCode)> GetServerStatus(string serverUrl, bool ignoreServerCertificateErrors = false, NetworkCredential networkCredential = null)
         {
+            WebDavTransport.RequireHttps(serverUrl);
             serverUrl = serverUrl.TrimEnd('/');
             if (serverUrl.EndsWith("owncloud") || serverUrl.EndsWith("nextcloud") || serverUrl.EndsWith("ownCloud"))
             {

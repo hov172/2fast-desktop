@@ -1,6 +1,6 @@
-# 2fast 1.4.4 for Windows — Uno desktop
+# 2fast 1.4.5 for Windows — Uno desktop
 
-The app title is **2fast**, version **1.4.4**, build **144**.
+The app title is **2fast**, version **1.4.5**, build **145**.
 See the [complete user guide](USER-GUIDE.md) for step-by-step vault setup, account
 editing, OCRA/Deepnet, backup/restore, WebDAV and troubleshooting.
 
@@ -75,7 +75,7 @@ Camera and screen frames are processed locally. No camera is required for screen
 scanning. See the user guide for the distinction between successful QR decoding
 and successful account import.
 
-## About the app in 1.4.4
+## About the app in 1.4.5
 
 **About the app** now shows the version, build number, OS and app/system
 architectures. Use **Copy app details** for support reports. The page also links
@@ -119,3 +119,11 @@ References:
 - [Uno desktop publishing](https://platform.uno/docs/articles/uno-publishing-desktop.html)
 - [Microsoft Visual C++ runtime](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist)
 - [OpenCvSharp source](https://github.com/shimat/opencvsharp/tree/b161e7e012f5101f6d5dc68a835c59db6cc88b18)
+
+## Privacy checks in 1.4.5
+
+Release builds suppress debug symbols and map compiler paths. Both portable
+packages and standalone EXEs are scanned for workstation paths; removing a PDB
+from an older build is insufficient. The PowerShell build script also requires
+Python 3.9 or newer for this release gate. Use a fresh publish directory when
+rebuilding an older version; the gate rejects stale debug files.

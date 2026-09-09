@@ -6,6 +6,7 @@ using Project2FA.Services;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using WebDAVClient;
 using System.Threading;
 using System.Threading.Tasks;
 using UNOversal.Ioc;
@@ -139,7 +140,7 @@ namespace Project2FA.ViewModels
         {
             if (value && !string.IsNullOrWhiteSpace(ServerAddress))
             {
-                URL = new Uri(ServerAddress.TrimEnd('/') + "/index.php/login/flow");
+                SetEmbeddedLoginUrl(ServerAddress);
             }
         }
 
@@ -147,7 +148,18 @@ namespace Project2FA.ViewModels
         {
             if (UseEmbeddedWebView && !string.IsNullOrWhiteSpace(value))
             {
-                URL = new Uri(value.TrimEnd('/') + "/index.php/login/flow");
+                SetEmbeddedLoginUrl(ServerAddress);
+            }
+        }
+
+        private void SetEmbeddedLoginUrl(string address)
+        {
+            try { URL = WebDavTransport.RequireHttps(address.TrimEnd('/') + "/index.php/login/flow"); }
+            catch (ArgumentException)
+            {
+                URL = null;
+                IsError = true;
+                ErrorMessage = "Enter an HTTPS WebDAV server address without embedded credentials.";
             }
         }
 
@@ -170,12 +182,20 @@ namespace Project2FA.ViewModels
                 return;
             }
 
-            var initUrl = ServerAddress.TrimEnd('/') + "/index.php/login/v2";
+            Uri origin;
+            try { origin = WebDavTransport.RequireHttps(ServerAddress); }
+            catch (ArgumentException)
+            {
+                IsError = true;
+                ErrorMessage = "Enter an HTTPS WebDAV server address without embedded credentials.";
+                return;
+            }
+            var initUrl = origin.AbsoluteUri.TrimEnd('/') + "/index.php/login/v2";
 
             NextcloudLoginFlowV2Response flowResponse;
             try
             {
-                using var http = new HttpClient();
+                using var http = WebDavTransport.CreateLoginClient();
                 http.DefaultRequestHeaders.UserAgent.ParseAdd("2fast/1.0");
                 var httpResponse = await http.PostAsync(initUrl, content: null);
                 if (!httpResponse.IsSuccessStatusCode)
@@ -194,7 +214,7 @@ namespace Project2FA.ViewModels
             catch (Exception ex)
             {
                 IsError = true;
-                ErrorMessage = ex.Message;
+                ErrorMessage = "Unable to complete secure WebDAV login. Check the HTTPS server address and try again.";
                 return;
             }
 
@@ -205,6 +225,17 @@ namespace Project2FA.ViewModels
                 return;
             }
 
+            try
+            {
+                WebDavTransport.RequireSameOrigin(flowResponse.Login, origin);
+                WebDavTransport.RequireSameOrigin(flowResponse.Poll.Endpoint, origin);
+            }
+            catch (ArgumentException)
+            {
+                IsError = true;
+                ErrorMessage = "The login response contains an unsafe endpoint. Use the configured HTTPS server.";
+                return;
+            }
             LoginUrl = flowResponse.Login;
             IsPollingFlag = true;
             OnPropertyChanged(nameof(IsPolling));
@@ -212,15 +243,15 @@ namespace Project2FA.ViewModels
 
             _pollCts?.Cancel();
             _pollCts = new CancellationTokenSource(TimeSpan.FromMinutes(20));
-            await PollForCredentialsAsync(flowResponse.Poll.Endpoint, flowResponse.Poll.Token, _pollCts.Token);
+            await PollForCredentialsAsync(flowResponse.Poll.Endpoint, flowResponse.Poll.Token, origin, _pollCts.Token);
         }
 
-        private async Task PollForCredentialsAsync(string pollEndpoint, string token, CancellationToken ct)
+        private async Task PollForCredentialsAsync(string pollEndpoint, string token, Uri origin, CancellationToken ct)
         {
             var serializer = App.Current.Container.Resolve<ISerializationService>();
             var secretService = App.Current.Container.Resolve<ISecretService>();
 
-            using var http = new HttpClient();
+            using var http = WebDavTransport.CreateLoginClient();
             http.DefaultRequestHeaders.UserAgent.ParseAdd("2fast/1.0");
 
             while (!ct.IsCancellationRequested)
@@ -233,7 +264,7 @@ namespace Project2FA.ViewModels
                     {
                         new KeyValuePair<string, string>("token", token)
                     });
-                    var resp = await http.PostAsync(pollEndpoint, reqBody, ct);
+                    var resp = await http.PostAsync(WebDavTransport.RequireSameOrigin(pollEndpoint, origin), reqBody, ct);
 
                     if (resp.StatusCode == System.Net.HttpStatusCode.NotFound)
                     {
@@ -248,7 +279,7 @@ namespace Project2FA.ViewModels
                         if (creds != null && !string.IsNullOrEmpty(creds.AppPassword))
                         {
                             // Persist credentials in the same slots used by CheckLoginAsync
-                            var server = string.IsNullOrEmpty(creds.Server) ? ServerAddress : creds.Server;
+                            var server = WebDavTransport.RequireSameOrigin(string.IsNullOrEmpty(creds.Server) ? origin.AbsoluteUri : creds.Server, origin).AbsoluteUri;
                             secretService.Helper.WriteSecret(Constants.ContainerName, "WDPassword", creds.AppPassword);
                             secretService.Helper.WriteSecret(Constants.ContainerName, "WDUsername", creds.LoginName);
                             secretService.Helper.WriteSecret(Constants.ContainerName, "WDServerAddress", server);
@@ -282,7 +313,7 @@ namespace Project2FA.ViewModels
                     OnPropertyChanged(nameof(IsPolling));
                     OnPropertyChanged(nameof(IsPollingInverse));
                     IsError = true;
-                    ErrorMessage = ex.Message;
+                    ErrorMessage = "Unable to complete secure WebDAV login. Check the HTTPS server address and try again.";
                     return;
                 }
             }
