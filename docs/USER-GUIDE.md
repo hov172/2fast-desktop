@@ -299,3 +299,13 @@ reload before trying again and preserve recovery copies. These messages do not
 remove the need to verify file access or resolve a WebDAV conflict.
 
 Press **Enter/Return** in a single-line field to submit the unlock, new-vault, open-vault, or add-account form when its submit button is enabled. Multiline notes retain Enter for new lines, and autocomplete fields retain their suggestion behavior. Rename, password-change, MobileID import, and OCRA dialogs use their primary action as the default button.
+
+## Accounts layout in 1.4.3
+
+Use **Add account** in the top toolbar for camera/screen scanning, manual entry,
+or OCRA. Search, Lock app, and Reload data file remain in the toolbar.
+Account rows show the service, account name, code, copy button, and countdown.
+Open the row’s **⋯** menu for Edit, QR code, Favorite, OCRA challenge, or Delete.
+The navigation rail starts collapsed. At desktop widths of 900 logical pixels
+or more, expanding it moves the content aside. Smaller windows use an overlay;
+close it with the menu button or by clicking outside it.

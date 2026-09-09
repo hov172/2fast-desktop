@@ -1,7 +1,7 @@
 # Desktop releases
 
-The current desktop release is `v1.4.2`, following `v1.4.1`. Its app
-version is 1.4.2 and build number is 142. This release includes macOS packages and Windows x64/ARM64 ZIPs and standalone executables.
+The current desktop release is `v1.4.3`, following `v1.4.2`. Its app
+version is 1.4.3 and build number is 143. This release includes macOS packages and Windows x64/ARM64 ZIPs and standalone executables.
 This private distribution does not replace upstream version history.
 
 1. Run the documented platform builds and regression checks. Mac packaging needs
@@ -10,7 +10,7 @@ This private distribution does not replace upstream version history.
 3. Commit the source and docs, then create an annotated `vX.Y.Z` tag on that commit.
 4. Build/package the universal Mac app and Windows x64/ARM64 archives. Upload
    these as release assets, rather than committing binaries to Git.
-5. Generate SHA-256 checksums for exactly the attached archives. Publish the
+5. Generate SHA-256 checksums for exactly the attached downloads. Publish the
    installation, compatibility and verification documents alongside the builds.
 6. Set release/prerelease status as requested by the maintainer. Always retain
    signing and hardware acceptance limitations in the notes. Verify repository
@@ -35,4 +35,9 @@ bundle. Include the user guide, both platform guides, compatibility, vault forma
 verification, release notes, license, and release process. Leave historical audits
 and upstream documentation clearly identified as historical material.
 
-After all platform builds finish, run `python3 scripts/package-release-docs.py` to assemble the current-version guides, refresh the Windows packages with those guides, and checksum exactly the four current release archives.
+After all platform builds finish, run `python3 scripts/package-release-docs.py` to assemble the current-version guides, refresh the Windows packages with those guides, and checksum all current release downloads.
+
+For 1.4.3, the asset set is the notarized Mac DMG and app ZIP, Windows x64/ARM64
+portable ZIPs and standalone EXEs, the versioned documentation ZIP, and SHA256SUMS.
+Upload the flattened guides alongside the archive. Verify remote asset digests
+against the local files before declaring the release complete.

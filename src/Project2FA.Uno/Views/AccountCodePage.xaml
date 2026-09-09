@@ -22,138 +22,151 @@
 
 <Page.Resources><ResourceDictionary>
 <DataTemplate x:Key="TwoFACodeCustomTemplate" x:DataType="models:TwoFACodeModel">
- <Border Style="{StaticResource DesktopCardStyle}" Padding="20" Margin="0,0,0,12">
-  <Grid>
-   <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-   <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-   <Grid Margin="0,0,12,16">
+ <Border Background="{ThemeResource DesktopSurfaceBrush}" BorderBrush="{ThemeResource AccountAccentBrush}" BorderThickness="4,0,0,0" Padding="20,18" Margin="0,0,0,18">
+  <Grid x:Name="AccountRow" SizeChanged="AccountRow_SizeChanged">
+   <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+   <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+   <PersonPicture x:Name="AccountAvatar"  Width="56" Height="56" Margin="0,0,22,0" VerticalAlignment="Top" FontSize="24" DisplayName="{x:Bind Model, Converter={StaticResource PersonalPictureInitialsVisibilityConverter}, Mode=OneWay}" Style="{StaticResource DefaultPersonPictureStyle}" Tag="{x:Bind AccountIconName, Mode=OneWay}" />
+   <Grid x:Name="AccountIdentity" Grid.Column="1" Margin="0,0,12,18" VerticalAlignment="Center">
+    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
     <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-    <PersonPicture Width="44" Height="44" Margin="0,0,14,0" FontSize="22" DisplayName="{x:Bind Model, Converter={StaticResource PersonalPictureInitialsVisibilityConverter}, Mode=OneWay}" Style="{StaticResource DefaultPersonPictureStyle}" Tag="{x:Bind AccountIconName, Mode=OneWay}" />
-    <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
-     <TextBlock Text="{x:Bind Label, Mode=OneWay}" FontSize="17" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" ToolTipService.ToolTip="{x:Bind Label, Mode=OneWay}" />
-     <TextBlock Text="{x:Bind Issuer, Mode=OneWay}" Style="{StaticResource DesktopCaptionStyle}" TextTrimming="CharacterEllipsis" MaxLines="1" />
-    </StackPanel>
+    <TextBlock x:Name="AccountIssuer" Text="{x:Bind Issuer, Mode=OneWay}" FontSize="22" FontWeight="Bold" TextTrimming="CharacterEllipsis" ToolTipService.ToolTip="{x:Bind Issuer, Mode=OneWay}" />
+    <TextBlock x:Name="AccountLabel" Grid.Column="1" Text="{x:Bind Label, Mode=OneWay}" Margin="16,0,0,0" FontSize="22" Foreground="{ThemeResource DesktopMutedBrush}" TextTrimming="CharacterEllipsis" ToolTipService.ToolTip="{x:Bind Label, Mode=OneWay}" />
    </Grid>
-   <Button Grid.Column="1" Tag="{x:Bind}" Click="BTN_SetFavourite_Click" Style="{StaticResource TransparentButtonStyle}" Width="40" Height="40" AutomationProperties.Name="Toggle favorite" ToolTipService.ToolTip="{x:Bind IsFavourite, Converter={StaticResource FavouriteTooltipConverter}, Mode=OneWay}">
-    <FontIcon Glyph="{x:Bind IsFavourite, Converter={StaticResource FavouriteToIconConverter}, Mode=OneWay}" FontSize="18" />
+   <Button Grid.Column="2" VerticalAlignment="Top" Style="{StaticResource TransparentButtonStyle}" Width="40" Height="40" AutomationProperties.Name="More account actions" ToolTipService.ToolTip="Account actions">
+    <FontIcon Glyph="&#xE712;" FontSize="22" />
+    <Button.Flyout><MenuFlyout>
+     <MenuFlyoutItem Text="Edit account" Tag="{x:Bind}" Click="MFI_EditAccount_Click"><MenuFlyoutItem.Icon><SymbolIcon Symbol="Edit"/></MenuFlyoutItem.Icon></MenuFlyoutItem>
+     <MenuFlyoutItem Text="View QR code" Tag="{x:Bind}" Click="MFI_ExportAccount_Click" />
+     <MenuFlyoutItem Text="{x:Bind IsFavourite, Converter={StaticResource FavouriteTooltipConverter}, Mode=OneWay}" Tag="{x:Bind}" Click="BTN_SetFavourite_Click"><MenuFlyoutItem.Icon><FontIcon Glyph="{x:Bind IsFavourite, Converter={StaticResource FavouriteToIconConverter}, Mode=OneWay}" /></MenuFlyoutItem.Icon></MenuFlyoutItem>
+     <MenuFlyoutItem Text="OCRA challenge" Tag="{x:Bind}" Click="OcraChallenge_Click" Visibility="{x:Bind OcraActionVisibility, Mode=OneWay}" />
+     <MenuFlyoutSeparator />
+     <MenuFlyoutItem Text="Delete account…" Tag="{x:Bind}" Click="MFI_DeleteAccount_Click"><MenuFlyoutItem.Icon><SymbolIcon Symbol="Delete"/></MenuFlyoutItem.Icon></MenuFlyoutItem>
+    </MenuFlyout></Button.Flyout>
    </Button>
-   <Grid Grid.Row="1" Grid.ColumnSpan="2" Margin="0,0,0,16">
-    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-    <StackPanel Orientation="Horizontal" Spacing="10">
-     <Grid>
-      <TextBlock Text="{x:Bind TwoFACode, Mode=OneWay}" FontSize="32" FontWeight="SemiBold" CharacterSpacing="120" Foreground="{ThemeResource SystemAccentColor}" Visibility="{x:Bind HideTOTPCode, Converter={StaticResource VisibleWhenFalseConverter}, Mode=OneWay}" />
-      <TextBlock Text="••• •••" FontSize="32" Visibility="{x:Bind HideTOTPCode, Mode=OneWay}" />
+   <ScrollViewer x:Name="AccountCodeScroller" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" HorizontalAlignment="Stretch">
+    <StackPanel Orientation="Horizontal" Spacing="12">
+     <Grid VerticalAlignment="Center">
+      <TextBlock x:Name="AccountCode" Text="{x:Bind TwoFACode, Mode=OneWay}" FontSize="32" CharacterSpacing="40" Foreground="{ThemeResource AccountAccentBrush}" Visibility="{x:Bind HideTOTPCode, Converter={StaticResource VisibleWhenFalseConverter}, Mode=OneWay}" />
+      <TextBlock x:Name="HiddenAccountCode" Text="••• •••" FontSize="32" Foreground="{ThemeResource AccountAccentBrush}" Visibility="{x:Bind HideTOTPCode, Mode=OneWay}" />
      </Grid>
-     <Button Tag="{x:Bind}" Click="BTN_ShowCode_Click" Visibility="{x:Bind CodeVisibilityOptionEnabled, Mode=OneWay}" Style="{StaticResource TransparentButtonStyle}" AutomationProperties.Name="Show or hide code" Width="40" Height="40">
-      <FontIcon Glyph="{x:Bind HideTOTPCode, Converter={StaticResource ShowCodeToIconConverter}, Mode=OneWay}" FontSize="18" />
-     </Button>
-    </StackPanel>
-    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-     <ProgressRing Value="{x:Bind Seconds, Mode=OneWay}" Maximum="{x:Bind Period, Mode=OneWay}" Minimum="0" IsIndeterminate="False" Width="28" Height="28" AutomationProperties.Name="Time remaining" />
-     <TextBlock Text="{x:Bind Seconds, Mode=OneWay}" FontWeight="SemiBold" FontSize="16" />
-     <TextBlock Text="s" Style="{StaticResource DesktopCaptionStyle}" />
-    </StackPanel>
-   </Grid>
-   <ScrollViewer Grid.Row="2" Grid.ColumnSpan="2" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
-    <StackPanel Orientation="Horizontal" Spacing="8">
-     <Button Content="Copy code" Tag="{x:Bind}" Click="BTN_CopyCode_Click" Style="{StaticResource DesktopPrimaryButtonStyle}" />
-     <Button Content="Edit" Tag="{x:Bind}" Click="MFI_EditAccount_Click" Style="{StaticResource DesktopButtonStyle}" />
-     <Button Content="View QR" Tag="{x:Bind}" Click="MFI_ExportAccount_Click" Style="{StaticResource DesktopButtonStyle}" />
-     <Button Content="OCRA challenge" Tag="{x:Bind}" Click="OcraChallenge_Click" Visibility="{x:Bind OcraActionVisibility, Mode=OneWay}" Style="{StaticResource DesktopButtonStyle}" />
-     <Button Content="More" Style="{StaticResource DesktopButtonStyle}" AutomationProperties.Name="More account actions">
-      <Button.Flyout><MenuFlyout><MenuFlyoutItem Text="Delete account…" Tag="{x:Bind}" Click="MFI_DeleteAccount_Click" /></MenuFlyout></Button.Flyout>
-     </Button>
+     <Button Tag="{x:Bind}" Click="BTN_CopyCode_Click" Style="{StaticResource TransparentButtonStyle}" Width="44" Height="48" AutomationProperties.Name="Copy code" ToolTipService.ToolTip="Copy code"><FontIcon Glyph="&#xE8C8;" FontSize="25" /></Button>
+     <Button Tag="{x:Bind}" Click="BTN_ShowCode_Click" Visibility="{x:Bind CodeVisibilityOptionEnabled, Mode=OneWay}" Style="{StaticResource TransparentButtonStyle}" AutomationProperties.Name="Show or hide code" ToolTipService.ToolTip="Show or hide code" Width="40" Height="48"><FontIcon Glyph="{x:Bind HideTOTPCode, Converter={StaticResource ShowCodeToIconConverter}, Mode=OneWay}" FontSize="20" /></Button>
+     <Grid Width="48" Height="48" VerticalAlignment="Center">
+      <ProgressRing Value="{x:Bind Seconds, Mode=OneWay}" Maximum="{x:Bind Period, Mode=OneWay}" Minimum="0" IsIndeterminate="False" Foreground="{ThemeResource AccountAccentBrush}" Width="48" Height="48" AutomationProperties.Name="Seconds remaining" />
+      <TextBlock Text="{x:Bind Seconds, Mode=OneWay}" FontSize="17" HorizontalAlignment="Center" VerticalAlignment="Center" />
+     </Grid>
     </StackPanel>
    </ScrollViewer>
   </Grid>
  </Border>
 </DataTemplate>
-
 <DataTemplate x:Key="TwoFACodeCustomAccentTemplate" x:DataType="models:TwoFACodeModel">
- <Border Style="{StaticResource DesktopCardStyle}" Padding="20" Margin="0,0,0,12">
-  <Grid>
-   <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-   <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-   <Grid Margin="0,0,12,16">
+ <Border Background="{ThemeResource DesktopSurfaceBrush}" BorderBrush="{ThemeResource AccountAccentBrush}" BorderThickness="4,0,0,0" Padding="20,18" Margin="0,0,0,18">
+  <Grid x:Name="AccountRow" SizeChanged="AccountRow_SizeChanged">
+   <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+   <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+   <PersonPicture x:Name="AccountAvatar" Background="{ThemeResource AccountAccentBrush}" Foreground="White" Width="56" Height="56" Margin="0,0,22,0" VerticalAlignment="Top" FontSize="24" DisplayName="{x:Bind Model, Converter={StaticResource PersonalPictureInitialsVisibilityConverter}, Mode=OneWay}" Style="{StaticResource DefaultPersonPictureStyle}" Tag="{x:Bind AccountIconName, Mode=OneWay}" />
+   <Grid x:Name="AccountIdentity" Grid.Column="1" Margin="0,0,12,18" VerticalAlignment="Center">
+    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
     <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-    <PersonPicture Background="{ThemeResource SystemAccentColor}" Foreground="White" Width="44" Height="44" Margin="0,0,14,0" FontSize="22" DisplayName="{x:Bind Model, Converter={StaticResource PersonalPictureInitialsVisibilityConverter}, Mode=OneWay}" Style="{StaticResource DefaultPersonPictureStyle}" Tag="{x:Bind AccountIconName, Mode=OneWay}" />
-    <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
-     <TextBlock Text="{x:Bind Label, Mode=OneWay}" FontSize="17" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" ToolTipService.ToolTip="{x:Bind Label, Mode=OneWay}" />
-     <TextBlock Text="{x:Bind Issuer, Mode=OneWay}" Style="{StaticResource DesktopCaptionStyle}" TextTrimming="CharacterEllipsis" MaxLines="1" />
-    </StackPanel>
+    <TextBlock x:Name="AccountIssuer" Text="{x:Bind Issuer, Mode=OneWay}" FontSize="22" FontWeight="Bold" TextTrimming="CharacterEllipsis" ToolTipService.ToolTip="{x:Bind Issuer, Mode=OneWay}" />
+    <TextBlock x:Name="AccountLabel" Grid.Column="1" Text="{x:Bind Label, Mode=OneWay}" Margin="16,0,0,0" FontSize="22" Foreground="{ThemeResource DesktopMutedBrush}" TextTrimming="CharacterEllipsis" ToolTipService.ToolTip="{x:Bind Label, Mode=OneWay}" />
    </Grid>
-   <Button Grid.Column="1" Tag="{x:Bind}" Click="BTN_SetFavourite_Click" Style="{StaticResource TransparentButtonStyle}" Width="40" Height="40" AutomationProperties.Name="Toggle favorite" ToolTipService.ToolTip="{x:Bind IsFavourite, Converter={StaticResource FavouriteTooltipConverter}, Mode=OneWay}">
-    <FontIcon Glyph="{x:Bind IsFavourite, Converter={StaticResource FavouriteToIconConverter}, Mode=OneWay}" FontSize="18" />
+   <Button Grid.Column="2" VerticalAlignment="Top" Style="{StaticResource TransparentButtonStyle}" Width="40" Height="40" AutomationProperties.Name="More account actions" ToolTipService.ToolTip="Account actions">
+    <FontIcon Glyph="&#xE712;" FontSize="22" />
+    <Button.Flyout><MenuFlyout>
+     <MenuFlyoutItem Text="Edit account" Tag="{x:Bind}" Click="MFI_EditAccount_Click"><MenuFlyoutItem.Icon><SymbolIcon Symbol="Edit"/></MenuFlyoutItem.Icon></MenuFlyoutItem>
+     <MenuFlyoutItem Text="View QR code" Tag="{x:Bind}" Click="MFI_ExportAccount_Click" />
+     <MenuFlyoutItem Text="{x:Bind IsFavourite, Converter={StaticResource FavouriteTooltipConverter}, Mode=OneWay}" Tag="{x:Bind}" Click="BTN_SetFavourite_Click"><MenuFlyoutItem.Icon><FontIcon Glyph="{x:Bind IsFavourite, Converter={StaticResource FavouriteToIconConverter}, Mode=OneWay}" /></MenuFlyoutItem.Icon></MenuFlyoutItem>
+     <MenuFlyoutItem Text="OCRA challenge" Tag="{x:Bind}" Click="OcraChallenge_Click" Visibility="{x:Bind OcraActionVisibility, Mode=OneWay}" />
+     <MenuFlyoutSeparator />
+     <MenuFlyoutItem Text="Delete account…" Tag="{x:Bind}" Click="MFI_DeleteAccount_Click"><MenuFlyoutItem.Icon><SymbolIcon Symbol="Delete"/></MenuFlyoutItem.Icon></MenuFlyoutItem>
+    </MenuFlyout></Button.Flyout>
    </Button>
-   <Grid Grid.Row="1" Grid.ColumnSpan="2" Margin="0,0,0,16">
-    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-    <StackPanel Orientation="Horizontal" Spacing="10">
-     <Grid>
-      <TextBlock Text="{x:Bind TwoFACode, Mode=OneWay}" FontSize="32" FontWeight="SemiBold" CharacterSpacing="120" Foreground="{ThemeResource SystemAccentColor}" Visibility="{x:Bind HideTOTPCode, Converter={StaticResource VisibleWhenFalseConverter}, Mode=OneWay}" />
-      <TextBlock Text="••• •••" FontSize="32" Visibility="{x:Bind HideTOTPCode, Mode=OneWay}" />
+   <ScrollViewer x:Name="AccountCodeScroller" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" HorizontalAlignment="Stretch">
+    <StackPanel Orientation="Horizontal" Spacing="12">
+     <Grid VerticalAlignment="Center">
+      <TextBlock x:Name="AccountCode" Text="{x:Bind TwoFACode, Mode=OneWay}" FontSize="32" CharacterSpacing="40" Foreground="{ThemeResource AccountAccentBrush}" Visibility="{x:Bind HideTOTPCode, Converter={StaticResource VisibleWhenFalseConverter}, Mode=OneWay}" />
+      <TextBlock x:Name="HiddenAccountCode" Text="••• •••" FontSize="32" Foreground="{ThemeResource AccountAccentBrush}" Visibility="{x:Bind HideTOTPCode, Mode=OneWay}" />
      </Grid>
-     <Button Tag="{x:Bind}" Click="BTN_ShowCode_Click" Visibility="{x:Bind CodeVisibilityOptionEnabled, Mode=OneWay}" Style="{StaticResource TransparentButtonStyle}" AutomationProperties.Name="Show or hide code" Width="40" Height="40">
-      <FontIcon Glyph="{x:Bind HideTOTPCode, Converter={StaticResource ShowCodeToIconConverter}, Mode=OneWay}" FontSize="18" />
-     </Button>
-    </StackPanel>
-    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-     <ProgressRing Value="{x:Bind Seconds, Mode=OneWay}" Maximum="{x:Bind Period, Mode=OneWay}" Minimum="0" IsIndeterminate="False" Width="28" Height="28" AutomationProperties.Name="Time remaining" />
-     <TextBlock Text="{x:Bind Seconds, Mode=OneWay}" FontWeight="SemiBold" FontSize="16" />
-     <TextBlock Text="s" Style="{StaticResource DesktopCaptionStyle}" />
-    </StackPanel>
-   </Grid>
-   <ScrollViewer Grid.Row="2" Grid.ColumnSpan="2" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
-    <StackPanel Orientation="Horizontal" Spacing="8">
-     <Button Content="Copy code" Tag="{x:Bind}" Click="BTN_CopyCode_Click" Style="{StaticResource DesktopPrimaryButtonStyle}" />
-     <Button Content="Edit" Tag="{x:Bind}" Click="MFI_EditAccount_Click" Style="{StaticResource DesktopButtonStyle}" />
-     <Button Content="View QR" Tag="{x:Bind}" Click="MFI_ExportAccount_Click" Style="{StaticResource DesktopButtonStyle}" />
-     <Button Content="OCRA challenge" Tag="{x:Bind}" Click="OcraChallenge_Click" Visibility="{x:Bind OcraActionVisibility, Mode=OneWay}" Style="{StaticResource DesktopButtonStyle}" />
-     <Button Content="More" Style="{StaticResource DesktopButtonStyle}" AutomationProperties.Name="More account actions">
-      <Button.Flyout><MenuFlyout><MenuFlyoutItem Text="Delete account…" Tag="{x:Bind}" Click="MFI_DeleteAccount_Click" /></MenuFlyout></Button.Flyout>
-     </Button>
+     <Button Tag="{x:Bind}" Click="BTN_CopyCode_Click" Style="{StaticResource TransparentButtonStyle}" Width="44" Height="48" AutomationProperties.Name="Copy code" ToolTipService.ToolTip="Copy code"><FontIcon Glyph="&#xE8C8;" FontSize="25" /></Button>
+     <Button Tag="{x:Bind}" Click="BTN_ShowCode_Click" Visibility="{x:Bind CodeVisibilityOptionEnabled, Mode=OneWay}" Style="{StaticResource TransparentButtonStyle}" AutomationProperties.Name="Show or hide code" ToolTipService.ToolTip="Show or hide code" Width="40" Height="48"><FontIcon Glyph="{x:Bind HideTOTPCode, Converter={StaticResource ShowCodeToIconConverter}, Mode=OneWay}" FontSize="20" /></Button>
+     <Grid Width="48" Height="48" VerticalAlignment="Center">
+      <ProgressRing Value="{x:Bind Seconds, Mode=OneWay}" Maximum="{x:Bind Period, Mode=OneWay}" Minimum="0" IsIndeterminate="False" Foreground="{ThemeResource AccountAccentBrush}" Width="48" Height="48" AutomationProperties.Name="Seconds remaining" />
+      <TextBlock Text="{x:Bind Seconds, Mode=OneWay}" FontSize="17" HorizontalAlignment="Center" VerticalAlignment="Center" />
+     </Grid>
     </StackPanel>
    </ScrollViewer>
   </Grid>
  </Border>
 </DataTemplate>
-
 <helpers:AccountAvatarTemplateSelector x:Key="AccountAvatarTemplateSelector" Normal="{StaticResource TwoFACodeCustomTemplate}" Accent="{StaticResource TwoFACodeCustomAccentTemplate}" />
 </ResourceDictionary></Page.Resources>
-
-<Grid MaxWidth="1080" HorizontalAlignment="Stretch" Margin="24,24,24,0">
- <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
- <Grid Margin="0,0,0,22">
-  <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-  <StackPanel Spacing="4"><TextBlock Text="{x:Bind strings:Resources.AccountCodePageTitle}" Style="{StaticResource DesktopHeadingStyle}"/><TextBlock Text="Your verification codes, in one place." Style="{StaticResource DesktopCaptionStyle}"/></StackPanel>
-  <Button x:Name="ABB_Logout" Grid.Column="1" Content="Lock vault" VerticalAlignment="Top"  Style="{StaticResource DesktopButtonStyle}" />
- </Grid>
- <StackPanel Grid.Row="1" Spacing="14" Margin="0,0,0,16">
-  <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
-   <StackPanel Orientation="Horizontal" Spacing="8">
-    <Button x:Name="ScreenScanMenuItem" Content="Scan screen" Click="ScreenScanMenuItem_Click" Style="{StaticResource DesktopPrimaryButtonStyle}" ToolTipService.ToolTip="Scan a QR from a browser window or display" />
-    <Button x:Name="CameraAction" Content="Scan camera" Style="{StaticResource DesktopButtonStyle}" />
-    <Button x:Name="ManualAction" Content="Add manually" Style="{StaticResource DesktopButtonStyle}" />
-    <Button x:Name="OcraMenuItem" Content="Add OCRA" Click="OcraMenuItem_Click" Style="{StaticResource DesktopButtonStyle}" />
-    <Button x:Name="ABB_Refresh" Content="Sync"  Style="{StaticResource DesktopButtonStyle}" />
+<Grid>
+ <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+ <VisualStateManager.VisualStateGroups>
+  <VisualStateGroup>
+   <VisualState x:Name="CompactToolbar">
+    <VisualState.StateTriggers><AdaptiveTrigger MinWindowWidth="0"/></VisualState.StateTriggers>
+    <VisualState.Setters>
+     <Setter Target="MobileAutoSuggestBox.(Grid.Row)" Value="1"/>
+     <Setter Target="MobileAutoSuggestBox.(Grid.Column)" Value="0"/>
+     <Setter Target="MobileAutoSuggestBox.(Grid.ColumnSpan)" Value="4"/>
+     <Setter Target="MobileAutoSuggestBox.MaxWidth" Value="10000"/>
+     <Setter Target="MobileAutoSuggestBox.Margin" Value="0,12,0,0"/>
+     <Setter Target="LockLabel.Visibility" Value="Collapsed"/>
+     <Setter Target="ReloadLabel.Visibility" Value="Collapsed"/>
+     <Setter Target="AddAccountLabel.Visibility" Value="Collapsed"/>
+     <Setter Target="ToolbarTitle.FontSize" Value="20"/>
+     <Setter Target="ToolbarIdentityGroup.Spacing" Value="8"/>
+     <Setter Target="ToolbarSeparator.Visibility" Value="Collapsed"/>
+     <Setter Target="ToolbarBackground.Padding" Value="12"/>
+    </VisualState.Setters>
+   </VisualState>
+   <VisualState x:Name="WideToolbar"><VisualState.StateTriggers><AdaptiveTrigger MinWindowWidth="1000"/></VisualState.StateTriggers></VisualState>
+  </VisualStateGroup>
+ </VisualStateManager.VisualStateGroups>
+ <Border x:Name="ToolbarBackground" Background="{ThemeResource AccountToolbarBrush}" Padding="20,12">
+  <Grid>
+   <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+   <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+   <StackPanel x:Name="ToolbarIdentityGroup" Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
+    <TextBlock x:Name="ToolbarTitle" Text="{x:Bind strings:Resources.AccountCodePageTitle}" FontSize="28" VerticalAlignment="Center"/>
+    <Border x:Name="ToolbarSeparator" Width="1" Height="28" Background="{ThemeResource DesktopMutedBrush}" Opacity="0.5" />
+    <Button Style="{StaticResource TransparentButtonStyle}" AutomationProperties.Name="Add account" ToolTipService.ToolTip="Add account">
+     <StackPanel Orientation="Horizontal" Spacing="8"><FontIcon Glyph="&#xE710;" FontSize="24"/><TextBlock x:Name="AddAccountLabel" Text="Add account" FontSize="16" VerticalAlignment="Center"/></StackPanel>
+     <Button.Flyout><MenuFlyout>
+      <MenuFlyoutItem x:Name="ScreenScanMenuItem" Text="Scan screen" Click="ScreenScanMenuItem_Click" />
+      <MenuFlyoutItem x:Name="CameraAction" Text="Scan camera" />
+      <MenuFlyoutItem x:Name="ManualAction" Text="Add manually" />
+      <MenuFlyoutItem x:Name="OcraMenuItem" Text="Add OCRA" Click="OcraMenuItem_Click" />
+     </MenuFlyout></Button.Flyout>
+    </Button>
    </StackPanel>
-  </ScrollViewer>
-  <AutoSuggestBox x:Name="MobileAutoSuggestBox" PlaceholderText="Search accounts or services" AutomationProperties.Name="Search accounts" Text="{Binding SearchedAccountLabel, Mode=TwoWay}"  TextChanged="AutoSuggestBox_TextChanged" SuggestionChosen="AutoSuggestBox_SuggestionChosen" GotFocus="AutoSuggestBox_GotFocus" UpdateTextOnSelect="False" TextMemberPath="Label" MinHeight="40">
-   <AutoSuggestBox.QueryIcon><FontIcon Glyph="&#xE721;"/></AutoSuggestBox.QueryIcon>
-  </AutoSuggestBox>
-  <TextBlock x:Name="CollectionSummary" Style="{StaticResource DesktopCaptionStyle}" AutomationProperties.LiveSetting="Polite" />
- </StackPanel>
- <Grid x:Name="MainGrid" Grid.Row="2">
-  <ProgressRing IsActive="{Binding TwoFADataService.IsLoading, Mode=OneWay}" Visibility="{Binding TwoFADataService.IsLoading, Mode=OneWay}" Width="32" Height="32" HorizontalAlignment="Center" VerticalAlignment="Top" />
-  <ListView x:Name="LV_AccountCollection"  ItemTemplateSelector="{StaticResource AccountAvatarTemplateSelector}" SelectionMode="None" IsSynchronizedWithCurrentItem="False" HorizontalContentAlignment="Stretch" Padding="0,0,0,24">
-   <ListView.ItemContainerStyle><Style TargetType="ListViewItem" BasedOn="{StaticResource TwoFASelectionListViewItemStyle}"><Setter Property="HorizontalContentAlignment" Value="Stretch"/><Setter Property="Padding" Value="0"/><Setter Property="Margin" Value="0"/></Style></ListView.ItemContainerStyle>
-  </ListView>
-  <Border x:Name="EmptyState" Style="{StaticResource DesktopCardStyle}" VerticalAlignment="Top" Visibility="Collapsed">
-   <StackPanel Spacing="12" Margin="16,20" HorizontalAlignment="Center" MaxWidth="380">
-    <FontIcon Glyph="&#xE72E;" FontSize="36" Foreground="{ThemeResource SystemAccentColor}" />
-    <TextBlock x:Name="EmptyTitle" Text="Add your first account" FontSize="22" FontWeight="SemiBold" TextAlignment="Center" />
-    <TextBlock x:Name="EmptyDescription" Text="Scan a setup QR from your screen or camera, or enter a setup key manually." Style="{StaticResource DesktopCaptionStyle}" TextAlignment="Center" />
-   </StackPanel>
-  </Border>
+   <AutoSuggestBox x:Name="MobileAutoSuggestBox" Grid.Column="1" Margin="24,0,16,0" MaxWidth="320" PlaceholderText="Search" AutomationProperties.Name="Search accounts or services" Text="{Binding SearchedAccountLabel, Mode=TwoWay}" TextChanged="AutoSuggestBox_TextChanged" SuggestionChosen="AutoSuggestBox_SuggestionChosen" GotFocus="AutoSuggestBox_GotFocus" UpdateTextOnSelect="False" TextMemberPath="Label" MinHeight="44">
+    <AutoSuggestBox.QueryIcon><FontIcon Glyph="&#xE721;"/></AutoSuggestBox.QueryIcon>
+   </AutoSuggestBox>
+   <Button x:Name="ABB_Logout" Grid.Column="2" Style="{StaticResource TransparentButtonStyle}" AutomationProperties.Name="Lock app" ToolTipService.ToolTip="Lock app" Margin="0,0,8,0"><StackPanel Orientation="Horizontal" Spacing="8"><FontIcon Glyph="&#xE72E;" FontSize="22"/><TextBlock x:Name="LockLabel" Text="Lock app" VerticalAlignment="Center"/></StackPanel></Button>
+   <Button x:Name="ABB_Refresh" Grid.Column="3" Style="{StaticResource TransparentButtonStyle}" AutomationProperties.Name="Reload data file" ToolTipService.ToolTip="Reload and sync data file"><StackPanel Orientation="Horizontal" Spacing="8"><FontIcon Glyph="&#xE72C;" FontSize="22"/><TextBlock x:Name="ReloadLabel" Text="Reload data file" VerticalAlignment="Center"/></StackPanel></Button>
+  </Grid>
+ </Border>
+ <Grid Grid.Row="1" Margin="20,16,20,0">
+  <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+  <TextBlock x:Name="CollectionSummary" Margin="0,0,0,10" Style="{StaticResource DesktopCaptionStyle}" AutomationProperties.LiveSetting="Polite" />
+  <Grid x:Name="MainGrid" Grid.Row="1" SizeChanged="MainGrid_SizeChanged">
+   <ProgressRing IsActive="{Binding TwoFADataService.IsLoading, Mode=OneWay}" Visibility="{Binding TwoFADataService.IsLoading, Mode=OneWay}" Width="32" Height="32" HorizontalAlignment="Center" VerticalAlignment="Top" />
+   <ListView x:Name="LV_AccountCollection" MaxWidth="1100" HorizontalAlignment="Left" ItemTemplateSelector="{StaticResource AccountAvatarTemplateSelector}" SelectionMode="None" IsSynchronizedWithCurrentItem="False" HorizontalContentAlignment="Stretch" Padding="0,0,0,24">
+    <ListView.ItemContainerStyle><Style TargetType="ListViewItem" BasedOn="{StaticResource TwoFASelectionListViewItemStyle}"><Setter Property="HorizontalContentAlignment" Value="Stretch"/><Setter Property="Padding" Value="0"/><Setter Property="Margin" Value="0"/><Setter Property="MaxWidth" Value="1100"/><Setter Property="HorizontalAlignment" Value="Stretch"/></Style></ListView.ItemContainerStyle>
+   </ListView>
+   <Border x:Name="EmptyState" Style="{StaticResource DesktopCardStyle}" VerticalAlignment="Top" Visibility="Collapsed">
+    <StackPanel Spacing="12" Margin="16,20" HorizontalAlignment="Center" MaxWidth="380">
+     <FontIcon Glyph="&#xE72E;" FontSize="36" Foreground="{ThemeResource AccountAccentBrush}" />
+     <TextBlock x:Name="EmptyTitle" Text="Add your first account" FontSize="22" FontWeight="SemiBold" TextAlignment="Center" />
+     <TextBlock x:Name="EmptyDescription" Text="Scan a setup QR from your screen or camera, or enter a setup key manually." Style="{StaticResource DesktopCaptionStyle}" TextAlignment="Center" />
+    </StackPanel>
+   </Border>
+  </Grid>
  </Grid>
 </Grid>
 </Page>

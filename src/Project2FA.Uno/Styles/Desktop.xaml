@@ -5,18 +5,24 @@
             <SolidColorBrush x:Key="DesktopSurfaceBrush" Color="#FFFFFF" />
             <SolidColorBrush x:Key="DesktopBorderBrush" Color="#DEE4ED" />
             <SolidColorBrush x:Key="DesktopMutedBrush" Color="#536174" />
+            <SolidColorBrush x:Key="AccountAccentBrush" Color="#007D96" />
+            <SolidColorBrush x:Key="AccountToolbarBrush" Color="#E6EFF2" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Default">
-            <SolidColorBrush x:Key="DesktopCanvasBrush" Color="#141820" />
-            <SolidColorBrush x:Key="DesktopSurfaceBrush" Color="#1D2330" />
-            <SolidColorBrush x:Key="DesktopBorderBrush" Color="#344052" />
-            <SolidColorBrush x:Key="DesktopMutedBrush" Color="#B6C2D3" />
+            <SolidColorBrush x:Key="DesktopCanvasBrush" Color="#000000" />
+            <SolidColorBrush x:Key="DesktopSurfaceBrush" Color="#111111" />
+            <SolidColorBrush x:Key="DesktopBorderBrush" Color="#333333" />
+            <SolidColorBrush x:Key="DesktopMutedBrush" Color="#BDBDBD" />
+            <SolidColorBrush x:Key="AccountAccentBrush" Color="#00A2BE" />
+            <SolidColorBrush x:Key="AccountToolbarBrush" Color="#183440" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <SolidColorBrush x:Key="DesktopCanvasBrush" Color="{ThemeResource SystemColorWindowColor}" />
             <SolidColorBrush x:Key="DesktopSurfaceBrush" Color="{ThemeResource SystemColorWindowColor}" />
             <SolidColorBrush x:Key="DesktopBorderBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
             <SolidColorBrush x:Key="DesktopMutedBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="AccountAccentBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="AccountToolbarBrush" Color="{ThemeResource SystemColorWindowColor}" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
     <Style x:Key="DesktopButtonStyle" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">

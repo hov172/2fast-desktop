@@ -152,7 +152,10 @@
             IsBackButtonVisible="Collapsed"
             CompactModeThresholdWidth="540"
             IsSettingsVisible="{x:Bind ViewModel.NavigationIsAllowed,Mode=OneWay}"
-            IsPaneOpen="True">
+            PaneDisplayMode="LeftCompact"
+            CompactPaneLength="56"
+            IsTitleBarAutoPaddingEnabled="False"
+            IsPaneOpen="False">
 
             <NavigationView.MenuItems>
                 <NavigationViewItem
@@ -275,18 +278,17 @@
                         <AdaptiveTrigger MinWindowWidth="0" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <Setter Target="ShellView.PaneDisplayMode" Value="LeftMinimal"/><Setter Target="ShellView.IsPaneOpen" Value="False"/>
+                        <Setter Target="ShellView.PaneDisplayMode" Value="LeftCompact"/>
                     </VisualState.Setters>
                 </VisualState>
-                <VisualState x:Name="WidewState">
+                <VisualState x:Name="WideState">
                     <VisualState.StateTriggers>
-                        <AdaptiveTrigger MinWindowWidth="540" />
+                        <AdaptiveTrigger MinWindowWidth="900" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <Setter Target="ShellView.PaneDisplayMode" Value="LeftCompact"/><Setter Target="ShellView.IsPaneOpen" Value="False"/>
+                        <Setter Target="ShellView.PaneDisplayMode" Value="Left"/>
                     </VisualState.Setters>
                 </VisualState>
-            <VisualState x:Name="DesktopExpandedState"><VisualState.StateTriggers><AdaptiveTrigger MinWindowWidth="1000"/></VisualState.StateTriggers><VisualState.Setters><Setter Target="ShellView.PaneDisplayMode" Value="Left"/><Setter Target="ShellView.IsPaneOpen" Value="True"/></VisualState.Setters></VisualState>
             </VisualStateGroup>
         </VisualStateManager.VisualStateGroups>
     </Grid>

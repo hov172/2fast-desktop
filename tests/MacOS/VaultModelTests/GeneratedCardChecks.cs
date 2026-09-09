@@ -25,7 +25,7 @@ internal static class GeneratedCardChecks
                     {
                         var constructor = method.Module.ResolveMethod(BitConverter.ToInt32(il, i));
                         if (constructor?.DeclaringType?.FullName == "Microsoft.UI.Xaml.Controls.TextBlock") texts++;
-                        if (constructor?.DeclaringType?.FullName == "Microsoft.UI.Xaml.Controls.Button") buttons++;
+                        if (constructor?.DeclaringType?.FullName is "Microsoft.UI.Xaml.Controls.Button" or "Microsoft.UI.Xaml.Controls.MenuFlyoutItem") buttons++;
                     }
                     i += op.OperandType switch
                     {

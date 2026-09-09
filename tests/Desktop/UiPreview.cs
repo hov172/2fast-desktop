@@ -28,11 +28,29 @@ internal static class DesktopUiPreview
         window.Content = App.ShellPageInstance;
         window.Title = "2fast — READ-ONLY DESIGN PREVIEW (sample accounts)";
         window.Activate();
+        if (int.TryParse(Environment.GetEnvironmentVariable("TWOFAST_UI_WIDTH"), out int width))
+            window.AppWindow.Resize(new Windows.Graphics.SizeInt32 { Width = width, Height = 760 });
         var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+        bool openedPane = false;
         timer.Tick += (_, _) => {
+            if (!openedPane && Environment.GetEnvironmentVariable("TWOFAST_UI_PANE_OPEN") == "1")
+            {
+                openedPane = true;
+                ((Microsoft.UI.Xaml.Controls.NavigationView)App.ShellPageInstance.FindName("ShellView")).IsPaneOpen = true;
+                return;
+            }
             timer.Stop();
             var list = (Microsoft.UI.Xaml.Controls.ListView)page.FindName("LV_AccountCollection");
             System.IO.File.AppendAllText("/private/tmp/twofast-ui-preview-tree.log", $"Items={list.Items.Count} Source={list.ItemsSource?.GetType().Name} Template={list.ItemTemplateSelector?.SelectTemplate(data.Collection[0], list)?.GetType().Name}\n");
+            if (Environment.GetEnvironmentVariable("TWOFAST_UI_PANE_OPEN") == "1")
+            {
+                var nav = (Microsoft.UI.Xaml.Controls.NavigationView)App.ShellPageInstance.FindName("ShellView");
+                var offset = page.TransformToVisual(App.ShellPageInstance).TransformPoint(new Windows.Foundation.Point());
+                System.IO.File.WriteAllText("/private/tmp/twofast-sidebar-state.txt", $"open={nav.IsPaneOpen}, mode={nav.DisplayMode}, contentX={offset.X}, pane={nav.OpenPaneLength}");
+                if (!nav.IsPaneOpen || nav.DisplayMode != Microsoft.UI.Xaml.Controls.NavigationViewDisplayMode.Expanded || offset.X < nav.OpenPaneLength)
+                    throw new Exception($"Sidebar overlap: open={nav.IsPaneOpen}, mode={nav.DisplayMode}, contentX={offset.X}");
+                System.IO.File.WriteAllText("/private/tmp/twofast-sidebar-check.txt", $"PASS: expanded sidebar pushes content to X={offset.X}; pane width={nav.OpenPaneLength}.");
+            }
             Dump(page, 0);
         };
         timer.Start();

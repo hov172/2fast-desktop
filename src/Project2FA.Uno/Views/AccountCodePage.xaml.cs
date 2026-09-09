@@ -43,6 +43,34 @@ public sealed partial class AccountCodePage : Page
 
     private CommunityToolkit.WinUI.Collections.AdvancedCollectionView observedAccounts;
 
+    private void MainGrid_SizeChanged(object sender, SizeChangedEventArgs e)
+        => LV_AccountCollection.Width = Math.Min(1100, e.NewSize.Width);
+
+    private void AccountRow_SizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        if (sender is not Grid row) return;
+        bool compact = e.NewSize.Width < 580;
+        var identity = (Grid)row.FindName("AccountIdentity");
+        var issuer = (TextBlock)row.FindName("AccountIssuer");
+        var label = (TextBlock)row.FindName("AccountLabel");
+        var avatar = (PersonPicture)row.FindName("AccountAvatar");
+        identity.ColumnDefinitions[0].Width = compact ? new GridLength(1, GridUnitType.Star) : GridLength.Auto;
+        Grid.SetRow(label, compact ? 1 : 0);
+        Grid.SetColumn(label, compact ? 0 : 1);
+        Grid.SetColumnSpan(issuer, compact ? 2 : 1);
+        Grid.SetColumnSpan(label, compact ? 2 : 1);
+        label.Margin = compact ? new Thickness(0, 4, 0, 0) : new Thickness(16, 0, 0, 0);
+        issuer.FontSize = label.FontSize = compact ? 18 : 22;
+        avatar.Width = avatar.Height = compact ? 40 : 56;
+        avatar.Margin = new Thickness(0, 0, compact ? 12 : 22, 0);
+        ((TextBlock)row.FindName("AccountCode")).FontSize = compact ? 26 : 32;
+        ((TextBlock)row.FindName("HiddenAccountCode")).FontSize = compact ? 26 : 32;
+        var codes = (ScrollViewer)row.FindName("AccountCodeScroller");
+        bool narrow = e.NewSize.Width < 420;
+        Grid.SetColumn(codes, narrow ? 0 : 1);
+        Grid.SetColumnSpan(codes, narrow ? 3 : 2);
+    }
+
     private void StopObservingAccounts()
     {
         if (observedAccounts != null) observedAccounts.VectorChanged -= AccountsChanged;
@@ -271,7 +299,7 @@ public sealed partial class AccountCodePage : Page
 
     private async void BTN_SetFavourite_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is Button mfi && mfi.DataContext is TwoFACodeModel model)
+        if (AccountFromSender(sender) is TwoFACodeModel model)
         {
             await ViewModel.SetFavouriteCommandTask(model);
         }

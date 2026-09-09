@@ -17,6 +17,7 @@ files = {
     'docs/RELEASING.md': 'RELEASING.md',
     'docs/audits/2026-09-08-desktop-parity.md': 'DESKTOP-VERIFICATION.md',
     'docs/audits/2026-09-08-desktop-ui.md': 'DESKTOP-UI-REVIEW.md',
+    'docs/audits/2026-09-08-classic-layout.md': 'CLASSIC-LAYOUT-VERIFICATION.md',
     f'docs/RELEASE-v{version}.md': f'RELEASE-v{version}.md',
 }
 resolved = {(root / source).resolve(): name for source, name in files.items()}
@@ -50,6 +51,6 @@ for arch in ('x64', 'arm64'):
         for path in sorted(folder.rglob('*')):
             if path.is_file():
                 archive.write(path, Path('2fast') / path.relative_to(folder))
-assets = ['2fast-macos-universal.zip', '2fast-windows-x64.zip', '2fast-windows-arm64.zip', f'2fast-{version}-documentation.zip']
+assets = ['2fast-macos-universal.zip', '2fast-macos-universal.dmg', '2fast-windows-x64.zip', '2fast-windows-arm64.zip', '2fast-windows-x64.exe', '2fast-windows-arm64.exe', f'2fast-{version}-documentation.zip']
 (dist / 'SHA256SUMS').write_text(''.join(hashlib.sha256((dist / name).read_bytes()).hexdigest() + '  ' + name + '\n' for name in assets))
 print(f'Packaged {version} documentation and checksums for {len(assets)} archives.')
