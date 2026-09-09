@@ -38,7 +38,7 @@ namespace Project2FA.ViewModels
 #endif
     public partial class ShellPageViewModel : ObservableRecipient
     {
-        private bool _navigationIsAllowed = true;
+        private bool _navigationIsAllowed = false;
         private string _title;
         public ICommand AccountCodePageCommand { get; }
         public ICommand SearchPageCommand { get; }

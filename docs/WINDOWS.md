@@ -1,6 +1,6 @@
-# 2fast 1.4.3 for Windows — Uno desktop
+# 2fast 1.4.4 for Windows — Uno desktop
 
-The app title is **2fast**, version **1.4.3**, build **143**.
+The app title is **2fast**, version **1.4.4**, build **144**.
 See the [complete user guide](USER-GUIDE.md) for step-by-step vault setup, account
 editing, OCRA/Deepnet, backup/restore, WebDAV and troubleshooting.
 
@@ -75,7 +75,7 @@ Camera and screen frames are processed locally. No camera is required for screen
 scanning. See the user guide for the distinction between successful QR decoding
 and successful account import.
 
-## About the app in 1.4.3
+## About the app in 1.4.4
 
 **About the app** now shows the version, build number, OS and app/system
 architectures. Use **Copy app details** for support reports. The page also links

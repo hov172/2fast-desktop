@@ -3,6 +3,19 @@ using Project2FA.Repository.Models;
 namespace Project2FA.Services;
 public partial class DataService
 {
+    internal void ClearLockedAccounts()
+    {
+        Collection.CollectionChanged -= Accounts_CollectionChanged;
+        try
+        {
+            Collection.Clear();
+            GlobalCategories.Clear();
+            ACVCollection.Filter = null;
+            EmptyAccountCollectionTipIsOpen = false;
+            TOTPEventStopwatch.Stop();
+        }
+        finally { Collection.CollectionChanged += Accounts_CollectionChanged; }
+    }
     private readonly AccountCommitQueue<TwoFACodeModel> accountCommits = new();
     public async Task<bool> AddMacOSAccount(TwoFACodeModel model)
     {

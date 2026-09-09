@@ -28,7 +28,7 @@ public partial class DataService
             _errorOccurred = false; IsLoading = false;
         }
         finally { _initialization = false; CollectionAccessSemaphore.Release(); }
-        App.ShellPageInstance.ViewModel.NavigationIsAllowed = true;
+        App.ShellPageInstance.ViewModel.NavigationIsAllowed = false;
         await App.ShellPageInstance.ViewModel.NavigationService.NavigateAsync("/" + nameof(WelcomePage));
     }
 }

@@ -29,6 +29,11 @@ internal static class VaultV4Checks
             throw new Exception("Malformed vault or incorrect password was accepted.");
         }
         string content = Encrypt(model, password);
+        foreach (var attempt in new[] { "", "wrong" })
+        {
+            try { codec.GetMethod("VerifyCredential", flags)!.Invoke(null, new object[] { content, attempt, "vault-synthetic" }); throw new Exception("Invalid unlock attempt accepted."); }
+            catch (TargetInvocationException error) when (error.InnerException is System.Security.Cryptography.CryptographicException) { }
+        }
         codec.GetMethod("VerifyCredential", flags)!.Invoke(null, new object[] { content, password, "vault-synthetic" });
         try { codec.GetMethod("VerifyCredential", flags)!.Invoke(null, new object[] { content, "wrong", "vault-synthetic" }); throw new Exception("Biometric enrollment accepted a wrong V4 password."); }
         catch (TargetInvocationException ex) when (ex.InnerException is CryptographicException) { }

@@ -284,6 +284,10 @@ namespace Project2FA.Services
         /// </summary>
         private async Task CheckLocalDatafile()
         {
+#if TWOFAST_DESKTOP
+            if (!App.ShellPageInstance.ViewModel.NavigationIsAllowed) return;
+            var loadToken = Project2FA.Services.MacOS.MacOSSession.Token;
+#endif
             if (Collection.Count == 0)
             {
                 // loading animation only for empty collection
@@ -433,12 +437,17 @@ namespace Project2FA.Services
                         if (!string.IsNullOrWhiteSpace(datafileStr))
                         {
 #if TWOFAST_DESKTOP
+                            var sessionPassword = SecretService.Helper.ReadSecret(Constants.ContainerName, passwordHashName);
+                            if (string.IsNullOrEmpty(sessionPassword))
+                                throw new CryptographicException("A vault password is required.");
                             var passwordBytes = ActivatedDatafile != null
-                                ? SerializationService.Deserialize<byte[]>(SecretService.Helper.ReadSecret(Constants.ContainerName, passwordHashName))
-                                : Encoding.UTF8.GetBytes(SecretService.Helper.ReadSecret(Constants.ContainerName, passwordHashName));
+                                ? SerializationService.Deserialize<byte[]>(sessionPassword)
+                                : Encoding.UTF8.GetBytes(sessionPassword);
                             DatafileModel datafile;
                             try { datafile = await Task.Run(() => Project2FA.Services.MacOS.MacOSVaultCodec.DecryptCurrent(datafileStr, Encoding.UTF8.GetString(passwordBytes), passwordHashName)); }
                             finally { CryptographicOperations.ZeroMemory(passwordBytes); }
+                            loadToken.ThrowIfCancellationRequested();
+                            _errorOccurred = false;
 #else
                             // read the iv for AES
                             DatafileModel datafile = SerializationService.Deserialize<DatafileModel>(datafileStr);
@@ -553,6 +562,20 @@ namespace Project2FA.Services
                     }
                     catch (Exception exc)
                     {
+#if TWOFAST_DESKTOP
+                        if (exc is OperationCanceledException) return;
+                        if (exc is CryptographicException)
+                        {
+                            _errorOccurred = true;
+                            Project2FA.Services.MacOS.MacOSSession.Lock();
+                            var parameters = new UNOversal.Navigation.NavigationParameters();
+                            parameters.Add("isLogout", true);
+                            await App.ShellPageInstance.ViewModel.NavigationService.NavigateAsync("/LoginPage", parameters);
+                            await Project2FA.Services.MacOS.MacOSSession.Message(DialogService,
+                                "Unlock required", "Enter the current data-file password to unlock. Your data file has not been changed.");
+                            return;
+                        }
+#endif
                         await LoggingService.LogException(exc, SettingsService.Instance.LoggingSetting);
                         _errorOccurred = true;
 #if WINDOWS_UWP

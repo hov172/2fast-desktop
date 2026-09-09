@@ -367,6 +367,7 @@ namespace Project2FA.ViewModels
         private async Task<bool> CheckNavigationRequest(string password)
         {
 #if TWOFAST_DESKTOP
+            var unlockToken = Project2FA.Services.MacOS.MacOSSession.Token;
             string pwdhash = SettingsService.Instance.DataFilePasswordHash;
             try
             {
@@ -374,6 +375,7 @@ namespace Project2FA.ViewModels
                 var file = await DataService.Instance.CurrentMacOSVault();
                 string content = await System.IO.File.ReadAllTextAsync(file.Path);
                 await Task.Run(() => Project2FA.Services.MacOS.MacOSVaultCodec.VerifyCredential(content, password, pwdhash));
+                unlockToken.ThrowIfCancellationRequested();
                 if (!pwdhash.StartsWith("vault-", StringComparison.Ordinal) && Project2FA.Services.MacOS.MacOSVaultCodec.IsModern(content))
                 {
                     var helper = App.Current.Container.Resolve<ISecretService>().Helper;
@@ -399,7 +401,17 @@ namespace Project2FA.ViewModels
                 WinUIWindow.Current.Content = App.ShellPageInstance;
 #endif
 
-                await App.ShellPageInstance.ViewModel.NavigationService.NavigateAsync("/" + nameof(AccountCodePage));
+                App.ShellPageInstance.ViewModel.NavigationIsAllowed = true;
+                var navigation = await App.ShellPageInstance.ViewModel.NavigationService.NavigateAsync("/" + nameof(AccountCodePage));
+                if (!navigation.Success)
+                {
+#if TWOFAST_DESKTOP
+                    Project2FA.Services.MacOS.MacOSSession.Lock();
+#else
+                    App.ShellPageInstance.ViewModel.NavigationIsAllowed = false;
+#endif
+                    return false;
+                }
                 WinUIWindow.Current.Activate();
 
                 return true;

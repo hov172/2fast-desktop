@@ -309,3 +309,16 @@ Open the row’s **⋯** menu for Edit, QR code, Favorite, OCRA challenge, or De
 The navigation rail starts collapsed. At desktop widths of 900 logical pixels
 or more, expanding it moves the content aside. Smaller windows use an overlay;
 close it with the menu button or by clicking outside it.
+
+## Unlock recovery in 1.4.4
+
+Accounts and other protected pages stay unavailable until the vault is unlocked.
+Lock app clears the displayed accounts and requires authentication again. If the
+unlock session is missing or its credential no longer decrypts the file, the app
+returns to password entry. Enter the current password for that data file.
+
+Older desktop builds could show “saved password invalid” after opening Accounts
+before authentication. That message alone did not mean the actual password had
+changed. Update to 1.4.4, quit the older running copy, and retry the current vault
+password. This update does not reset the password or modify the vault. If unlock
+still fails, confirm the selected file and password, and retain existing backups.

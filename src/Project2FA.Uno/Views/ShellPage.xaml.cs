@@ -35,10 +35,23 @@ namespace Project2FA.Uno.Views
             _settingsNavigationStr = "SettingPage?PivotItem=0";
             ShellViewInternal = ShellView;
             ShellView.Content = MainFrame = new Frame();
+#if TWOFAST_DESKTOP
+            MainFrame.Navigating += (_, args) =>
+            {
+                if (!ViewModel.NavigationIsAllowed && !CanNavigateWhileLocked(args.SourcePageType))
+                    args.Cancel = true;
+            };
+#endif
             ViewModel.NavigationService = NavigationFactory.Create(MainFrame);
 
             SetupGestures();
         }
+
+        internal static bool CanNavigateWhileLocked(Type page) =>
+            page == typeof(LoginPage) || page == typeof(TutorialPage) ||
+            page == typeof(WelcomePage) || page == typeof(NewDataFilePage) ||
+            page == typeof(UseDataFilePage) || page == typeof(FileActivationPage) ||
+            page == typeof(BlankPage);
 
         private void SetupGestures()
         {

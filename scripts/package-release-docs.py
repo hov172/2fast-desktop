@@ -18,6 +18,7 @@ files = {
     'docs/audits/2026-09-08-desktop-parity.md': 'DESKTOP-VERIFICATION.md',
     'docs/audits/2026-09-08-desktop-ui.md': 'DESKTOP-UI-REVIEW.md',
     'docs/audits/2026-09-08-classic-layout.md': 'CLASSIC-LAYOUT-VERIFICATION.md',
+    'docs/audits/2026-09-08-unlock-navigation.md': 'UNLOCK-VERIFICATION.md',
     f'docs/RELEASE-v{version}.md': f'RELEASE-v{version}.md',
 }
 resolved = {(root / source).resolve(): name for source, name in files.items()}

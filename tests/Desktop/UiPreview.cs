@@ -17,6 +17,12 @@ internal static class DesktopUiPreview
             ShowKeyboardCheck(window);
             return;
         }
+        if (Environment.GetEnvironmentVariable("TWOFAST_UI_AUTH_CHECK") == "1")
+        {
+            try { ShowAuthCheck(window); }
+            catch (Exception error) { System.IO.File.WriteAllText("/private/tmp/twofast-auth-check.txt", "FAIL: " + error.ToString()); }
+            return;
+        }
         var data = DataService.Instance;
         data.DisableUiPreviewAutosave();
         foreach (var entry in new[] { ("Personal email", "Example Mail", "123456"), ("Work account", "Example Workspace", "654321"), ("Developer account", "Example Code", "246810") })
@@ -54,6 +60,31 @@ internal static class DesktopUiPreview
             Dump(page, 0);
         };
         timer.Start();
+    }
+    private static void ShowAuthCheck(Window window)
+    {
+        var shell = App.ShellPageInstance;
+        var data = DataService.Instance;
+        data.DisableUiPreviewAutosave();
+        if (shell.ViewModel.NavigationIsAllowed) throw new Exception("Startup navigation is unlocked.");
+        window.Content = shell;
+        window.Title = "2fast — SYNTHETIC AUTH CHECK";
+        window.Activate();
+        foreach (var type in new[] { typeof(AccountCodePage), typeof(SettingPage), typeof(Microsoft.UI.Xaml.Controls.Page) })
+        {
+            shell.MainFrame.Navigate(type);
+            if (shell.MainFrame.Content != null) throw new Exception("Protected page opened before authentication: " + shell.MainFrame.Content.GetType().Name);
+        }
+        shell.ViewModel.NavigationIsAllowed = true;
+        if (!shell.MainFrame.Navigate(typeof(Microsoft.UI.Xaml.Controls.Page))) throw new Exception("Unlocked navigation was blocked.");
+        data.Collection.Add(new TwoFACodeModel { Label = "Synthetic lock check", Issuer = "Example" });
+        var token = Project2FA.Services.MacOS.MacOSSession.Token;
+        Project2FA.Services.MacOS.MacOSSession.Lock();
+        if (shell.ViewModel.NavigationIsAllowed || data.Collection.Count != 0 || !token.IsCancellationRequested)
+            throw new Exception("Lock failed to revoke navigation, clear accounts, or cancel pending work.");
+        shell.MainFrame.Navigate(typeof(AccountCodePage));
+        if (shell.MainFrame.Content is AccountCodePage) throw new Exception("Accounts reopened after lock.");
+        System.IO.File.WriteAllText("/private/tmp/twofast-auth-check.txt", "PASS: startup routes blocked; unlocked navigation allowed; lock clears accounts and cancels work; protected navigation remains blocked after lock.");
     }
     private static void ShowKeyboardCheck(Window window)
     {

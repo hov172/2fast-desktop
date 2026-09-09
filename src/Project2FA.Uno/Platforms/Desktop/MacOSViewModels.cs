@@ -27,8 +27,10 @@ namespace Project2FA.Services.MacOS
         }
         internal static void Lock()
         {
+            App.ShellPageInstance.ViewModel.NavigationIsAllowed = false;
             CancelOperations();
             SecretHelper.ClearSession();
+            DataService.Instance.ClearLockedAccounts();
         }
         internal static Task Message(IDialogService service, string title, string text) => service.ShowDialogAsync(new ContentDialog
         {
