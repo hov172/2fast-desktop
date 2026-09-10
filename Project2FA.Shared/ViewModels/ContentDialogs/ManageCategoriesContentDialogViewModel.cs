@@ -81,13 +81,14 @@ namespace Project2FA.ViewModels
         }
 
 
-        private Task PrimaryCommandTask()
+        private async Task PrimaryCommandTask()
         {
             DataService.Instance.GlobalCategories.AddRange(TempGlobalCategories, true);
-            DataService.Instance.WriteLocalDatafile();
+            // Await the vault write: the command is an AsyncRelayCommand, so returning
+            // before the write completes let the dialog close and the changed message
+            // fire while the save was still in flight, and swallowed any write failure.
+            await DataService.Instance.WriteLocalDatafile();
             Messenger.Send(new CategoriesChangedMessage(true));
-            return Task.CompletedTask;
-            
         }
 
         private Task CreateCategoryCommandTask()

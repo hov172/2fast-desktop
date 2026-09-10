@@ -190,7 +190,7 @@ namespace Project2FA.Services
                     }
                     catch (Exception exc)
                     {
-                        LoggingService.LogException(exc, SettingsService.Instance.LoggingSetting);
+                        _ = LoggingService.LogException(exc, SettingsService.Instance.LoggingSetting);
                         Logger.Log("NTP exception: " + exc.Message, Category.Exception, Priority.Low);
                         //TrackingManager.TrackException(exc);
                     }

@@ -17,7 +17,7 @@ namespace Project2FA.Uno.Views
             {
                 ViewModel.BarcodeReaderControl = BarcodeReaderControl;
             }
-            ViewModel.ReadBarcode(e);
+            _ = ViewModel.ReadBarcode(e); // event handler cannot await
         }
     }
 }

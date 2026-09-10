@@ -26,7 +26,7 @@ namespace Project2FA.Uno.Views
         {
             if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
             {
-                ViewModel.SearchAccountFonts(sender.Text);
+                _ = ViewModel.SearchAccountFonts(sender.Text); // event handler cannot await
             }
         }
 

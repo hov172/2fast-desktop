@@ -328,7 +328,7 @@ namespace Project2FA.ViewModels
                 FolderPath = file.Path.Replace(file.Name, string.Empty);
                 LocalStorageFile = file;
 
-                CheckInputs();
+                await CheckInputs();
                 return true;
             }
             else

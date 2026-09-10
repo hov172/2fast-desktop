@@ -489,7 +489,7 @@ namespace Project2FA.ViewModels
             {
                 if (value != _settings.NTPServerString)
                 {
-                    CheckNTPServer(value);
+                    _ = CheckNTPServer(value); // property setter cannot await
                 }
                 else
                 {
@@ -1003,7 +1003,7 @@ namespace Project2FA.ViewModels
 #endif
             LoggingService = loggingService;
             SerializationService = serializationService;
-            LoadDependencyList();
+            _ = LoadDependencyList(); // constructor cannot await
         }
 
         private async Task LoadDependencyList()

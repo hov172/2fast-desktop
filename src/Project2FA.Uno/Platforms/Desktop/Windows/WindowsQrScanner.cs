@@ -111,7 +111,7 @@ internal static class WindowsQrScanner
                         using var bitmap = new SkiaSharp.SKBitmap(width, height, SkiaSharp.SKColorType.Bgra8888, SkiaSharp.SKAlphaType.Opaque);
                         Marshal.Copy(pixels, 0, bitmap.GetPixels(), pixels.Length);
                         using var small = width > 720 || height > 420
-                            ? bitmap.Resize(new SkiaSharp.SKImageInfo(Math.Max(1, (int)(width * Math.Min(720d / width, 420d / height))), Math.Max(1, (int)(height * Math.Min(720d / width, 420d / height)))), SkiaSharp.SKFilterQuality.Medium) : null;
+                            ? bitmap.Resize(new SkiaSharp.SKImageInfo(Math.Max(1, (int)(width * Math.Min(720d / width, 420d / height))), Math.Max(1, (int)(height * Math.Min(720d / width, 420d / height)))), new SkiaSharp.SKSamplingOptions(SkiaSharp.SKFilterMode.Linear, SkiaSharp.SKMipmapMode.Linear)) : null;
                         using var image = SkiaSharp.SKImage.FromBitmap(small ?? bitmap); using var png = image.Encode(SkiaSharp.SKEncodedImageFormat.Png, 80);
                         byte[] bytes = png.ToArray();
                         var applied = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
