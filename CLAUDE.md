@@ -162,28 +162,13 @@ is passed, so a build without `-r win-x64` (or `osx-…`) excludes all the deskt
 platform files and fails with missing-handler errors. The release process is in
 [docs/RELEASING.md](docs/RELEASING.md).
 
-**The legacy UWP head is compile-only.** It compiles, and that is its whole
-value here — a second compiler over `Project2FA.Shared`. It ships nothing, and
-**it does not render**: it launches to a live window with an entirely black
-client area. That is pre-existing and reproduces at `HEAD`, so do not go looking
-for it in this repo's C# — the startup path was traced and completes correctly.
-See [docs/plan.md](docs/plan.md) before spending time on it.
-
-Both build scripts publish only `src/Project2FA.Uno/Project2FA.Uno.csproj`; no
-script or CI touches `Project2FA/Project2FA.UWP`, and it cannot be built from
-macOS at all. On Windows it needs the 10.0.26100 SDK, MSBuild 18 (Visual Studio
-2026) and the UWP workload:
-
-```
-"C:\Program Files\Microsoft Visual Studio\18\Community\MSBuild\Current\Bin\MSBuild.exe" \
-  Project2FA/Project2FA.UWP/Project2FA.UWPNet.csproj -t:Build -restore \
-  -p:Configuration=Debug -p:Platform=x64
-```
-
-If that reports ~285 errors about `InitializeComponent` or other missing
-XAML-generated members, the UWP workload is absent — nothing is wrong with the
-source. See [docs/plan.md](docs/plan.md). Release builds sign the MSIX with a
-Store certificate that only the release machine holds; Debug does not sign.
+**The legacy UWP head is compile-only.** Both build scripts publish only
+`src/Project2FA.Uno/Project2FA.Uno.csproj`; nothing builds or ships
+`Project2FA/Project2FA.UWP`, and it cannot be built on macOS. It compiles — that
+is its value, a second compiler over `Project2FA.Shared` — but it launches to a
+black window, which is pre-existing and not in this repo's C#. Building it needs
+a specific toolchain and running it needs more; both are in
+[docs/uwp-head.md](docs/uwp-head.md). Read that first.
 
 ## Scope discipline
 

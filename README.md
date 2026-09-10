@@ -110,6 +110,8 @@ a companion set of documents — read the one that matches your question:
 - [docs/design.md](docs/design.md) — colour, typography, layout and controls
 - [docs/interactions.md](docs/interactions.md) — motion, state and feedback
 - [docs/plan.md](docs/plan.md) — the current phase and what is out of scope
+- [docs/uwp-head.md](docs/uwp-head.md) — the legacy UWP project: how to build it,
+  and why it is compile-only
 
 ## Source and validation
 
