@@ -18,7 +18,13 @@
 	<EnableTrimAnalyzer>true</EnableTrimAnalyzer>
 	<SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
 	<PackageCertificateThumbprint>7DA25049DA50E7D7FD4733C1801572DC5262D0A9</PackageCertificateThumbprint>
-	<AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
+	<!-- The Store signing certificate named above exists only on the release machine.
+	     Requiring it in Debug made this project impossible to compile anywhere else:
+	     the C# and XAML compile finished, then MSIX packaging failed with
+	     SigningCertificateThumbprintNotInStore. Release still signs; Debug does not.
+	     Override either way with -p:AppxPackageSigningEnabled=True|False. -->
+	<AppxPackageSigningEnabled Condition="'$(AppxPackageSigningEnabled)' == '' And '$(Configuration)' == 'Release'">True</AppxPackageSigningEnabled>
+	<AppxPackageSigningEnabled Condition="'$(AppxPackageSigningEnabled)' == ''">False</AppxPackageSigningEnabled>
 	<WindowsSdkPackageVersion>10.0.26100.84</WindowsSdkPackageVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

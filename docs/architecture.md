@@ -10,7 +10,7 @@ misrepresents itself. Conventions live in [CLAUDE.md](../CLAUDE.md).
 | `Project2FA.Core` | class library, platform-free | `Constants`, WebDAV client + directory service, network-time service, collection utilities, OTP migration proto models |
 | `Project2FA.Shared` | **shared project** (`.shproj`) compiled into every head | models, view-models, services (crypto, serialization, parser, importers, settings, WebDAV), converters, messenger, controls, localized strings |
 | `src/Project2FA.Uno` | Uno head — `net10.0-desktop`, iOS, Android | **the shipping app**; XAML views, dialogs, DI registration, platform code under `Platforms/` |
-| `Project2FA/Project2FA.UWP` | legacy UWP head, **dormant** | inherited Windows Store build. No script or CI builds it, it cannot build on macOS, and it does not compile today — but it still compiles `Project2FA.Shared`, so shared-layer changes reach it. See [plan.md](plan.md) |
+| `Project2FA/Project2FA.UWP` | legacy UWP head, **not shipped** | inherited Windows Store build. No script or CI builds it and it cannot build on macOS, but it does compile on Windows with the 10.0.26100 SDK, MSBuild 18 and the UWP workload — and it compiles `Project2FA.Shared`, so it is a useful second check on the shared layer. See [plan.md](plan.md) |
 | `src/UnoLibrary.Controls` | class library | Markdown renderer and supporting controls |
 | vendored: `BiometryService`, `Otp.NET`, `ZXing.Net.Uno`, `WebDAVClientPortable`, `UNOversalTemplate` | source deps | biometrics, TOTP/HOTP, QR decode, WebDAV transport, MVVM/DI/navigation framework |
 

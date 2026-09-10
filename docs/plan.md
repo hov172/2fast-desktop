@@ -124,7 +124,53 @@ broken input before being accepted.
 
 Both are wired into `scripts/test-windows.ps1` and `scripts/test-macos.sh`.
 
-**The legacy UWP head: SDK blocker removed, but it does not build at HEAD either.**
+**The legacy UWP head now builds.** This section records how it was diagnosed and
+what it costs to build, because none of it is obvious from the project file.
+
+**Requirements — all three are needed, and any one missing looks like broken source:**
+
+1. **Windows SDK 10.0.26100** — `winget install --id Microsoft.WindowsSDK.10.0.26100`.
+   Without it CsWinRT fails on the missing `Platforms\UAP\10.0.26100.0\Platform.xml`.
+   The project cannot be retargeted to an older SDK: `net10.0-windows10.0.22000.0`
+   fails restore with `NU1202`, because `CommunityToolkit.Uwp.Lottie 8.2.250604`
+   supports only `net9.0-windows10.0.26100` or `uap10.0.16299`.
+2. **MSBuild 18** — i.e. the Visual Studio 2026 generation. .NET SDK 10.0.303
+   refuses to load under MSBuild 17, so Visual Studio 2022 and the 2019/2022
+   Build Tools cannot build this project at all:
+   *"Version 10.0.303 of the .NET SDK requires at least version 18.0.0 of MSBuild."*
+3. **The Universal Windows Platform workload** — `<UseUwp>true</UseUwp>` needs its
+   XAML compiler. Add it with
+   `setup.exe modify --installPath "<vs2026 path>" --add Microsoft.VisualStudio.Workload.Universal --includeRecommended --quiet --norestart`
+   (quote the install path; an unquoted one silently truncates at the first space).
+   It is about 6 GB.
+
+Build it with the 2026 MSBuild rather than `dotnet build`:
+
+```
+"C:\Program Files\Microsoft Visual Studio\18\Community\MSBuild\Current\Bin\MSBuild.exe" ^
+  Project2FA\Project2FA.UWP\Project2FA.UWPNet.csproj -t:Build -restore ^
+  -p:Configuration=Debug -p:Platform=x64
+```
+
+**Symptom to recognise:** with the workload missing, the build emits **285 errors**
+that all look like broken code — `InitializeComponent`, `LV_AccountCollection`,
+`ShellHeaderTemplate`, `MainPivot` "does not exist". They are not source errors.
+No XAML `*.g.cs` is generated at all, so every code-behind file loses its
+generated half. Installing the workload took the generated file count from **1 to
+58** and the error count from **285 to 0**. If you see those errors, check the
+workload before reading any C#.
+
+**Signing:** the project pins a Store certificate
+(`PackageCertificateThumbprint 7DA25049…`) that exists only on the release
+machine. It previously had `AppxPackageSigningEnabled=True` unconditionally, so
+even a successful compile ended in `SigningCertificateThumbprintNotInStore` at
+the MSIX packaging step. Signing is now enabled for `Release` only; `Debug`
+compiles without the certificate. Pass `-p:AppxPackageSigningEnabled=True|False`
+to override.
+
+---
+
+**Historical note — what this looked like before the toolchain was fixed:**
 
 `Project2FA.UWPNet.csproj` targets `net10.0-windows10.0.26100.0` and needs the
 UAP platform from Windows SDK **10.0.26100**. That SDK has now been installed
@@ -164,15 +210,12 @@ Version 10.0.303 of the .NET SDK requires at least version 18.0.0 of MSBuild.
 The current available version of MSBuild is 17.14.51.32402.
 ```
 
-MSBuild 18 ships with the 2026 (v18) generation, so the UWP head needs
-**Visual Studio Build Tools 2026 with the UWP workload**, not the 2019 or 2022
-Build Tools that are already on the machine. That install was attempted and
-failed with `0x80070070` (`ERROR_DISK_FULL`) — C: had 10 GB free. Clearing the
-NuGet caches recovered 17.3 GB, so it can be retried, but it has not been.
+MSBuild 18 ships with the 2026 (v18) generation. This was resolved by installing
+Visual Studio Community 2026 and adding the UWP workload to it.
 
-### …and it does not matter much, because nothing builds this head
+### It builds, but nothing in this repo builds it
 
-Worth stating plainly, because it reframes everything above as optional:
+Worth stating plainly, because it keeps the above in proportion:
 
 - `scripts/build-windows.ps1` and `scripts/build-macos.sh` both publish
   **only** `src/Project2FA.Uno/Project2FA.Uno.csproj`.
@@ -184,11 +227,10 @@ Worth stating plainly, because it reframes everything above as optional:
   Windows and macOS desktop builds and documentation"` — the commit that imported
   it from upstream. It is inherited Windows Store code, not maintained here.
 
-It is still listed in `Project2FA.slnx`, so an IDE "Build Solution" will attempt
-it and fail. The two honest options are to leave it dormant, or to drop it from
-the solution so it stops looking like something that ought to build. Either way
-`SharedProjectTests` remains worthwhile, because `Project2FA.Shared` compiles
-into that head too.
+So it compiles, but it ships nothing. Keep it building anyway: `Project2FA.Shared`
+compiles into it, so it is a second compiler checking the shared layer — which is
+how the Phase 1c converter change was ultimately verified beyond inference. That
+is also what `SharedProjectTests` guards on machines without the UWP toolchain.
 
 ---
 
