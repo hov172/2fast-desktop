@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net10.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings></PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../../Project2FA.Shared/Services/Importer/BackupCryptoHelper.cs" Link="BackupCryptoHelper.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="BouncyCastle.Cryptography" Version="2.7.0" />
+    <ProjectReference Include="../../../Otp.NET/src/Otp.NET/Otp.NET.csproj" />
+  </ItemGroup>
+</Project>

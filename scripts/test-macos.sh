@@ -2,6 +2,8 @@
 set -euo pipefail
 repo_root="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$repo_root"
+dotnet run --project tests/Desktop/SharedProjectTests/SharedProjectTests.csproj -c Release
+dotnet run --project tests/Desktop/ImporterCryptoTests/ImporterCryptoTests.csproj -c Release
 dotnet run --project tests/MacOS/ParserTests.csproj -c Release
 dotnet run --project tests/MacOS/AccountCommitTests/AccountCommitTests.csproj -c Release
 dotnet run --project tests/MacOS/IconTests/IconTests.csproj -c Release

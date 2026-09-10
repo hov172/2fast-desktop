@@ -3,6 +3,10 @@ $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
 Push-Location $root
 try {
+    dotnet run --project tests/Desktop/SharedProjectTests/SharedProjectTests.csproj -c Release
+    if ($LASTEXITCODE -ne 0) { throw 'Shared project manifest is out of sync.' }
+    dotnet run --project tests/Desktop/ImporterCryptoTests/ImporterCryptoTests.csproj -c Release
+    if ($LASTEXITCODE -ne 0) { throw 'Backup importer crypto tests failed.' }
     dotnet run --project tests/Desktop/QrFrameTests/QrFrameTests.csproj -c Release
     if ($LASTEXITCODE -ne 0) { throw 'QR frame tests failed.' }
     dotnet run --project tests/MacOS/ParserTests.csproj -c Release
