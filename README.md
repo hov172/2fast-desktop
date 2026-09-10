@@ -22,7 +22,7 @@ learn more about their work and support the project. The
 
 ## Downloads
 
-Current desktop release: **1.4.5** (app title **2fast**).
+Current desktop release: **1.5.0** (app title **2fast**).
 
 Get the builds from [Releases](https://github.com/hov172/2fast-desktop/releases).
 

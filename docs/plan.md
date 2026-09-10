@@ -1,6 +1,6 @@
 # Plan
 
-Current release: **1.4.5**. Last reviewed: **2026-09-10**.
+Current release: **1.5.0**. Last reviewed: **2026-09-10**.
 
 **Done:** Phase 0 (context stack), 1b (dead code), 1c (duplicate collapse),
 1d (coverage). **Next up: Phase 1 — the `MacOS*` → `Desktop*` rename.**
