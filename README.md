@@ -97,6 +97,20 @@ backup/restore, WebDAV and troubleshooting.
 - [Release process](docs/RELEASING.md)
 - [Original upstream README](docs/UPSTREAM-README.md)
 
+### For contributors
+
+This README covers *what* 2fast Desktop is. How it is built and changed lives in
+a companion set of documents — read the one that matches your question:
+
+- [CLAUDE.md](CLAUDE.md) — conventions, the reuse map (what already exists, so
+  you do not write it again), security rules, and build/test commands
+- [docs/architecture.md](docs/architecture.md) — projects, data flow, and known
+  structural debt
+- [docs/ux-flows.md](docs/ux-flows.md) — the user journeys the app supports
+- [docs/design.md](docs/design.md) — colour, typography, layout and controls
+- [docs/interactions.md](docs/interactions.md) — motion, state and feedback
+- [docs/plan.md](docs/plan.md) — the current phase and what is out of scope
+
 ## Source and validation
 
 Use the .NET SDK pinned in `global.json`. Desktop build and test scripts are in
