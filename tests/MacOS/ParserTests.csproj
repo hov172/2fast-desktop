@@ -8,9 +8,9 @@
   <ItemGroup>
     <PackageReference Include="BouncyCastle.Cryptography" Version="2.7.0" />
     <Compile Include="Program.cs" />
-    <Compile Include="../../src/Project2FA.Uno/Platforms/Desktop/MacOSMobileId.cs" Link="MacOSMobileId.cs" />
-    <Compile Include="../../src/Project2FA.Uno/Platforms/Desktop/MacOSOcra.cs" Link="MacOSOcra.cs" />
-    <Compile Include="../../src/Project2FA.Uno/Platforms/Desktop/MacOSOtpParser.cs" Link="MacOSOtpParser.cs" />
+    <Compile Include="../../src/Project2FA.Uno/Platforms/Desktop/DesktopMobileId.cs" Link="DesktopMobileId.cs" />
+    <Compile Include="../../src/Project2FA.Uno/Platforms/Desktop/DesktopOcra.cs" Link="DesktopOcra.cs" />
+    <Compile Include="../../Project2FA.Shared/Services/Parser/StrictProject2FAParser.cs" Link="StrictProject2FAParser.cs" />
     <Compile Include="../../Otp.NET/src/Otp.NET/Base32Encoding.cs" Link="Base32Encoding.cs" />
   </ItemGroup>
 </Project>

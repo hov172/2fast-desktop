@@ -286,7 +286,7 @@ namespace Project2FA.Services
         {
 #if TWOFAST_DESKTOP
             if (!App.ShellPageInstance.ViewModel.NavigationIsAllowed) return;
-            var loadToken = Project2FA.Services.MacOS.MacOSSession.Token;
+            var loadToken = DesktopSession.Token;
 #endif
             if (Collection.Count == 0)
             {
@@ -386,7 +386,7 @@ namespace Project2FA.Services
 
 
 #if TWOFAST_DESKTOP
-                file = await Project2FA.Services.MacOS.MacOSVaultLocation.OpenAsync(
+                file = await DesktopVaultLocation.OpenAsync(
                     ActivatedDatafile?.Path ?? SettingsService.Instance.DataFilePath,
                     datafilename, ActivatedDatafile == null && SettingsService.Instance.DataFileWebDAVEnabled);
                 folder = await file.GetParentAsync();
@@ -444,7 +444,7 @@ namespace Project2FA.Services
                                 ? SerializationService.Deserialize<byte[]>(sessionPassword)
                                 : Encoding.UTF8.GetBytes(sessionPassword);
                             DatafileModel datafile;
-                            try { datafile = await Task.Run(() => Project2FA.Services.MacOS.MacOSVaultCodec.DecryptCurrent(datafileStr, Encoding.UTF8.GetString(passwordBytes), passwordHashName)); }
+                            try { datafile = await Task.Run(() => DesktopVaultCodec.DecryptCurrent(datafileStr, Encoding.UTF8.GetString(passwordBytes), passwordHashName)); }
                             finally { CryptographicOperations.ZeroMemory(passwordBytes); }
                             loadToken.ThrowIfCancellationRequested();
                             _errorOccurred = false;
@@ -567,11 +567,11 @@ namespace Project2FA.Services
                         if (exc is CryptographicException)
                         {
                             _errorOccurred = true;
-                            Project2FA.Services.MacOS.MacOSSession.Lock();
+                            DesktopSession.Lock();
                             var parameters = new UNOversal.Navigation.NavigationParameters();
                             parameters.Add("isLogout", true);
                             await App.ShellPageInstance.ViewModel.NavigationService.NavigateAsync("/LoginPage", parameters);
-                            await Project2FA.Services.MacOS.MacOSSession.Message(DialogService,
+                            await DesktopSession.Message(DialogService,
                                 "Unlock required", "Enter the current data-file password to unlock. Your data file has not been changed.");
                             return;
                         }
@@ -807,7 +807,7 @@ namespace Project2FA.Services
                 }
 
 #if TWOFAST_DESKTOP
-                file = await Project2FA.Services.MacOS.MacOSVaultLocation.OpenAsync(
+                file = await DesktopVaultLocation.OpenAsync(
                     ActivatedDatafile?.Path ?? SettingsService.Instance.DataFilePath,
                     fileName, ActivatedDatafile == null && SettingsService.Instance.DataFileWebDAVEnabled);
                 folder = await file.GetParentAsync();
@@ -819,7 +819,7 @@ namespace Project2FA.Services
 #if TWOFAST_DESKTOP
                 string sessionCredential = SecretService.Helper.ReadSecret(Constants.ContainerName, passwordHashName);
                 if (string.IsNullOrEmpty(sessionCredential))
-                    throw new Project2FA.Services.MacOS.VaultSessionExpiredException();
+                    throw new VaultSessionExpiredException();
                 var passwordBytes = ActivatedDatafile != null
                     ? SerializationService.Deserialize<byte[]>(sessionCredential)
                     : Encoding.UTF8.GetBytes(sessionCredential);
@@ -827,17 +827,17 @@ namespace Project2FA.Services
                 {
                     string password = Encoding.UTF8.GetString(passwordBytes);
                     // Authenticate the current file before replacing it; never overwrite externally changed credentials.
-                    await Task.Run(() => Project2FA.Services.MacOS.MacOSVaultCodec.DecryptCurrent(encryptedBackup, password, passwordHashName));
+                    await Task.Run(() => DesktopVaultCodec.DecryptCurrent(encryptedBackup, password, passwordHashName));
                     string content;
-                    if (Project2FA.Services.MacOS.MacOSVaultCodec.IsModern(encryptedBackup))
-                        content = await Task.Run(() => Project2FA.Services.MacOS.MacOSVaultCodec.Encrypt(fileModel, password));
+                    if (DesktopVaultCodec.IsModern(encryptedBackup))
+                        content = await Task.Run(() => DesktopVaultCodec.Encrypt(fileModel, password));
                     else
                     {
                         algorithm.Key = CryptoService.CreateByteArrayKeyV2(passwordBytes);
                         content = SerializationCryptoService.SerializeEncrypt(algorithm.Key, algorithm.IV, fileModel, 2);
                     }
                     if (SettingsService.Instance.DataFileWebDAVEnabled && ActivatedDatafile == null)
-                        await WriteMacOSRemoteVault(file.Path, encryptedBackup, content, password);
+                        await WriteDesktopRemoteVault(file.Path, encryptedBackup, content, password);
                     else
                         await WriteAtomicAsync(content, fileName, folder);
                 }
@@ -936,8 +936,8 @@ namespace Project2FA.Services
 #endif
 #if TWOFAST_DESKTOP
                 // Atomic writes/remote transactions already preserve recovery state. Do not overwrite an external change here.
-                Project2FA.Services.MacOS.MacOSScanDiagnostics.Record("saving vault", exc);
-                await Project2FA.Services.MacOS.MacOSSession.Message(DialogService, "Unable to save", Project2FA.Services.MacOS.VaultSaveErrors.Describe(exc));
+                DesktopScanDiagnostics.Record("saving vault", exc);
+                await DesktopSession.Message(DialogService, "Unable to save", VaultSaveErrors.Describe(exc));
 #else
                 await HandleWriteError(encryptedBackup, fileName, folder);
 #endif
@@ -1004,7 +1004,7 @@ namespace Project2FA.Services
         private async Task WriteAtomicAsync(string content, string fileName, StorageFolder targetFolder)
         {
 #if TWOFAST_DESKTOP
-            await Project2FA.Services.MacOS.MacOSVaultLocation.WriteAtomicAsync(targetFolder.Path, fileName, content);
+            await DesktopVaultLocation.WriteAtomicAsync(targetFolder.Path, fileName, content);
             return;
 #endif
             StorageFolder localFolder = ApplicationData.Current.LocalFolder;
@@ -1067,10 +1067,10 @@ namespace Project2FA.Services
                     if (oTPResult == OTPType.mobileid)
                     {
                         var account = Collection[i];
-                        if (!Project2FA.Services.MacOS.MacOSDeviceBinding.Allows(account.MobileIdDeviceId))
+                        if (!DesktopDeviceBinding.Allows(account.MobileIdDeviceId))
                         { account.TwoFACode = "Different Mac"; account.Seconds = 0; return; }
                         var now = DateTimeOffset.UtcNow;
-                        account.TwoFACode = Project2FA.Services.MacOS.MacOSMobileId.ComputeOtp(account.SecretByteArray, account.Period, account.TotpSize, account.MobileIdChecksum, now);
+                        account.TwoFACode = DesktopMobileId.ComputeOtp(account.SecretByteArray, account.Period, account.TotpSize, account.MobileIdChecksum, now);
                         account.Seconds = account.Period - now.ToUnixTimeSeconds() % account.Period;
                         return;
                     }
@@ -1278,7 +1278,7 @@ namespace Project2FA.Services
         private async Task<(bool successful, bool outdated)> CheckIfWebDAVDatafileIsEqual()
         {
 #if TWOFAST_DESKTOP
-            return await SyncMacOSRemoteVault();
+            return await SyncDesktopRemoteVault();
 #else
             try
             {

@@ -3,9 +3,9 @@ using System.IO;
 using System.Threading.Tasks;
 using Windows.Storage;
 
-namespace Project2FA.Services.MacOS;
+namespace Project2FA.Services.Desktop;
 
-internal static class MacOSVaultLocation
+internal static class DesktopVaultLocation
 {
     internal static async Task WriteAtomicAsync(string folder, string name, string content)
     {

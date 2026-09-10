@@ -85,7 +85,7 @@ namespace Project2FA.ViewModels
             LoggingService = App.Current.Container.Resolve<LoggingService>();
             LoginCommand = new RelayCommand(CheckLogin);
 #if TWOFAST_DESKTOP
-            BiometricoLoginCommand = new AsyncRelayCommand(MacOSLoginTask);
+            BiometricoLoginCommand = new AsyncRelayCommand(DesktopLoginTask);
 #endif
 #if WINDOWS_UWP
             WindowsHelloLoginCommand = new RelayCommand(WindowsHelloLoginCommandTask);
@@ -344,7 +344,7 @@ namespace Project2FA.ViewModels
         private async void CheckLogin()
         {
 #if TWOFAST_DESKTOP
-            await MacOSPasswordLogin();
+            await DesktopPasswordLogin();
 #else
             if (!string.IsNullOrEmpty(Password))
             {
@@ -367,21 +367,21 @@ namespace Project2FA.ViewModels
         private async Task<bool> CheckNavigationRequest(string password)
         {
 #if TWOFAST_DESKTOP
-            var unlockToken = Project2FA.Services.MacOS.MacOSSession.Token;
+            var unlockToken = DesktopSession.Token;
             string pwdhash = SettingsService.Instance.DataFilePasswordHash;
             try
             {
                 if (string.IsNullOrEmpty(pwdhash)) return false;
-                var file = await DataService.Instance.CurrentMacOSVault();
+                var file = await DataService.Instance.CurrentDesktopVault();
                 string content = await System.IO.File.ReadAllTextAsync(file.Path);
-                await Task.Run(() => Project2FA.Services.MacOS.MacOSVaultCodec.VerifyCredential(content, password, pwdhash));
+                await Task.Run(() => DesktopVaultCodec.VerifyCredential(content, password, pwdhash));
                 unlockToken.ThrowIfCancellationRequested();
-                if (!pwdhash.StartsWith("vault-", StringComparison.Ordinal) && Project2FA.Services.MacOS.MacOSVaultCodec.IsModern(content))
+                if (!pwdhash.StartsWith("vault-", StringComparison.Ordinal) && DesktopVaultCodec.IsModern(content))
                 {
                     var helper = App.Current.Container.Resolve<ISecretService>().Helper;
                     helper.RemoveSecret(Constants.ContainerName, pwdhash);
                     SettingsService.Instance.ActivateBiometricLogin = false;
-                    pwdhash = Project2FA.Services.MacOS.MacOSVaultCodec.NewCredentialId();
+                    pwdhash = DesktopVaultCodec.NewCredentialId();
                     SettingsService.Instance.DataFilePasswordHash = pwdhash;
                 }
             }
@@ -406,7 +406,7 @@ namespace Project2FA.ViewModels
                 if (!navigation.Success)
                 {
 #if TWOFAST_DESKTOP
-                    Project2FA.Services.MacOS.MacOSSession.Lock();
+                    DesktopSession.Lock();
 #else
                     App.ShellPageInstance.ViewModel.NavigationIsAllowed = false;
 #endif
@@ -427,7 +427,7 @@ namespace Project2FA.ViewModels
         public void Initialize(INavigationParameters parameters)
         {
 #if TWOFAST_DESKTOP
-            Project2FA.Services.MacOS.MacOSSession.Lock();
+            DesktopSession.Lock();
 #endif
             IsLoading = false;
             if (parameters.TryGetValue<bool>("isLogout", out var isLogout))

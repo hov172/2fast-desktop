@@ -1,4 +1,4 @@
-using Project2FA.Services.MacOS;
+using Project2FA.Services.Desktop;
 var scanner = new DesktopQrFrameDecoder();
 var writer = new ZXing.BarcodeWriterPixelData { Format = ZXing.BarcodeFormat.QR_CODE, Options = new ZXing.Common.EncodingOptions { Width = 512, Height = 512, Margin = 4 } };
 if (scanner.Decode(Enumerable.Repeat((byte)255, 512 * 512 * 4).ToArray(), 512, 512) != null) throw new Exception("Blank frame accepted");

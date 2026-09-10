@@ -53,7 +53,7 @@ public sealed partial class EditAccountContentDialog : ContentDialog
             args.Cancel = true;
             EditError.Text = "The edits could not be saved. Check file access and try again.";
 #if TWOFAST_DESKTOP
-            Project2FA.Services.MacOS.MacOSScanDiagnostics.Record("saving account edits", error);
+            DesktopScanDiagnostics.Record("saving account edits", error);
 #endif
         }
         finally { deferral.Complete(); }

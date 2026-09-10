@@ -1,13 +1,13 @@
 #if TWOFAST_DESKTOP
 using WebDAVClient;
-namespace Project2FA.Services.MacOS;
+namespace Project2FA.Services.Desktop;
 
-internal sealed class MacOSRemoteVaultTransaction
+internal sealed class DesktopRemoteVaultTransaction
 {
     private readonly ConditionalVaultClient remote;
     private readonly VaultRevision original;
     private readonly string candidate;
-    internal MacOSRemoteVaultTransaction(ConditionalVaultClient remote, VaultRevision original, string candidate)
+    internal DesktopRemoteVaultTransaction(ConditionalVaultClient remote, VaultRevision original, string candidate)
     { this.remote = remote; this.original = original; this.candidate = candidate; }
 
     internal async Task Apply()

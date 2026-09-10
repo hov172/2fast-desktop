@@ -56,7 +56,7 @@ internal static class WorkflowChecks
         accountType.GetProperty("Label")!.SetValue(searchAccount, null);
         if (!(bool)matches.Invoke(null, new[] { searchAccount, "mail" })!) throw new Exception("Missing labels must not break issuer search.");
         if (app.GetType("DesktopUiPreview") != null) throw new Exception("A preview build must not be distributed as the application.");
-        var describe = app.GetType("Project2FA.Services.MacOS.VaultSaveErrors", true)!.GetMethod("Describe", BindingFlags.Static | BindingFlags.NonPublic)!;
+        var describe = app.GetType("VaultSaveErrors", true)!.GetMethod("Describe", BindingFlags.Static | BindingFlags.NonPublic)!;
         foreach (Exception failure in new Exception[] { new IOException("synthetic-sensitive-text"), new UnauthorizedAccessException("synthetic-sensitive-text"), new System.Security.Cryptography.CryptographicException("synthetic-sensitive-text"), new Exception("synthetic-sensitive-text") })
             if (((string)describe.Invoke(null, new[] { failure })!).Contains("synthetic-sensitive-text")) throw new Exception("Save error UI leaked raw exception data.");
         Console.WriteLine("Desktop presentation: content template retained, issuer search works, production preview absent, save errors redact raw exception text.");

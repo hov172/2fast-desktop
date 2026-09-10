@@ -24,7 +24,7 @@ public sealed partial class AccountCodePage : Page
         Unloaded += (_, _) =>
         {
             ViewModel?.StopAccountTimers();
-            Project2FA.Services.MacOS.MacOSSession.CancelOperations();
+            DesktopSession.CancelOperations();
         };
 #endif
         Loaded += (_, _) => ObserveAccounts();

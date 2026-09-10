@@ -3,5 +3,5 @@
     <OutputType>Exe</OutputType><TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings><DefineConstants>TWOFAST_MACOS;TWOFAST_DESKTOP</DefineConstants>
   </PropertyGroup>
-  <ItemGroup><Compile Include="../../../src/Project2FA.Uno/Platforms/Desktop/MacOSNewDataFile.cs" Link="MacOSNewDataFile.cs" /><Compile Include="../../../src/Project2FA.Uno/Platforms/Desktop/MacOSVaultLocation.cs" Link="MacOSVaultLocation.cs" /><Compile Include="../../../src/Project2FA.Uno/Platforms/Desktop/MacOSFileTransaction.cs" Link="MacOSFileTransaction.cs" /></ItemGroup>
+  <ItemGroup><Compile Include="../../../Project2FA.Shared/ViewModels/DesktopInputValidation.cs" Link="DesktopInputValidation.cs" /><Compile Include="../../../src/Project2FA.Uno/Platforms/Desktop/DesktopNewDataFile.cs" Link="DesktopNewDataFile.cs" /><Compile Include="../../../src/Project2FA.Uno/Platforms/Desktop/DesktopVaultLocation.cs" Link="DesktopVaultLocation.cs" /><Compile Include="../../../src/Project2FA.Uno/Platforms/Desktop/DesktopFileTransaction.cs" Link="DesktopFileTransaction.cs" /></ItemGroup>
 </Project>

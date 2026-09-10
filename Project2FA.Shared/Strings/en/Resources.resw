@@ -1535,4 +1535,52 @@ The application supports an MDM configuration for centralised management of the 
   <data name="WebDAVAuthSuccessText.Text" xml:space="preserve">
     <value>Login successful!</value>
   </data>
+  <data name="DesktopBiometricName.Windows" xml:space="preserve"><value>Windows Hello</value></data>
+  <data name="DesktopBiometricName.Mac" xml:space="preserve"><value>Touch ID</value></data>
+  <data name="DesktopBiometricDescription.Windows" xml:space="preserve"><value>Unlock this vault with Windows Hello. Set up your PIN, face or fingerprint in Settings → Accounts → Sign-in options.</value></data>
+  <data name="DesktopBiometricDescription.Mac" xml:space="preserve"><value>Unlock this vault using a fingerprint enrolled in System Settings → Touch ID &amp; Password.</value></data>
+  <data name="DesktopPlatformName.Windows" xml:space="preserve"><value>Windows</value></data>
+  <data name="DesktopPlatformName.Mac" xml:space="preserve"><value>macOS</value></data>
+  <data name="DatafileOperationFailed" xml:space="preserve"><value>The file operation could not be completed. Check access to the selected folder.</value></data>
+  <data name="UseLocalVault" xml:space="preserve"><value>Use a local vault</value></data>
+  <data name="ContinueLocally" xml:space="preserve"><value>Continue locally</value></data>
+  <data name="LocalVaultWarning" xml:space="preserve"><value>This operation moves or renames the local copy and stops WebDAV syncing. The server copy stays at its current location.</value></data>
+  <data name="NewFilename" xml:space="preserve"><value>New filename</value></data>
+  <data name="RenameDataFile" xml:space="preserve"><value>Rename data file</value></data>
+  <data name="Rename" xml:space="preserve"><value>Rename</value></data>
+  <data name="DatafileRenamed" xml:space="preserve"><value>Data file renamed. Enable biometric unlock again if you use it.</value></data>
+  <data name="DatafileMoved" xml:space="preserve"><value>Data file moved. Enable biometric unlock again if you use it.</value></data>
+  <data name="EncryptedBackupSaved" xml:space="preserve"><value>Encrypted backup saved to </value></data>
+  <data name="PasswordChanged" xml:space="preserve"><value>Password changed. Use the new password next time you open this data file.</value></data>
+  <data name="VaultAlreadyModern" xml:space="preserve"><value>This vault already uses authenticated encryption.</value></data>
+  <data name="UpgradeVaultEncryption" xml:space="preserve"><value>Upgrade vault encryption</value></data>
+  <data name="Upgrade" xml:space="preserve"><value>Upgrade</value></data>
+  <data name="UpgradeVaultWarning" xml:space="preserve"><value>The upgraded vault works with the updated 2fast desktop app on Windows and macOS. Older releases and mobile clients cannot open it. An encrypted legacy copy will be kept beside the file. Your password stays the same; Biometric unlock must be enabled again. For WebDAV, the remote vault is upgraded too.</value></data>
+  <data name="VaultUpgraded" xml:space="preserve"><value>Vault upgraded. The encrypted legacy copy is preserved beside the data file.</value></data>
+  <data name="OcraTokenName" xml:space="preserve"><value>Token name</value></data>
+  <data name="OcraTokenSeed" xml:space="preserve"><value>Token seed</value></data>
+  <data name="OcraSeedEncoding" xml:space="preserve"><value>Seed encoding</value></data>
+  <data name="AddOcraToken" xml:space="preserve"><value>Add OCRA token</value></data>
+  <data name="OcraInvalidSeed" xml:space="preserve"><value>Enter a token name and valid seed in the selected encoding (at least 10 bytes).</value></data>
+  <data name="OcraWrongDeviceTitle" xml:space="preserve"><value>Token belongs to another desktop</value></data>
+  <data name="OcraWrongDevice" xml:space="preserve"><value>Re-enroll this device-bound MobileID token on this desktop.</value></data>
+  <data name="OcraUnsupportedTitle" xml:space="preserve"><value>Unsupported OCRA suite</value></data>
+  <data name="OcraUnsupported" xml:space="preserve"><value>This token's OCRA suite is not supported.</value></data>
+  <data name="OcraChallenge" xml:space="preserve"><value>Login challenge (1–8 digits)</value></data>
+  <data name="Generate" xml:space="preserve"><value>Generate</value></data>
+  <data name="CopyResponse" xml:space="preserve"><value>Copy response</value></data>
+  <data name="OcraResponseExpiry" xml:space="preserve"><value>Use this response before the current minute ends.</value></data>
+  <data name="OcraInvalidChallenge" xml:space="preserve"><value>Enter the numeric challenge from your login page (1–8 digits).</value></data>
+  <data name="OcraCopied" xml:space="preserve"><value>Response copied.</value></data>
+  <data name="OcraCopyFailed" xml:space="preserve"><value>Unable to copy. Read the response above.</value></data>
+  <data name="OcraExpired" xml:space="preserve"><value>Response expired. Generate a new response.</value></data>
+  <data name="UnableToUnlock" xml:space="preserve"><value>Unable to unlock</value></data>
+  <data name="CredentialStoreUnavailable" xml:space="preserve"><value>The secure credential store could not be opened. Check that this is a correctly signed build, then try again.</value></data>
+  <data name="BiometricUnlockFailed" xml:space="preserve"><value>Unable to unlock with {0}. Use your data-file password.</value></data>
+  <data name="IncorrectDatafilePassword" xml:space="preserve"><value>The data-file password is incorrect.</value></data>
+  <data name="BiometricSettingsFailed" xml:space="preserve"><value>Unable to change {0} settings. Please try again.</value></data>
+  <data name="UnlockMobileId" xml:space="preserve"><value>Unlock MobileID token</value></data>
+  <data name="Import" xml:space="preserve"><value>Import</value></data>
+  <data name="UnableImportQr" xml:space="preserve"><value>Unable to import this QR</value></data>
+  <data name="ScanAnotherQr" xml:space="preserve"><value>Scan another QR</value></data>
 </root>

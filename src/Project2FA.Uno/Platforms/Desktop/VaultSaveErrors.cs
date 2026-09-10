@@ -1,6 +1,6 @@
 #if TWOFAST_DESKTOP
 using System.Security.Cryptography;
-namespace Project2FA.Services.MacOS;
+namespace Project2FA.Services.Desktop;
 internal sealed class VaultSessionExpiredException : InvalidOperationException { }
 internal static class VaultSaveErrors
 {

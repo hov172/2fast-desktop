@@ -9,6 +9,9 @@
     <Import_RootNamespace>Project2FA.Shared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Services\DesktopText.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\DesktopInputValidation.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)GlobalUsings.Desktop.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Controls\AutoCloseTeachingTip.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Controls\ImageEx\ImageEx.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Controls\ImageEx\ImageEx.Members.cs" />
@@ -89,10 +92,12 @@
     <Compile Include="$(MSBuildThisFileDirectory)Services\Importer\TwofastBackupImportService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Parser\IProject2FAParser.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Parser\Project2FAParser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Parser\StrictProject2FAParser.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Serialization\EncryptedBytesConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Serialization\EncryptedStringConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Serialization\ISerializationCryptoService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Serialization\SerializationCryptoService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Serialization\DesktopVaultCodec.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Serialization\SerializationService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Serialization\SerializationContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\SettingsService\Enums\Theme.cs" />

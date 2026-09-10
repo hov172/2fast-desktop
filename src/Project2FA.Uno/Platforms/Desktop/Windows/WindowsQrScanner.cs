@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using Windows.Storage.Streams;
 
-namespace Project2FA.Services.MacOS;
+namespace Project2FA.Services.Desktop;
 internal static class WindowsQrScanner
 {
     private static readonly SemaphoreSlim Gate = new(1, 1);
@@ -128,7 +128,7 @@ internal static class WindowsQrScanner
                                 if (decoded != null)
                                 { result = decoded; dialog.Hide(); }
                             }
-                            catch (Exception error) { MacOSScanDiagnostics.Record("Windows scan preview", error); if (!closed) status.Text = "Preview could not be displayed. Select the source again."; }
+                            catch (Exception error) { DesktopScanDiagnostics.Record("Windows scan preview", error); if (!closed) status.Text = "Preview could not be displayed. Select the source again."; }
                             finally { CryptographicOperations.ZeroMemory(bytes); applied.TrySetResult(); }
                         })) break;
                         await applied.Task.WaitAsync(token);
@@ -141,7 +141,7 @@ internal static class WindowsQrScanner
             catch (OperationCanceledException) { }
             catch (Exception error)
             {
-                MacOSScanDiagnostics.Record("Windows scanner", error);
+                DesktopScanDiagnostics.Record("Windows scanner", error);
                 dialog.DispatcherQueue.TryEnqueue(() => { if (!closed && current == generation) status.Text = error is IOException ? error.Message : "Capture failed. Try another source or check camera permissions."; });
             }
             finally { camera?.Dispose(); if (ownsCamera) CameraGate.Release(); }

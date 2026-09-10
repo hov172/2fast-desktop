@@ -3,12 +3,12 @@ using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Project2FA.Services.MacOS;
+namespace Project2FA.Services.Desktop;
 
 // Interoperability decoder for Deepnet MobileID 6 offline install URIs.
 // Legacy RC4/MD5 is used only to unwrap this vendor's provisioning envelope.
 // Imported accounts use the app's normal encrypted vault, not this envelope.
-internal static class MacOSMobileId
+internal static class DesktopMobileId
 {
     internal static bool TryParse(string text, string? authorizationCode, out List<KeyValuePair<string, string>> values, out string error)
     {
@@ -25,7 +25,7 @@ internal static class MacOSMobileId
                 var pair = part.Split('=', 2);
                 if (pair.Length != 2 || !query.TryAdd(Uri.UnescapeDataString(pair[0]), Uri.UnescapeDataString(pair[1]))) return false;
             }
-            if (query.GetValueOrDefault("suite") != MacOSOcra.Suite)
+            if (query.GetValueOrDefault("suite") != DesktopOcra.Suite)
             { error = "This MobileID OCRA suite is not supported."; return false; }
             bool hasPushRegistration = query.ContainsKey("sid") || query.ContainsKey("pn") || query.ContainsKey("regurl");
             // Registration is a separate vendor step. Import only the offline token;
@@ -59,7 +59,7 @@ internal static class MacOSMobileId
             values = new() { new("label", "Deepnet MobileID"), new("issuer", name),
                 new("secret", OtpNet.Base32Encoding.ToString(key)), new("algorithm", "SHA1"),
                 new("digits", digits.ToString(CultureInfo.InvariantCulture)), new("period", period.ToString(CultureInfo.InvariantCulture)),
-                new("ocrasuite", MacOSOcra.Suite), new("mobileid", (profile & 4) != 0 ? "checksum" : "plain") };
+                new("ocrasuite", DesktopOcra.Suite), new("mobileid", (profile & 4) != 0 ? "checksum" : "plain") };
             if (deviceBound) values.Add(new("mobileidbinding", "this-mac"));
             if (hasPushRegistration) values.Add(new("importnotice", "Offline OTP and OCRA imported. Push approvals are not enrolled; use Deepnet MobileID for push requests."));
             error = ""; return true;

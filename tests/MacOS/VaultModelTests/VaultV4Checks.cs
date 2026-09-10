@@ -7,7 +7,7 @@ internal static class VaultV4Checks
 {
     internal static void Run(Assembly app, object account)
     {
-        var codec = app.GetType("Project2FA.Services.MacOS.MacOSVaultCodec", true)!;
+        var codec = app.GetType("DesktopVaultCodec", true)!;
         const BindingFlags flags = BindingFlags.Static | BindingFlags.NonPublic;
         var encrypt = codec.GetMethod("Encrypt", flags)!;
         var decrypt = codec.GetMethod("Decrypt", flags)!;

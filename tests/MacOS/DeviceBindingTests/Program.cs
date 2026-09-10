@@ -1,15 +1,15 @@
-using Project2FA.Services.MacOS;
-if (!MacOSDeviceBinding.Allows("") || MacOSNative.Reads != 0) throw new Exception("Unbound token requires Keychain");
-string local = MacOSDeviceBinding.Identity;
-if (local.Length != 32 || MacOSNative.Writes != 1) throw new Exception("Missing identity not created once");
-if (!MacOSDeviceBinding.Allows(local)) throw new Exception("Local token rejected");
-if (MacOSDeviceBinding.Allows("other-device")) throw new Exception("Different Mac accepted");
-Parallel.For(0, 20, _ => { if (MacOSDeviceBinding.Identity != local) throw new Exception("Identity changed"); });
-if (MacOSNative.Reads != 1 || MacOSNative.Writes != 1) throw new Exception("Concurrent identity replacement");
+using Project2FA.Services.Desktop;
+if (!DesktopDeviceBinding.Allows("") || DesktopNative.Reads != 0) throw new Exception("Unbound token requires Keychain");
+string local = DesktopDeviceBinding.Identity;
+if (local.Length != 32 || DesktopNative.Writes != 1) throw new Exception("Missing identity not created once");
+if (!DesktopDeviceBinding.Allows(local)) throw new Exception("Local token rejected");
+if (DesktopDeviceBinding.Allows("other-device")) throw new Exception("Different Mac accepted");
+Parallel.For(0, 20, _ => { if (DesktopDeviceBinding.Identity != local) throw new Exception("Identity changed"); });
+if (DesktopNative.Reads != 1 || DesktopNative.Writes != 1) throw new Exception("Concurrent identity replacement");
 Console.WriteLine("Device binding: 5 checks passed.");
-namespace Project2FA.Services.MacOS
+namespace Project2FA.Services.Desktop
 {
-    internal static class MacOSNative
+    internal static class DesktopNative
     {
         internal static int Reads, Writes;
         internal static string Read(string key) { Reads++; throw new BiometryService.BiometryException(BiometryService.BiometryExceptionReason.KeyInvalidated); }

@@ -1,12 +1,13 @@
 #if TWOFAST_DESKTOP
 using System.Globalization;
 using System.Text.RegularExpressions;
+using Project2FA.Services.Desktop;
 
-namespace Project2FA.Services.MacOS;
+namespace Project2FA.Services.Parser;
 
 // Treat camera payloads as untrusted input. Decode each component once, without
 // unescaping the entire URI (which would turn escaped '&' into parameter separators).
-internal static class MacOSOtpParser
+internal static class StrictProject2FAParser
 {
     internal static bool TryParse(string text, out List<KeyValuePair<string, string>> values)
         => TryParse(text, out values, out _);
@@ -15,7 +16,7 @@ internal static class MacOSOtpParser
     {
         error = "Invalid or unsupported authenticator QR. Expected a TOTP, OCRA, or Deepnet MobileID setup code.";
         if (text?.StartsWith("mobileid://", StringComparison.OrdinalIgnoreCase) == true)
-            return MacOSMobileId.TryParse(text, authorizationCode, out values, out error);
+            return DesktopMobileId.TryParse(text, authorizationCode, out values, out error);
         values = new();
         if (string.IsNullOrEmpty(text) || text.Length > 16384 ||
             !Uri.TryCreate(text, UriKind.Absolute, out var uri) ||

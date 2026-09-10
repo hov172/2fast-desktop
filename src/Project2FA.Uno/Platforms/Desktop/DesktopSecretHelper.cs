@@ -4,7 +4,7 @@ using System.Text;
 using System.Text.Json;
 using Project2FA.Core;
 using Project2FA.Services;
-using Project2FA.Services.MacOS;
+using Project2FA.Services.Desktop;
 using UNOversal.Services.Serialization;
 
 namespace UNOversal.Services.Secrets;
@@ -29,7 +29,7 @@ public class SecretHelper
             MigrateLegacyStore();
             string account = Account(container, key);
             if (!IsWebDAV(key)) return Session.GetValueOrDefault(account, string.Empty);
-            try { return MacOSNative.Read(account); }
+            try { return DesktopNative.Read(account); }
             catch (BiometryService.BiometryException e) when (e.Reason == BiometryService.BiometryExceptionReason.KeyInvalidated) { return string.Empty; }
         }
     }
@@ -42,8 +42,8 @@ public class SecretHelper
             string account = Account(container, key);
             if (IsWebDAV(key))
             {
-                if (string.IsNullOrEmpty(secret)) MacOSNative.Delete(account);
-                else MacOSNative.Write(account, secret);
+                if (string.IsNullOrEmpty(secret)) DesktopNative.Delete(account);
+                else DesktopNative.Write(account, secret);
             }
             else Session[account] = secret;
         }
@@ -54,11 +54,11 @@ public class SecretHelper
         lock (Gate)
         {
             MigrateLegacyStore();
-            if (IsWebDAV(key)) MacOSNative.Delete(Account(container, key));
+            if (IsWebDAV(key)) DesktopNative.Delete(Account(container, key));
             else
             {
                 // Password changes, reset, and switching files revoke the old biometric credential.
-                MacOSNative.Delete(BiometricKey(key));
+                DesktopNative.Delete(BiometricKey(key));
                 Session.Remove(Account(container, key));
                 if (key == SettingsService.Instance.DataFilePasswordHash)
                 {
@@ -98,7 +98,7 @@ public class SecretHelper
             // Migrate only WebDAV credentials. Vault secrets must be supplied by password or Touch ID.
             foreach (var bucket in store)
                 foreach (var item in bucket.Value)
-                    if (IsWebDAV(item.Key) && !string.IsNullOrEmpty(item.Value)) MacOSNative.Write(Account(bucket.Key, item.Key), item.Value);
+                    if (IsWebDAV(item.Key) && !string.IsNullOrEmpty(item.Value)) DesktopNative.Write(Account(bucket.Key, item.Key), item.Value);
             // Delete only after all persistent credentials have reached Keychain successfully.
             System.IO.File.Delete(path);
             if (System.IO.File.Exists(path + ".tmp")) System.IO.File.Delete(path + ".tmp");

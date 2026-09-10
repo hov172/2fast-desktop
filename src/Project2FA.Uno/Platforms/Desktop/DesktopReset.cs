@@ -1,6 +1,6 @@
 #if TWOFAST_DESKTOP
 using Project2FA.Core;
-using Project2FA.Services.MacOS;
+using Project2FA.Services.Desktop;
 using Project2FA.UnoApp;
 using Project2FA.Uno.Views;
 using UNOversal.Services.Secrets;
@@ -12,7 +12,7 @@ public partial class DataService
 {
     public async Task ResetMacOSSetup()
     {
-        MacOSSession.CancelOperations();
+        DesktopSession.CancelOperations();
         await CollectionAccessSemaphore.WaitAsync();
         try
         {

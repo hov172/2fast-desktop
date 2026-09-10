@@ -1,7 +1,7 @@
 #if TWOFAST_DESKTOP
 using BiometryService;
-namespace Project2FA.Services.MacOS;
-internal static class MacOSDeviceBinding
+namespace Project2FA.Services.Desktop;
+internal static class DesktopDeviceBinding
 {
     private static string? identity;
     private static readonly object gate = new();
@@ -12,12 +12,12 @@ internal static class MacOSDeviceBinding
             lock (gate)
             {
             if (identity != null) return identity;
-            try { identity = MacOSNative.Read("mobileid-device-binding-id"); }
+            try { identity = DesktopNative.Read("mobileid-device-binding-id"); }
             catch (BiometryException e) when (e.Reason == BiometryExceptionReason.KeyInvalidated) { }
             if (string.IsNullOrEmpty(identity))
             {
                 string created = Guid.NewGuid().ToString("N");
-                MacOSNative.Write("mobileid-device-binding-id", created);
+                DesktopNative.Write("mobileid-device-binding-id", created);
                 identity = created;
             }
             return identity;

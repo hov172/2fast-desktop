@@ -1,4 +1,5 @@
 using Project2FA.ViewModels;
+using Project2FA.Services.Desktop;
 using Windows.Storage;
 
 await FileTransactionChecks.Run();
@@ -51,30 +52,30 @@ try
     if (vm.PasswordWhitespaceHint != "") throw new Exception("Stale whitespace hint");
     passed++;
     var vault = Path.Combine(folder, "sample.2fa");
-    await Project2FA.Services.MacOS.MacOSVaultLocation.WriteAtomicAsync(folder, "sample.2fa", "replacement ciphertext");
+    await DesktopVaultLocation.WriteAtomicAsync(folder, "sample.2fa", "replacement ciphertext");
     if (File.ReadAllText(vault) != "replacement ciphertext" || Directory.GetFiles(folder, ".2fast-*.tmp").Length != 0) throw new Exception("Atomic replacement failed");
     passed++;
     Directory.CreateDirectory(Path.Combine(folder, "blocked.2fa"));
-    try { await Project2FA.Services.MacOS.MacOSVaultLocation.WriteAtomicAsync(folder, "blocked.2fa", "synthetic"); throw new Exception("Invalid destination accepted"); }
+    try { await DesktopVaultLocation.WriteAtomicAsync(folder, "blocked.2fa", "synthetic"); throw new Exception("Invalid destination accepted"); }
     catch (IOException) { passed++; }
     if (File.ReadAllText(vault) != "replacement ciphertext" || Directory.GetFiles(folder, ".2fast-*.tmp").Length != 0) throw new Exception("Failure changed vault or leaked temporary file");
     passed++;
-    try { await Project2FA.Services.MacOS.MacOSVaultLocation.WriteAtomicAsync(folder, "../escape", "synthetic"); throw new Exception("Path traversal accepted"); }
+    try { await DesktopVaultLocation.WriteAtomicAsync(folder, "../escape", "synthetic"); throw new Exception("Path traversal accepted"); }
     catch (ArgumentException) { passed++; }
 
     foreach (var savedPath in new[] { vault, folder })
     {
-        var opened = await Project2FA.Services.MacOS.MacOSVaultLocation.OpenAsync(savedPath, "sample.2fa", false);
+        var opened = await DesktopVaultLocation.OpenAsync(savedPath, "sample.2fa", false);
         if (opened.Path != vault) throw new Exception("Wrong vault location");
         passed++;
     }
     ApplicationData.Current.LocalFolder = new StorageFolder { Path = folder };
-    var cached = await Project2FA.Services.MacOS.MacOSVaultLocation.OpenAsync("https://test.invalid/dav", "sample.2fa", true);
+    var cached = await DesktopVaultLocation.OpenAsync("https://test.invalid/dav", "sample.2fa", true);
     if (cached.Path != vault) throw new Exception("Wrong WebDAV cache location");
     passed++;
     try
     {
-        await Project2FA.Services.MacOS.MacOSVaultLocation.OpenAsync(Path.Combine(folder, "missing.2fa"), "sample.2fa", false);
+        await DesktopVaultLocation.OpenAsync(Path.Combine(folder, "missing.2fa"), "sample.2fa", false);
         throw new Exception("Missing file fell back to a different vault");
     }
     catch (FileNotFoundException) { passed++; }
@@ -95,7 +96,7 @@ namespace Project2FA.ViewModels
         public StorageFolder LocalStorageFolder { get; set; }
         public object LocalStorageFile { get; set; }
         private void SetProperty(ref string field, string value) => field = value;
-        public void Validate() => ValidateMacOSInputs();
+        public void Validate() => ValidateDesktopInputs();
     }
 }
 namespace Windows.Storage

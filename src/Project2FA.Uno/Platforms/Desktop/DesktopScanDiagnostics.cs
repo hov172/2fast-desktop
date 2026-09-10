@@ -2,9 +2,9 @@
 using System.Diagnostics;
 using System.Text;
 
-namespace Project2FA.Services.MacOS;
+namespace Project2FA.Services.Desktop;
 
-internal static class MacOSScanDiagnostics
+internal static class DesktopScanDiagnostics
 {
     internal static void Record(string stage, Exception error)
     {

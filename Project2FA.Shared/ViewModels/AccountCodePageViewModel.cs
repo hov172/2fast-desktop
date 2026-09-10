@@ -237,7 +237,7 @@ namespace Project2FA.ViewModels
         private async Task LogoutCommandTask()
         {
 #if TWOFAST_DESKTOP
-            Project2FA.Services.MacOS.MacOSSession.Lock();
+            DesktopSession.Lock();
 #endif
             if (TwoFADataService.EmptyAccountCollectionTipIsOpen)
             {
@@ -427,9 +427,9 @@ namespace Project2FA.ViewModels
         public async Task<bool> CopyCodeToClipboardCommandTask(TwoFACodeModel model)
         {
 #if TWOFAST_DESKTOP
-            if (!Project2FA.Services.MacOS.MacOSDeviceBinding.Allows(model.MobileIdDeviceId))
+            if (!DesktopDeviceBinding.Allows(model.MobileIdDeviceId))
             {
-                await Project2FA.Services.MacOS.MacOSSession.Message(DialogService, "Token belongs to another Mac", "This token is bound to another Mac. Enroll a new token for this Mac through your administrator.");
+                await DesktopSession.Message(DialogService, "Token belongs to another Mac", "This token is bound to another Mac. Enroll a new token for this Mac through your administrator.");
                 return false;
             }
             if (model.OTPType == "ocra") return await ShowOcraResponse(model);
@@ -615,7 +615,7 @@ namespace Project2FA.ViewModels
 #if TWOFAST_DESKTOP
             if (model.IsOcraCapable)
             {
-                await Project2FA.Services.MacOS.MacOSSession.Message(DialogService, "OCRA token", "Use an encrypted 2fast backup to transfer this token. A TOTP QR code cannot represent its OCRA settings.");
+                await DesktopSession.Message(DialogService, "OCRA token", "Use an encrypted 2fast backup to transfer this token. A TOTP QR code cannot represent its OCRA settings.");
                 return;
             }
 #endif

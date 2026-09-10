@@ -7,10 +7,10 @@ using System.Text.Json.Serialization.Metadata;
 using Project2FA.Core.Services.Crypto;
 using Project2FA.Repository.Models;
 
-namespace Project2FA.Services.MacOS;
+namespace Project2FA.Services.Desktop;
 
 // V4 protects the complete serialized vault, including empty collections and metadata.
-internal static class MacOSVaultCodec
+internal static class DesktopVaultCodec
 {
     internal const int Iterations = 600_000;
     private const int MaxBytes = 32 * 1024 * 1024;
@@ -125,7 +125,7 @@ internal sealed class VaultEnvelope
     public int Version { get; set; } = 4;
     public string Algorithm { get; set; } = "AES-256-GCM";
     public string Kdf { get; set; } = "PBKDF2-SHA256";
-    public int Iterations { get; set; } = MacOSVaultCodec.Iterations;
+    public int Iterations { get; set; } = DesktopVaultCodec.Iterations;
     public byte[] Salt { get; set; }
     public byte[] Nonce { get; set; }
     public byte[] Tag { get; set; }

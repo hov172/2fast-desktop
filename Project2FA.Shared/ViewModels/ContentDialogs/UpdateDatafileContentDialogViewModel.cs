@@ -54,8 +54,8 @@ namespace Project2FA.ViewModels
         {
             var hash = CryptoService.CreateStringHash(Password);
 #if TWOFAST_DESKTOP
-            if (Project2FA.Services.MacOS.MacOSVaultCodec.IsModern(System.IO.File.ReadAllText(LocalStorageFile.Path)))
-                hash = Project2FA.Services.MacOS.MacOSVaultCodec.NewCredentialId();
+            if (DesktopVaultCodec.IsModern(System.IO.File.ReadAllText(LocalStorageFile.Path)))
+                hash = DesktopVaultCodec.NewCredentialId();
 #endif
             //delete password in the secret vault
             SecretService.Helper.RemoveSecret(Constants.ContainerName, SettingsService.Instance.DataFilePasswordHash);

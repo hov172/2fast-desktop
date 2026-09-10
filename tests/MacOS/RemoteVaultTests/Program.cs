@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Headers;
-using Project2FA.Services.MacOS;
+using Project2FA.Services.Desktop;
 using WebDAVClient;
 
 static async Task Reject(Func<Task> action)
@@ -15,7 +15,7 @@ await Reject(async () => await remote.CreateAsync("must not replace"));
 server.Missing = true;
 await remote.CreateAsync("original ciphertext");
 var original = await remote.ReadAsync();
-var change = new MacOSRemoteVaultTransaction(remote, original, "new ciphertext");
+var change = new DesktopRemoteVaultTransaction(remote, original, "new ciphertext");
 await change.Apply(); if (server.Content != "new ciphertext") throw new Exception("Upload missing");
 await change.Restore(); if (server.Content != "original ciphertext") throw new Exception("Rollback missing");
 original = await remote.ReadAsync(); server.Change("other device");
@@ -40,10 +40,10 @@ try
         await File.WriteAllTextAsync(p, text);
     }
     bool rolledBack = false;
-    await Reject(() => MacOSFileTransaction.Replace(path, "new ciphertext", () => throw new IOException("credential store failure"), () => rolledBack = true, Writer));
+    await Reject(() => DesktopFileTransaction.Replace(path, "new ciphertext", () => throw new IOException("credential store failure"), () => rolledBack = true, Writer));
     if (!rolledBack || server.Content != "original ciphertext" || await File.ReadAllTextAsync(path) != "original ciphertext") throw new Exception("Distributed rollback failed");
     original = await remote.ReadAsync(); change = new(remote, original, "new ciphertext");
-    await Reject(() => MacOSFileTransaction.Replace(path, "new ciphertext", () => { server.Change("concurrent ciphertext"); throw new IOException("commit failure"); }, () => { }, Writer));
+    await Reject(() => DesktopFileTransaction.Replace(path, "new ciphertext", () => { server.Change("concurrent ciphertext"); throw new IOException("commit failure"); }, () => { }, Writer));
     if (server.Content != "concurrent ciphertext" || !Directory.GetFiles(directory, "*.recovery-*").Any(p => File.ReadAllText(p) == "original ciphertext")) throw new Exception("Conflict recovery copy not retained");
 }
 finally { Directory.Delete(directory, true); }
@@ -75,9 +75,9 @@ sealed class Server : HttpMessageHandler
         return response;
     }
 }
-namespace Project2FA.Services.MacOS
+namespace Project2FA.Services.Desktop
 {
-    internal static class MacOSVaultLocation
+    internal static class DesktopVaultLocation
     {
         internal static Task WriteAtomicAsync(string folder, string name, string text) => File.WriteAllTextAsync(Path.Combine(folder, name), text);
     }

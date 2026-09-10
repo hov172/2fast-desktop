@@ -52,7 +52,7 @@ public sealed partial class ChangeDatafilePasswordContentDialog : ContentDialog
         catch (Exception error)
         {
 #if TWOFAST_DESKTOP
-            Project2FA.Services.MacOS.MacOSScanDiagnostics.Record("changing data-file password", error);
+            DesktopScanDiagnostics.Record("changing data-file password", error);
 #endif
             ChangeError.Text = error is System.IO.IOException || error is InvalidOperationException ? error.Message : "The change could not be completed. Check your password and file access.";
         }

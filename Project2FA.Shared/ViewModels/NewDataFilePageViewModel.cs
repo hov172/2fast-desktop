@@ -114,7 +114,7 @@ namespace Project2FA.ViewModels
         public override async Task CheckInputs()
         {
 #if TWOFAST_DESKTOP
-            ValidateMacOSInputs();
+            ValidateDesktopInputs();
             return;
 #endif
             if (!string.IsNullOrEmpty(DateFileName))
@@ -181,7 +181,7 @@ namespace Project2FA.ViewModels
         private async Task SetAndCreateLocalDatafile(bool isWebDAV)
         {
 #if TWOFAST_DESKTOP
-            ValidateMacOSInputs();
+            ValidateDesktopInputs();
             if (!DatafileBTNActive) return;
 #endif
             if (!DateFileName.EndsWith(".2fa", StringComparison.OrdinalIgnoreCase))
@@ -218,8 +218,8 @@ namespace Project2FA.ViewModels
                     }
                     try
                     {
-                        string encrypted = await Task.Run(() => Project2FA.Services.MacOS.MacOSVaultCodec.Encrypt(model, Password));
-                        await Project2FA.Services.MacOS.MacOSVaultLocation.WriteAtomicAsync(LocalStorageFolder.Path, DateFileName, encrypted);
+                        string encrypted = await Task.Run(() => DesktopVaultCodec.Encrypt(model, Password));
+                        await DesktopVaultLocation.WriteAtomicAsync(LocalStorageFolder.Path, DateFileName, encrypted);
                     }
                     catch
                     {

@@ -141,7 +141,7 @@ namespace Project2FA.ViewModels
                     datafileStr = await FileIO.ReadTextAsync(storageFile);
 #endif
 #if TWOFAST_DESKTOP
-                    await Task.Run(() => Project2FA.Services.MacOS.MacOSVaultCodec.Decrypt(datafileStr, Password));
+                    await Task.Run(() => DesktopVaultCodec.Decrypt(datafileStr, Password));
                     return (true, true);
 #else
                     //read the iv for AES

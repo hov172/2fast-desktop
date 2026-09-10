@@ -108,8 +108,8 @@ namespace Project2FA.ViewModels
             {
                 string hash = CryptoService.CreateStringHash(Password);
 #if TWOFAST_DESKTOP
-                if (Project2FA.Services.MacOS.MacOSVaultCodec.IsModern(await FileIO.ReadTextAsync(LocalStorageFile)))
-                    hash = Project2FA.Services.MacOS.MacOSVaultCodec.NewCredentialId();
+                if (DesktopVaultCodec.IsModern(await FileIO.ReadTextAsync(LocalStorageFile)))
+                    hash = DesktopVaultCodec.NewCredentialId();
                 // Revoke the previous file's Touch ID item before changing its identity.
                 if (!string.IsNullOrEmpty(SettingsService.Instance.DataFilePasswordHash))
                     SecretService.Helper.RemoveSecret(Constants.ContainerName, SettingsService.Instance.DataFilePasswordHash);

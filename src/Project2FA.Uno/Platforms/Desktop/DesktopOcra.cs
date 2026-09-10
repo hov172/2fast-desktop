@@ -3,9 +3,9 @@ using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Project2FA.Services.MacOS;
+namespace Project2FA.Services.Desktop;
 
-internal static class MacOSOcra
+internal static class DesktopOcra
 {
     internal const string Suite = "OCRA-1:HOTP-SHA1-6:QN08-T1M";
 

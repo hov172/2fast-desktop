@@ -16,7 +16,7 @@ namespace Project2FA.Uno.Views
             this.Loaded += LoginPage_Loaded;
             Unloaded += (_, _) => ShowPassword.IsChecked = false;
 #if TWOFAST_DESKTOP
-            Unloaded += (_, _) => Project2FA.Services.MacOS.MacOSSession.CancelOperations();
+            Unloaded += (_, _) => DesktopSession.CancelOperations();
 #endif
         }
 
@@ -30,12 +30,12 @@ namespace Project2FA.Uno.Views
         private async void LoginPage_Loaded(object sender, RoutedEventArgs e)
         {
 #if TWOFAST_DESKTOP
-            TouchIDLoginButton.Content = "Unlock with " + Project2FA.Services.MacOS.DesktopPlatform.BiometricName;
+            TouchIDLoginButton.Content = "Unlock with " + DesktopPlatform.BiometricName;
             TouchIDLoginButton.SetBinding(VisibilityProperty, new Microsoft.UI.Xaml.Data.Binding
             {
                 Source = ViewModel, Path = new PropertyPath(nameof(ViewModel.BiometricIsUsable))
             });
-            await ViewModel.RefreshMacOSBiometry();
+            await ViewModel.RefreshDesktopBiometry();
 #endif
             if (System.Diagnostics.Debugger.IsAttached || SettingsService.Instance.PrideMonthDesign)
             {

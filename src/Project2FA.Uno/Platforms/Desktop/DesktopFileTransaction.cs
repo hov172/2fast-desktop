@@ -1,6 +1,6 @@
 #if TWOFAST_DESKTOP
-namespace Project2FA.Services.MacOS;
-internal static class MacOSFileTransaction
+namespace Project2FA.Services.Desktop;
+internal static class DesktopFileTransaction
 {
     internal static string FileName(string name)
     {
@@ -26,7 +26,7 @@ internal static class MacOSFileTransaction
     }
     internal static async Task Replace(string path, string content, Action commit, Action rollback, Func<string, string, Task> write = null)
     {
-        write ??= (target, text) => MacOSVaultLocation.WriteAtomicAsync(Path.GetDirectoryName(target)!, Path.GetFileName(target), text);
+        write ??= (target, text) => DesktopVaultLocation.WriteAtomicAsync(Path.GetDirectoryName(target)!, Path.GetFileName(target), text);
         string backup = path + ".recovery-" + Guid.NewGuid().ToString("N");
         await CopyNew(path, backup);
         bool recoveryComplete = false;

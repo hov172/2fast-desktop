@@ -21,9 +21,9 @@ namespace BiometryService
         public BiometryExceptionReason Reason => BiometryExceptionReason.KeyInvalidated;
     }
 }
-namespace Project2FA.Services.MacOS
+namespace Project2FA.Services.Desktop
 {
-    internal static class MacOSNative
+    internal static class DesktopNative
     {
         internal static readonly Dictionary<string, string> Items = new();
         internal static readonly List<string> Deleted = new();

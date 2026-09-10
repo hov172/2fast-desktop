@@ -1,5 +1,5 @@
 #if TWOFAST_DESKTOP
-namespace Project2FA.Services.MacOS;
+namespace Project2FA.Services.Desktop;
 internal sealed class DesktopQrFrameDecoder
 {
     private readonly ZXing.BarcodeReaderGeneric reader = new()

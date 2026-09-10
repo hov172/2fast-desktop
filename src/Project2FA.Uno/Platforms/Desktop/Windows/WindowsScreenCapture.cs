@@ -1,7 +1,7 @@
 #if TWOFAST_WINDOWS
 using System.Runtime.InteropServices;
 using System.Text;
-namespace Project2FA.Services.MacOS;
+namespace Project2FA.Services.Desktop;
 
 internal sealed record WindowsCaptureSource(string Name, IntPtr Window, int X, int Y, int Width, int Height, int Camera = -1)
 {

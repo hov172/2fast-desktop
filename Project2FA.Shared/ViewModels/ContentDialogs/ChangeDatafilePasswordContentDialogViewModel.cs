@@ -151,7 +151,7 @@ namespace Project2FA.ViewModels
             else
             {
 #if TWOFAST_DESKTOP
-                StorageFile file = await Project2FA.Services.MacOS.MacOSVaultLocation.OpenAsync(SettingsService.Instance.DataFilePath, SettingsService.Instance.DataFileName, SettingsService.Instance.DataFileWebDAVEnabled);
+                StorageFile file = await DesktopVaultLocation.OpenAsync(SettingsService.Instance.DataFilePath, SettingsService.Instance.DataFileName, SettingsService.Instance.DataFileWebDAVEnabled);
                 StorageFolder folder = await file.GetParentAsync();
 #else
                 StorageFolder folder = SettingsService.Instance.DataFileWebDAVEnabled ?
@@ -202,7 +202,7 @@ namespace Project2FA.ViewModels
             try
             {
 #if TWOFAST_DESKTOP
-                await Task.Run(() => Project2FA.Services.MacOS.MacOSVaultCodec.Decrypt(datafileStr, InvalidPassword ? NewPassword : CurrentPassword));
+                await Task.Run(() => DesktopVaultCodec.Decrypt(datafileStr, InvalidPassword ? NewPassword : CurrentPassword));
 #else
                 // if the current password is invalid, try to load the datafile with the new password
                 if (InvalidPassword)

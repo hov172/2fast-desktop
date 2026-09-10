@@ -111,8 +111,8 @@ namespace Project2FA.Uno.Views
             catch (Exception error)
             {
 #if TWOFAST_DESKTOP
-                Project2FA.Services.MacOS.MacOSScanDiagnostics.Record("sidebar navigation", error);
-                await Project2FA.Services.MacOS.MacOSSession.Message(
+                DesktopScanDiagnostics.Record("sidebar navigation", error);
+                await DesktopSession.Message(
                     App.Current.Container.Resolve<UNOversal.Services.Dialogs.IDialogService>(),
                     "Unable to open page", "Navigation failed. Please return to Accounts and try again.");
 #else

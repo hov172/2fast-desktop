@@ -44,7 +44,7 @@ Mobile swaps the `NavigationView` for a `TabBar` via `ViewModel.IsMobile`.
   the password box and shows the error in place; it does not navigate away.
 - Blocking errors and confirmations use a `ContentDialog` registered through
   `RegisterDialog` and shown via `IDialogService`. Do not construct dialogs ad hoc
-  from a view-model — `MacOSSession.Message` does, and that is debt, not a
+  from a view-model — `DesktopSession.Message` does, and that is debt, not a
   pattern (see [architecture.md](architecture.md)).
 - Error text never contains a secret, a password, or a vault path.
 

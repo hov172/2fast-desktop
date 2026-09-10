@@ -7,14 +7,14 @@ using CommunityToolkit.Mvvm.Messaging;
 using Project2FA.Core.Services.Crypto;
 using Project2FA.Repository.Models;
 using Project2FA.Repository.Models.Enums;
-using Project2FA.Services.MacOS;
+using Project2FA.Services.Desktop;
 using UNOversal.Services.Secrets;
 using Windows.Storage;
 
 namespace Project2FA.Services;
 public partial class DataService
 {
-    internal Task<StorageFile> CurrentMacOSVault() => MacOSVaultLocation.OpenAsync(
+    internal Task<StorageFile> CurrentDesktopVault() => DesktopVaultLocation.OpenAsync(
         ActivatedDatafile?.Path ?? SettingsService.Instance.DataFilePath,
         ActivatedDatafile?.Name ?? SettingsService.Instance.DataFileName,
         ActivatedDatafile == null && SettingsService.Instance.DataFileWebDAVEnabled);
@@ -22,7 +22,7 @@ public partial class DataService
     private void RevokeMacOSUnlock()
     {
         string key = ActivatedDatafile != null ? Constants.ActivatedDatafileHashName : SettingsService.Instance.DataFilePasswordHash;
-        MacOSNative.Delete(SecretHelper.BiometricKey(key));
+        DesktopNative.Delete(SecretHelper.BiometricKey(key));
         SettingsService.Instance.ActivateBiometricLogin = false;
         SettingsService.Instance.PreferBiometricLogin = Enums.BiometricPreferEnum.No;
     }
@@ -46,38 +46,38 @@ public partial class DataService
         await CollectionAccessSemaphore.WaitAsync();
         try
         {
-            var file = await CurrentMacOSVault();
+            var file = await CurrentDesktopVault();
             string original = await System.IO.File.ReadAllTextAsync(file.Path);
-            var decoded = await Task.Run(() => MacOSVaultCodec.DecryptCurrent(original, adoptExisting ? replacement : current ?? "", ActivatedDatafile == null ? SettingsService.Instance.DataFilePasswordHash : null));
+            var decoded = await Task.Run(() => DesktopVaultCodec.DecryptCurrent(original, adoptExisting ? replacement : current ?? "", ActivatedDatafile == null ? SettingsService.Instance.DataFilePasswordHash : null));
             if (decoded == null) throw new InvalidOperationException("The data file could not be read.");
             string keyName = ActivatedDatafile != null ? Constants.ActivatedDatafileHashName : SettingsService.Instance.DataFilePasswordHash;
             string previousSecret = SecretService.Helper.ReadSecret(Constants.ContainerName, keyName);
             string previousHash = SettingsService.Instance.DataFilePasswordHash;
-            string nextHash = adoptExisting && !MacOSVaultCodec.IsModern(original) ? CryptoService.CreateStringHash(replacement) : MacOSVaultCodec.NewCredentialId();
+            string nextHash = adoptExisting && !DesktopVaultCodec.IsModern(original) ? CryptoService.CreateStringHash(replacement) : DesktopVaultCodec.NewCredentialId();
             string nextKey = ActivatedDatafile != null ? Constants.ActivatedDatafileHashName : nextHash;
             string nextSecret = ActivatedDatafile != null ? SerializationService.Serialize(Encoding.UTF8.GetBytes(replacement)) : replacement;
             RevokeMacOSUnlock();
             string content = original;
             if (!adoptExisting)
             {
-                content = await Task.Run(() => MacOSVaultCodec.Encrypt(decoded, replacement));
-                var verified = await Task.Run(() => MacOSVaultCodec.Decrypt(content, replacement));
-                if (!MacOSVaultCodec.SameAccounts(decoded, verified)) throw new IOException("Vault verification failed.");
+                content = await Task.Run(() => DesktopVaultCodec.Encrypt(decoded, replacement));
+                var verified = await Task.Run(() => DesktopVaultCodec.Decrypt(content, replacement));
+                if (!DesktopVaultCodec.SameAccounts(decoded, verified)) throw new IOException("Vault verification failed.");
             }
-            MacOSRemoteVaultTransaction remoteChange = null;
+            DesktopRemoteVaultTransaction remoteChange = null;
             if (SettingsService.Instance.DataFileWebDAVEnabled && ActivatedDatafile == null && !adoptExisting)
             {
                 var remote = WebDAV.WebDAVClientService.Instance.GetClient().GetConditionalVaultClient(SettingsService.Instance.DataFilePath + "/" + file.Name);
                 var revision = await remote.ReadAsync();
-                var remoteModel = await Task.Run(() => MacOSVaultCodec.Decrypt(revision.Content, current));
-                if (!MacOSVaultCodec.SameAccounts(decoded, remoteModel))
+                var remoteModel = await Task.Run(() => DesktopVaultCodec.Decrypt(revision.Content, current));
+                if (!DesktopVaultCodec.SameAccounts(decoded, remoteModel))
                     throw new IOException("The WebDAV vault differs from the local copy. Reload it before changing the password.");
-                remoteChange = new MacOSRemoteVaultTransaction(remote, revision, content);
+                remoteChange = new DesktopRemoteVaultTransaction(remote, revision, content);
             }
             // Explicit upgrades keep the legacy encrypted original for older clients and recovery.
-            if (!MacOSVaultCodec.IsModern(original) && !adoptExisting)
-                await MacOSFileTransaction.CopyNew(file.Path, file.Path + ".legacy-" + Guid.NewGuid().ToString("N") + ".2fa");
-            await MacOSFileTransaction.Replace(file.Path, content, () =>
+            if (!DesktopVaultCodec.IsModern(original) && !adoptExisting)
+                await DesktopFileTransaction.CopyNew(file.Path, file.Path + ".legacy-" + Guid.NewGuid().ToString("N") + ".2fa");
+            await DesktopFileTransaction.Replace(file.Path, content, () =>
             {
                 SecretService.Helper.WriteSecret(Constants.ContainerName, nextKey, nextSecret);
                 if (ActivatedDatafile == null) SettingsService.Instance.DataFilePasswordHash = nextHash;
@@ -90,7 +90,7 @@ public partial class DataService
             {
                 if (text == content) await remoteChange.Apply();
                 else await remoteChange.Restore();
-                await MacOSVaultLocation.WriteAtomicAsync(Path.GetDirectoryName(path)!, Path.GetFileName(path), text);
+                await DesktopVaultLocation.WriteAtomicAsync(Path.GetDirectoryName(path)!, Path.GetFileName(path), text);
             });
             if (nextKey != keyName) SecretService.Helper.ForgetSessionSecret(Constants.ContainerName, keyName);
             return true;
@@ -101,26 +101,26 @@ public partial class DataService
         }
     }
 
-    internal async Task WriteMacOSRemoteVault(string path, string original, string content, string password)
+    internal async Task WriteDesktopRemoteVault(string path, string original, string content, string password)
     {
         var remote = WebDAV.WebDAVClientService.Instance.GetClient().GetConditionalVaultClient(SettingsService.Instance.DataFilePath + "/" + Path.GetFileName(path));
         var revision = await remote.ReadAsync();
-        bool same = await Task.Run(() => MacOSVaultCodec.SameAccounts(MacOSVaultCodec.Decrypt(original, password), MacOSVaultCodec.DecryptCurrent(revision.Content, password, SettingsService.Instance.DataFilePasswordHash)));
+        bool same = await Task.Run(() => DesktopVaultCodec.SameAccounts(DesktopVaultCodec.Decrypt(original, password), DesktopVaultCodec.DecryptCurrent(revision.Content, password, SettingsService.Instance.DataFilePasswordHash)));
         if (!same) throw new IOException("The WebDAV vault changed on another device. Reload before saving; your pending changes have not been uploaded.");
-        var transaction = new MacOSRemoteVaultTransaction(remote, revision, content);
-        await MacOSFileTransaction.Replace(path, content, () => { }, () => { }, async (target, text) =>
+        var transaction = new DesktopRemoteVaultTransaction(remote, revision, content);
+        await DesktopFileTransaction.Replace(path, content, () => { }, () => { }, async (target, text) =>
         {
             if (text == content) await transaction.Apply(); else await transaction.Restore();
-            await MacOSVaultLocation.WriteAtomicAsync(Path.GetDirectoryName(target)!, Path.GetFileName(target), text);
+            await DesktopVaultLocation.WriteAtomicAsync(Path.GetDirectoryName(target)!, Path.GetFileName(target), text);
         });
     }
 
-    private async Task<(bool successful, bool outdated)> SyncMacOSRemoteVault()
+    private async Task<(bool successful, bool outdated)> SyncDesktopRemoteVault()
     {
         await CollectionAccessSemaphore.WaitAsync();
         try
         {
-            var file = await CurrentMacOSVault();
+            var file = await CurrentDesktopVault();
             string original = await File.ReadAllTextAsync(file.Path);
             string password = SecretService.Helper.ReadSecret(Constants.ContainerName, SettingsService.Instance.DataFilePasswordHash);
             var remote = WebDAV.WebDAVClientService.Instance.GetClient().GetConditionalVaultClient(SettingsService.Instance.DataFilePath + "/" + file.Name);
@@ -128,19 +128,19 @@ public partial class DataService
             try { revision = await remote.ReadAsync(); }
             catch (System.Net.Http.HttpRequestException error) when (error.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
-                await Task.Run(() => MacOSVaultCodec.Decrypt(original, password));
+                await Task.Run(() => DesktopVaultCodec.Decrypt(original, password));
                 await remote.CreateAsync(original);
                 return (true, false);
             }
             if (revision.Content == original) return (true, false);
-            await Task.Run(() => MacOSVaultCodec.DecryptCurrent(revision.Content, password, SettingsService.Instance.DataFilePasswordHash));
+            await Task.Run(() => DesktopVaultCodec.DecryptCurrent(revision.Content, password, SettingsService.Instance.DataFilePasswordHash));
             // Remote content is authoritative on reload, never local filesystem timestamps.
-            await MacOSFileTransaction.CopyNew(file.Path, file.Path + ".before-sync-" + Guid.NewGuid().ToString("N") + ".2fa");
+            await DesktopFileTransaction.CopyNew(file.Path, file.Path + ".before-sync-" + Guid.NewGuid().ToString("N") + ".2fa");
             string previousId = SettingsService.Instance.DataFilePasswordHash;
-            string nextId = MacOSVaultCodec.IsModern(revision.Content) && !previousId.StartsWith("vault-", StringComparison.Ordinal)
-                ? MacOSVaultCodec.NewCredentialId() : previousId;
+            string nextId = DesktopVaultCodec.IsModern(revision.Content) && !previousId.StartsWith("vault-", StringComparison.Ordinal)
+                ? DesktopVaultCodec.NewCredentialId() : previousId;
             if (nextId != previousId) RevokeMacOSUnlock();
-            await MacOSFileTransaction.Replace(file.Path, revision.Content, () =>
+            await DesktopFileTransaction.Replace(file.Path, revision.Content, () =>
             {
                 if (nextId != previousId)
                 {
@@ -157,14 +157,14 @@ public partial class DataService
         }
         catch (Exception error)
         {
-            MacOSScanDiagnostics.Record("WebDAV sync", error);
+            DesktopScanDiagnostics.Record("WebDAV sync", error);
             Messenger.Send(new WebDAVStatusChangedMessage(WebDAVStatus.Failed));
             return (false, false);
         }
         finally { CollectionAccessSemaphore.Release(); }
     }
 
-    public async Task UpgradeMacOSVault()
+    public async Task UpgradeDesktopVault()
     {
         string key = ActivatedDatafile != null ? Constants.ActivatedDatafileHashName : SettingsService.Instance.DataFilePasswordHash;
         string value = SecretService.Helper.ReadSecret(Constants.ContainerName, key);
@@ -172,17 +172,17 @@ public partial class DataService
         await ChangeMacOSPassword(password, password);
     }
 
-    public async Task<string> CopyMacOSVault(string folder, string name, bool move)
+    public async Task<string> CopyDesktopVault(string folder, string name, bool move)
     {
         if (!await WriteLocalDatafile()) throw new IOException("The current data file could not be saved. Try again before copying it.");
         await CollectionAccessSemaphore.WaitAsync();
         try
         {
-            var source = await CurrentMacOSVault();
-            string destination = Path.Combine(folder, MacOSFileTransaction.FileName(name));
+            var source = await CurrentDesktopVault();
+            string destination = Path.Combine(folder, DesktopFileTransaction.FileName(name));
             if (Path.GetFullPath(source.Path) == Path.GetFullPath(destination)) return source.Path;
             if (move) RevokeMacOSUnlock();
-            await MacOSFileTransaction.CopyNew(source.Path, destination);
+            await DesktopFileTransaction.CopyNew(source.Path, destination);
             if (move)
             {
                 string previousPath = SettingsService.Instance.DataFilePath, previousName = SettingsService.Instance.DataFileName;

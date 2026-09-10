@@ -4,9 +4,9 @@ using System.Security.Cryptography;
 using System.Text;
 using BiometryService;
 
-namespace Project2FA.Services.MacOS;
+namespace Project2FA.Services.Desktop;
 
-internal static class MacOSNative
+internal static class DesktopNative
 {
     private const string Library = "libTwoFastMac.dylib";
     [DllImport(Library)] internal static extern int tf_biometry_status();
@@ -126,21 +126,21 @@ internal static class MacOSNative
     }
 }
 
-internal sealed class MacOSBiometryService : IBiometryService
+internal sealed class DesktopBiometryService : IBiometryService
 {
     public Task<BiometryCapabilities> GetCapabilities(CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
-        int status = MacOSNative.tf_biometry_status();
+        int status = DesktopNative.tf_biometry_status();
         return Task.FromResult(new BiometryCapabilities(status == -6 ? BiometryType.None : BiometryType.Fingerprint, status == 0, status != -5));
     }
-    public Task ScanBiometry(CancellationToken ct) => MacOSNative.ScanBiometry(ct);
-    public Task Encrypt(CancellationToken ct, string keyName, string keyValue) => MacOSNative.WithAuthentication(ct, context =>
+    public Task ScanBiometry(CancellationToken ct) => DesktopNative.ScanBiometry(ct);
+    public Task Encrypt(CancellationToken ct, string keyName, string keyValue) => DesktopNative.WithAuthentication(ct, context =>
     {
-        MacOSNative.Write(keyName, keyValue, true, context);
+        DesktopNative.Write(keyName, keyValue, true, context);
         return true;
     });
-    public Task<string> Decrypt(CancellationToken ct, string keyName) => MacOSNative.WithAuthentication(ct, context => MacOSNative.Read(keyName, context));
-    public void Remove(string keyName) => MacOSNative.Delete(keyName);
+    public Task<string> Decrypt(CancellationToken ct, string keyName) => DesktopNative.WithAuthentication(ct, context => DesktopNative.Read(keyName, context));
+    public void Remove(string keyName) => DesktopNative.Delete(keyName);
 }
 #endif

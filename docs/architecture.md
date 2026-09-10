@@ -89,41 +89,38 @@ cover it, but the *shape* misleads readers — human and agent alike — into wr
 new code instead of reusing what exists. Recording it here is what keeps that
 from repeating; the retirement sequence is in [plan.md](plan.md).
 
-### 1. `MacOS*` is a lie about scope
+### 1. Desktop naming reflects scope
 
-17 of 18 `MacOS*.cs` files compile under `#if TWOFAST_DESKTOP`, so they ship in
-the **Windows** build. Only `MacOSNative.cs` is genuinely macOS-only
-(`#if TWOFAST_MACOS`). The same misnaming reaches into tests:
-`tests/MacOS/ParserTests.csproj` is the *shared* parser suite and is executed by
-`scripts/test-windows.ps1`.
+Desktop implementations now use `Desktop*` names and compile for both Windows
+and macOS under `TWOFAST_DESKTOP`. Only `MacOSNative.cs` is genuinely macOS-only
+(`#if TWOFAST_MACOS`). The parser suite remains under `tests/MacOS/` for
+historical compatibility and is executed by `scripts/test-windows.ps1`.
 
 ### 2. Platform abstraction expressed as duplicate type names
 
 `Platforms/Desktop/MacOSNative.cs` and `Platforms/Desktop/Windows/WindowsNative.cs`
-both declare `MacOSNative` and `MacOSBiometryService` in namespace
-`Project2FA.Services.MacOS`, mutually exclusive by compile symbol. The Windows
-file also holds `WindowsCredentialStore`; `WindowsCameras`, `WindowsQrScanner`
-and `WindowsScreenCapture` sit in the same `…Services.MacOS` namespace.
+provide the same `DesktopNative` seam under mutually exclusive compile symbols.
+The Windows file also holds `WindowsCredentialStore`; `WindowsCameras`,
+`WindowsQrScanner` and `WindowsScreenCapture` use the shared
+`…Services.Desktop` namespace.
 
-The real structure is *one desktop capability with two platform implementations*.
-It is currently encoded as identical class names in a wrongly-named namespace
-rather than an interface with two implementations, so neither reader nor tooling
-can see the seam.
+The real structure is one desktop capability with two platform implementations;
+the shared name makes that seam explicit to readers and tooling.
 
 ### 3. Duplicated capabilities
 
 | Capability | Implementations |
 | --- | --- |
-| otpauth parsing | `Project2FA.Shared/Services/Parser/Project2FAParser` (DI, regex-based) **and** `Platforms/Desktop/MacOSOtpParser` (static, strict validation, OCRA + MobileID) |
-| vault encrypt/decrypt | `Services/Crypto/CryptoService` + `Serialization/SerializationCryptoService` **and** `Platforms/Desktop/MacOSVaultCodec` |
+| otpauth parsing | One `IProject2FAParser` seam. Desktop uses `Services/Parser/StrictProject2FAParser` (strict validation, OCRA + MobileID); mobile uses the legacy-compatible parser. |
+| vault encrypt/decrypt | Shared `Services/Serialization/DesktopVaultCodec` owns V4 and delegates explicit V0–V3 compatibility to `CryptoService` / `SerializationCryptoService`. |
 | ~~WebDAV client + directory~~ | resolved — the dead `Project2FA.Core/Services/WebDAV/` fork was deleted; `Project2FA.Shared/Services/WebDAV/` is the only implementation |
 | ~~bool → constant converters~~ | resolved — `FavouriteToIconConverter`, `ShowCodeToIconConverter`, `FavouriteTooltipConverter` and `TOTPVisibilityTooltipConverter` now derive from `Converters/BoolToValueConverter.cs` and only declare their value pair |
 | ~~PBKDF2 `DeriveKey` + `OtpHashMode` switch~~ | resolved — lifted into `Services/Importer/BackupCryptoHelper.cs`, used by the andOTP and 2FAS importers |
 
-`MacOSOtpParser` is the stricter of the two parsers — it bounds input length,
+`StrictProject2FAParser` is the desktop parser — it bounds input length,
 rejects non-default ports, user-info and fragments, validates the Base32 secret
-against a round-trip decode, and constrains algorithm, digits and period. Any
-consolidation must keep those checks; it is a security control, not a style
+against a round-trip decode, and constrains algorithm, digits and period. Those
+checks are covered by the parser suite and are a security control, not a style
 difference.
 
 The importer duplication was scaffolding, not format logic. `BackupCryptoHelper`
@@ -133,8 +130,8 @@ still supplies its own digest, iteration count and payload layout, and keeps its
 own upstream attribution header. Aegis was left alone — its slot-based key
 derivation shares nothing with the other two.
 
-**Not duplication, despite appearances.** `MacOSFileTransaction` (local
-backup → write → rollback), `MacOSRemoteVaultTransaction` (conditional remote
+**Not duplication, despite appearances.** `DesktopFileTransaction` (local
+backup → write → rollback), `DesktopRemoteVaultTransaction` (conditional remote
 replace, tolerant of a lost response) and `AccountCommitQueue<T>` (in-memory
 add/save/revert gate) are three different concerns and should stay separate.
 Likewise the thin `AddAccountPageViewModel` / `AddAccountContentDialogViewModel`
@@ -154,59 +151,47 @@ Deleted, along with the now-pointless `Compile`/`EmbeddedResource`/`None`
 `Remove` items (which also referenced a `Messenger\` folder that no longer
 exists). `Project2FA.Shared/Services/WebDAV/` is the single implementation.
 
-### 4. Layering inversion — the load-bearing one
+### 4. Shared desktop boundary
 
-`Project2FA.Shared` contains **42 references to `Project2FA.Services.MacOS.*`
-across 13 files**. The shared layer depends on the head's platform namespace,
-which is the reverse of the stated dependency direction, and is why the desktop
-code cannot be reasoned about from the shared project alone.
+Shared code uses the conditional `GlobalUsings.Desktop.cs` seam for desktop
+capabilities. There are no fully-qualified `Project2FA.Services.Desktop.*`
+references scattered through shared view-models and services. The V4 codec is
+owned by the shared serialization layer; the desktop project supplies native
+and filesystem implementations.
 
 | Shared file | Refs |
 | --- | --- |
-| `Services/DataService.cs` | 15 |
-| `ViewModels/LoginPageViewModel.cs` | 6 |
-| `ViewModels/AccountCodePageViewModel.cs` | 4 |
-| `ViewModels/Base/AddAccountViewModelBase.cs` | 3 |
-| `ViewModels/Base/DatafileViewModelBase.cs`, `ContentDialogs/ChangeDatafilePasswordContentDialogViewModel.cs`, `ContentDialogs/UpdateDatafileContentDialogViewModel.cs`, `ViewModels/NewDataFilePageViewModel.cs` | 2 each |
-| `Services/Importer/TwofastBackupImportService.cs`, `ViewModels/ContentDialogs/UseDatafileContentDialogViewModel.cs`, `ViewModels/FileActivationPageViewModel.cs`, `ViewModels/SettingPageViewModel.Desktop.cs`, `ViewModels/UseDataFilePageViewModel.cs` | 1 each |
+| `Project2FA.Shared/**/*.cs` | 0 fully-qualified references |
 
-Every one is a fully-qualified `Project2FA.Services.MacOS.X.Y(...)` call rather
-than an injected abstraction — `MacOSVaultCodec`, `MacOSVaultLocation`,
-`MacOSSession`, `MacOSDeviceBinding`, `MacOSMobileId`, `MacOSOtpParser`,
-`MacOSScanDiagnostics`, `VaultSaveErrors`. Phase 2 of [plan.md](plan.md) exists
-to give these interfaces so the count can go to zero.
+The shared project refers to desktop capabilities by their short names through
+the conditional global seam. The implementation inventory remains explicit in
+the desktop namespace and is covered by the platform suites.
 
 `DataService.WriteAtomicAsync` (line 1004) is the clearest example: the method
 body is an `#if TWOFAST_DESKTOP` early-return delegating to
-`MacOSVaultLocation.WriteAtomicAsync`, followed by the UWP `StorageFile`
+`DesktopVaultLocation.WriteAtomicAsync`, followed by the UWP `StorageFile`
 implementation. Two atomic-write implementations, one file, selected by
 preprocessor — the shape an interface is for.
 
-### 4a. Localization bypassed entirely
+### 4a. Desktop resource seam
 
-`src/Project2FA.Uno/Platforms/Desktop/` contains **44 hardcoded user-facing UI
-literals** (dialog titles, body text, button captions) and **32 English
-exception messages that are shown to the user** — and **zero** references to
-`Strings.Resources`, while the app ships 15+ languages. `MacOSDatafilePage.cs`
-alone builds six `ContentDialog`s inline with literal English text instead of
-using `x:Uid` resources and `IDialogService`.
-
-Every one of those strings is invisible to the translation pipeline. This is the
-same failure as the duplicated classes — existing infrastructure not found, so
-rebuilt inline.
+Desktop data-file, OCRA, biometric, and QR-import dialogs and status messages
+resolve through `DesktopText`, backed by `Project2FA.Shared/Strings/en/` and a
+safe English fallback. Native exception diagnostics may retain fallback text
+because those messages also serve platform failure reporting and logs.
 
 ### 5. View-model extension by platform partial
 
-`MacOSViewModels.cs`, `MacOSOcraViewModels.cs`, `MacOSNewDataFile.cs`,
-`MacOSDatafileActions.cs`, `MacOSAccountSave.cs` and `MacOSReset.cs` add
+`DesktopViewModels.cs`, `DesktopOcraViewModels.cs`, `DesktopNewDataFile.cs`,
+`DesktopDatafileActions.cs`, `DesktopAccountSave.cs` and `DesktopReset.cs` add
 `partial` members to `LoginPageViewModel`, `AccountCodePageViewModel`,
 `SettingsPartViewModel`, `NewDataFilePageViewModel` and `DataService` from the
 platform folder. `partial` for platform specialization is fine and matches
-`SettingPageViewModel.Desktop.cs` in the shared project. What is not fine is that
-these files also carry behaviour that belongs in `ViewModels/Base/*ViewModelBase`
-and would then be shared with mobile — and that `MacOSSession` reaches
-`App.ShellPageInstance` statically instead of going through the navigation and
-dialog services.
+`SettingPageViewModel.Desktop.cs` in the shared project. The remaining partial
+classes contain desktop-only camera, biometric, native credential, and
+navigation integration. Pure input validation has moved to shared code;
+platform workflows remain partial because mobile has different native services
+and lifecycle requirements.
 
 ## Testing
 

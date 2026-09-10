@@ -27,7 +27,7 @@ namespace Project2FA.ViewModels
             set
             {
 #if TWOFAST_DESKTOP
-                _ = SetMacOSBiometry(value);
+                _ = SetDesktopBiometry(value);
 #else
                 _settings.ActivateBiometricLogin = value;
                 OnPropertyChanged(nameof(ActivateBiometricLogin));
@@ -61,7 +61,7 @@ namespace Project2FA.ViewModels
         private async Task CheckBiometricLoginIsSupported()
         {
 #if TWOFAST_DESKTOP
-            var capabilities = await new Project2FA.Services.MacOS.MacOSBiometryService().GetCapabilities(CancellationToken.None);
+            var capabilities = await new DesktopBiometryService().GetCapabilities(CancellationToken.None);
             IsBiometricLoginSupported = !changingMacBiometry && capabilities.IsSupported && capabilities.IsEnabled;
 #endif
         }

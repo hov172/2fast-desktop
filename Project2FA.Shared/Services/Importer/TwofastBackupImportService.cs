@@ -29,7 +29,7 @@ namespace Project2FA.Services.Importer
                 return Task.FromResult((new List<TwoFACodeModel>(), false));
             }
 #if TWOFAST_DESKTOP
-            var datafile = Project2FA.Services.MacOS.MacOSVaultCodec.Decrypt(content, Encoding.UTF8.GetString(bytePassword));
+            var datafile = DesktopVaultCodec.Decrypt(content, Encoding.UTF8.GetString(bytePassword));
 #else
             // read the iv for AES
             DatafileModel datafile = SerializationService.Deserialize<DatafileModel>(content);

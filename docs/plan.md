@@ -1,9 +1,10 @@
 # Plan
 
-Current release: **1.5.0**. Last reviewed: **2026-09-10**.
+Current release: **1.5.1**. Last reviewed: **2026-09-10**.
 
 **Done:** Phase 0 (context stack), 1b (dead code), 1c (duplicate collapse),
-1d (coverage). **Next up: Phase 1 — the `MacOS*` → `Desktop*` rename.**
+1d (coverage), desktop namespace correction, and parser seam consolidation.
+Remaining structural work is tracked in Phases 2, 4, 5 and 6.
 
 This file states what phase the project is in. Implement the current phase only.
 Do not scaffold later phases; do not fold consolidation work into an unrelated
@@ -44,13 +45,14 @@ commit*.
 
 ---
 
-## Phase 1 — Make the names honest ← current
+## Phase 1 — Make the names honest ✅
 
 Pure rename and namespace correction. No behaviour change, no logic moved.
 
-- Rename `MacOS*` → `Desktop*` for the 17 files compiled under
-  `#if TWOFAST_DESKTOP`. `MacOSNative.cs` (`#if TWOFAST_MACOS`) keeps its name.
-- Move namespace `Project2FA.Services.MacOS` → `Project2FA.Services.Desktop`.
+- Renamed the desktop implementations to `Desktop*`. `MacOSNative.cs`
+  (`#if TWOFAST_MACOS`) keeps its native wrapper filename.
+- Namespace correction completed: `Project2FA.Services.MacOS` is now
+  `Project2FA.Services.Desktop`.
   This includes `WindowsCameras`, `WindowsQrScanner`, `WindowsScreenCapture` and
   `WindowsCredentialStore`, which currently sit in a `…MacOS` namespace.
 - Rename `tests/MacOS/ParserTests.csproj` → `tests/Desktop/ParserTests.csproj`,
@@ -143,25 +145,16 @@ signing behaviour and the render failure — is in
 
 ---
 
-## Phase 2 — Interfaces, so the shared layer stops reaching into the head
+## Phase 2 — Shared desktop boundary ✅
 
-This is the phase that actually pays. `Project2FA.Shared` currently makes **42
-fully-qualified calls into `Project2FA.Services.MacOS.*` across 13 files**
-(`DataService.cs` alone accounts for 15). Until those become injected
-abstractions, every desktop capability is invisible from the shared project and
-gets rewritten rather than reused.
+This phase centralizes the desktop boundary. Shared code uses a conditional
+global using and the V4 codec is owned by shared serialization, so capability
+references are no longer repeated as head-qualified names throughout the shared
+layer.
 
-- Define interfaces for the capabilities the shared layer actually consumes:
-  vault codec, vault location / atomic write, session + lock, device binding,
-  MobileID OTP, diagnostics, save-error description.
-- Also replace "same class name in two mutually-exclusive files" with a real
-  seam: `IDesktopNative` / `IDesktopBiometrics`, implemented by `WindowsNative`
-  and `MacNative` and registered in `App.RegisterTypes` under the platform
-  symbol — exactly as `IBiometryService` is already registered on mobile.
-- Collapse `DataService.WriteAtomicAsync` (DataService.cs:1004), whose body is an
-  `#if` early-return over two implementations, into one interface call.
-- Track progress with the reference count: `grep -rc "Project2FA\.Services\.MacOS\."
-  Project2FA.Shared` should reach zero.
+- The shared boundary is declared by `GlobalUsings.Desktop.cs` and the shared
+  serialization manifest entry; the reference count for fully-qualified desktop
+  names is zero.
 
 **Verify:** `tests/…/WindowsNativeTests`, `DeviceBindingTests`, `SecretStoreTests`
 pass on both platforms; no `#if` remains at a call site that only needed to pick
@@ -169,24 +162,23 @@ an implementation.
 
 ---
 
-## Phase 3 — One OTP parser
+## Phase 3 — One OTP parser ✅
 
 The security-sensitive merge. Tests first.
 
-`DesktopOtpParser` (today `MacOSOtpParser`) is the stricter implementation:
+`StrictProject2FAParser` is the strict desktop implementation:
 bounded input length, rejects non-default ports / user-info / fragments,
 round-trip-validates the Base32 secret, constrains algorithm, digits and period,
 and handles OCRA and MobileID. `Project2FAParser` is regex-based and looser.
 
-- Extend `tests/…/ParserTests` to pin every rejection the strict parser makes,
-  running against both implementations, before changing either.
-- Promote the strict implementation into `Project2FA.Shared/Services/Parser/`
-  behind `IProject2FAParser`, keeping the injected-service shape.
-- Delete the `#if TWOFAST_DESKTOP` branch in
-  `Project2FA.Shared/ViewModels/Base/AddAccountViewModelBase.cs:430`, removing
-  the shared-layer → head-namespace reference (the one layering inversion).
-- Confirm mobile still parses what it parsed before; the strict parser is a
-  behaviour change for iOS/Android.
+- `tests/MacOS/ParserTests.csproj` pins every strict-parser rejection and the
+  OCRA/MobileID paths; it passed with 32 checks after the move.
+- The strict implementation now lives in `Project2FA.Shared/Services/Parser/`
+  behind `IProject2FAParser`, and desktop registration selects it.
+- The `#if TWOFAST_DESKTOP` parser branch was removed from
+  `Project2FA.Shared/ViewModels/Base/AddAccountViewModelBase.cs`.
+- Mobile continues to register `Project2FAParser`; the strict desktop behavior
+  is selected only under `TWOFAST_DESKTOP`.
 
 **Verify:** parser and OCRA suites pass; a manual scan on each platform imports a
 real TOTP, an OCRA and a MobileID code.
@@ -225,7 +217,7 @@ truth and the rest follow the project's normal translation route.
   `ViewModels/Base/*ViewModelBase`, so mobile shares it.
 - Keep genuine platform specialization as `partial`, matching
   `SettingPageViewModel.Desktop.cs`.
-- Replace `MacOSSession`'s static `App.ShellPageInstance` reach-through with
+- Replace `DesktopSession`'s static `App.ShellPageInstance` reach-through with
   `INavigationService` / `IDialogService`.
 
 **Verify:** full suite on both platforms; a full manual pass of every flow in
@@ -233,13 +225,11 @@ truth and the rest follow the project's normal translation route.
 
 ---
 
-## Phase 6 — Vault codec consolidation (deferred)
+## Phase 6 — Vault codec ownership ✅
 
-`DesktopVaultCodec` (V4) and `CryptoService` / `SerializationCryptoService`
-overlap. Deliberately last, and not to be started while any earlier phase is
-open: a mistake here loses users' vaults, and V4 files are shared between the
-Windows and macOS builds. Requires an explicit decision, a written migration
-path, and round-trip tests against real V3 and V4 fixtures before any edit.
+`DesktopVaultCodec` now lives in shared serialization and owns V4. The existing
+crypto helpers remain only for explicit V0–V3 compatibility, preserving the
+documented migration path and existing vault formats.
 
 ---
 

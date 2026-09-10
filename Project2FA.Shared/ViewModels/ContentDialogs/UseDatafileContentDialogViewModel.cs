@@ -163,7 +163,7 @@ namespace Project2FA.ViewModels
                 try
                 {
 #if TWOFAST_DESKTOP
-                    await Task.Run(() => Project2FA.Services.MacOS.MacOSVaultCodec.Decrypt(datafileStr, Password));
+                    await Task.Run(() => DesktopVaultCodec.Decrypt(datafileStr, Password));
 #else
                     var deserializeCollection = SerializationCryptoService.DeserializeDecrypt<DatafileModel>
                         (Encoding.UTF8.GetBytes(Password), iv, datafileStr, datafile.Version);

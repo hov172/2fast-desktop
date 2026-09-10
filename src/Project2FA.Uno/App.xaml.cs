@@ -267,7 +267,7 @@ namespace Project2FA.UnoApp
                 if (timeDiff.TotalMinutes >= SettingsService.Instance.AutoLogoutMinutes)
                 {
 #if TWOFAST_DESKTOP
-                    Project2FA.Services.MacOS.MacOSSession.Lock();
+                    DesktopSession.Lock();
 #endif
                     _focusLostTimer.Stop();
                     var dialogService = Current.Container.Resolve<IDialogService>();
@@ -421,7 +421,11 @@ namespace Project2FA.UnoApp
             container.RegisterSingleton<ISerializationService, SerializationService>();
             container.RegisterSingleton<ISerializationCryptoService, SerializationCryptoService>();
             container.RegisterSingleton<ISettingsAdapter, LocalSettingsAdapter>();
+#if TWOFAST_DESKTOP
+            container.RegisterSingleton<IProject2FAParser, StrictProject2FAParser>();
+#else
             container.RegisterSingleton<IProject2FAParser, Project2FAParser>();
+#endif
             container.RegisterSingleton<INetworkTimeService, NetworkTimeService>();
             //container.RegisterSingleton<IPurchaseAddOnService, PurchaseAddOnService>();
             container.RegisterSingleton<ILoggingService, LoggingService>();

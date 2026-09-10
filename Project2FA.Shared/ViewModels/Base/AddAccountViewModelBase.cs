@@ -196,7 +196,7 @@ namespace Project2FA.ViewModels
             Model.SelectedCategories ??= new ObservableCollection<CategoryModel>();
             Model.SelectedCategories.AddRange(GlobalTempCategories.Where(x => x.IsSelected == true), true);
 #if TWOFAST_DESKTOP
-            if (!await DataService.Instance.AddMacOSAccount(Model)) return;
+            if (!await DataService.Instance.AddDesktopAccount(Model)) return;
 #else
             DataService.Instance.Collection.Add(Model);
 #endif
@@ -424,13 +424,7 @@ namespace Project2FA.ViewModels
         /// <returns>true if TOTP</returns>
         public async Task<bool> ParseQRCode(List<KeyValuePair<string, string>> accountValuePair = null)
         {
-#if TWOFAST_DESKTOP
-            List<KeyValuePair<string, string>> valuePair;
-            if (accountValuePair != null) valuePair = accountValuePair;
-            else if (!Project2FA.Services.MacOS.MacOSOtpParser.TryParse(_qrCodeStr, out valuePair)) return false;
-#else
             List<KeyValuePair<string, string>> valuePair = accountValuePair ?? Project2FAParser.ParseQRCodeStr(_qrCodeStr);
-#endif
 
             if (valuePair.Count == 0)
             {
@@ -444,7 +438,7 @@ namespace Project2FA.ViewModels
                 {
 #if TWOFAST_DESKTOP
                     case "mobileidbinding":
-                        Model.MobileIdDeviceId = Project2FA.Services.MacOS.MacOSDeviceBinding.Identity;
+                        Model.MobileIdDeviceId = DesktopDeviceBinding.Identity;
                         break;
                     case "importnotice":
                         Model.ImportNotice = item.Value;
@@ -454,7 +448,7 @@ namespace Project2FA.ViewModels
                         Model.MobileIdChecksum = item.Value == "checksum";
                         break;
                     case "ocrasuite":
-                        if (item.Value != Project2FA.Services.MacOS.MacOSOcra.Suite) return false;
+                        if (item.Value != DesktopOcra.Suite) return false;
                         Model.OTPType = "ocra";
                         Model.OcraSuite = item.Value;
                         break;

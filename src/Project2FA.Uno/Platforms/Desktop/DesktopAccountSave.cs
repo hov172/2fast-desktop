@@ -17,7 +17,7 @@ public partial class DataService
         finally { Collection.CollectionChanged += Accounts_CollectionChanged; }
     }
     private readonly AccountCommitQueue<TwoFACodeModel> accountCommits = new();
-    public async Task<bool> AddMacOSAccount(TwoFACodeModel model)
+    public async Task<bool> AddDesktopAccount(TwoFACodeModel model)
     {
         // Await durable save before navigating: Accounts initialization reloads
         // the vault and must not race the collection's async event handler.

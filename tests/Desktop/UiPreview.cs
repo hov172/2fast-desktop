@@ -78,8 +78,8 @@ internal static class DesktopUiPreview
         shell.ViewModel.NavigationIsAllowed = true;
         if (!shell.MainFrame.Navigate(typeof(Microsoft.UI.Xaml.Controls.Page))) throw new Exception("Unlocked navigation was blocked.");
         data.Collection.Add(new TwoFACodeModel { Label = "Synthetic lock check", Issuer = "Example" });
-        var token = Project2FA.Services.MacOS.MacOSSession.Token;
-        Project2FA.Services.MacOS.MacOSSession.Lock();
+        var token = DesktopSession.Token;
+        DesktopSession.Lock();
         if (shell.ViewModel.NavigationIsAllowed || data.Collection.Count != 0 || !token.IsCancellationRequested)
             throw new Exception("Lock failed to revoke navigation, clear accounts, or cancel pending work.");
         shell.MainFrame.Navigate(typeof(AccountCodePage));

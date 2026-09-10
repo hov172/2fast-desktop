@@ -5,10 +5,10 @@ using System.Security.Principal;
 using System.Text;
 using BiometryService;
 
-namespace Project2FA.Services.MacOS;
+namespace Project2FA.Services.Desktop;
 
 // Windows implementation of the shared desktop service boundary.
-internal static class MacOSNative
+internal static class DesktopNative
 {
     internal static string Read(string key, IntPtr context = default) => WindowsCredentialStore.Read(key, context != IntPtr.Zero);
     internal static void Write(string key, string value, bool biometric = false, IntPtr context = default) => WindowsCredentialStore.Write(key, value, biometric);
@@ -23,7 +23,7 @@ internal static class MacOSNative
     }, ct);
     internal static Task<string?> ScanCamera(CancellationToken ct, bool screen = false) => WindowsQrScanner.Scan(ct, screen);
 }
-internal sealed class MacOSBiometryService : IBiometryService
+internal sealed class DesktopBiometryService : IBiometryService
 {
     public Task<BiometryCapabilities> GetCapabilities(CancellationToken ct)
     {
@@ -31,14 +31,14 @@ internal sealed class MacOSBiometryService : IBiometryService
         bool supported = WindowsCredentialStore.HelloAvailable();
         return Task.FromResult(new BiometryCapabilities(BiometryType.Fingerprint, supported, supported));
     }
-    public Task ScanBiometry(CancellationToken ct) => MacOSNative.WithAuthentication(ct, _ =>
+    public Task ScanBiometry(CancellationToken ct) => DesktopNative.WithAuthentication(ct, _ =>
     {
         string name = "vault:verification:" + Guid.NewGuid().ToString("N");
         try { WindowsCredentialStore.Write(name, Convert.ToHexString(RandomNumberGenerator.GetBytes(32)), true); return true; }
         finally { WindowsCredentialStore.Delete(name); }
     });
-    public Task Encrypt(CancellationToken ct, string keyName, string value) => MacOSNative.WithAuthentication(ct, _ => { WindowsCredentialStore.Write(keyName, value, true); return true; });
-    public Task<string> Decrypt(CancellationToken ct, string keyName) => MacOSNative.WithAuthentication(ct, _ => WindowsCredentialStore.Read(keyName, true));
+    public Task Encrypt(CancellationToken ct, string keyName, string value) => DesktopNative.WithAuthentication(ct, _ => { WindowsCredentialStore.Write(keyName, value, true); return true; });
+    public Task<string> Decrypt(CancellationToken ct, string keyName) => DesktopNative.WithAuthentication(ct, _ => WindowsCredentialStore.Read(keyName, true));
     public void Remove(string keyName) => WindowsCredentialStore.Delete(keyName);
 }
 

@@ -39,7 +39,7 @@ namespace Project2FA.Uno.Views
             }
             PasswordWhitespaceHint.SetBinding(TextBlock.TextProperty, new Binding { Path = new PropertyPath("PasswordWhitespaceHint") });
             ValidationMessage.SetBinding(TextBlock.TextProperty, new Binding { Path = new PropertyPath("ValidationMessage") });
-            Loaded += async (s, e) => { if (ViewModel != null) await ViewModel.InitializeMacOSLocation(); };
+            Loaded += async (s, e) => { if (ViewModel != null) await ViewModel.InitializeDesktopLocation(); };
 #endif
         }
 

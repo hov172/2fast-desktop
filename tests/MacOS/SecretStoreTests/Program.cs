@@ -2,7 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Project2FA.Services;
-using Project2FA.Services.MacOS;
+using Project2FA.Services.Desktop;
 using UNOversal.Services.Secrets;
 
 void Check(bool result, string name)
@@ -27,25 +27,25 @@ try
     using (var aes = new AesGcm(key, 16)) aes.Encrypt(nonce, data, encrypted, tag);
     File.WriteAllBytes(path, nonce.Concat(tag).Concat(encrypted).ToArray());
     File.Copy(path, path + ".tmp");
-    MacOSNative.FailWrites = true;
+    DesktopNative.FailWrites = true;
     bool failed = false;
     try { SecretHelper.MigrateLegacyStore(path); } catch (InvalidOperationException) { failed = true; }
     Check(failed && File.Exists(path), "failed Keychain migration preserves the original file");
-    MacOSNative.FailWrites = false;
+    DesktopNative.FailWrites = false;
     SecretHelper.MigrateLegacyStore(path);
     Check(!File.Exists(path) && !File.Exists(path + ".tmp"), "successful migration removes weak legacy copies");
-    Check(MacOSNative.Items.Count == 1 && !MacOSNative.Items.Values.Contains("synthetic-vault-password"), "migration never persists the vault password");
+    Check(DesktopNative.Items.Count == 1 && !DesktopNative.Items.Values.Contains("synthetic-vault-password"), "migration never persists the vault password");
     var helper = new SecretHelper();
     Check(helper.ReadSecret("container", "test-hash") == "", "migration does not automatically unlock a vault");
     helper.WriteSecret("container", "test-hash", "synthetic-vault-password");
-    Check(helper.ReadSecret("container", "test-hash") == "synthetic-vault-password" && MacOSNative.Items.Count == 1, "password login caches the secret only in memory");
+    Check(helper.ReadSecret("container", "test-hash") == "synthetic-vault-password" && DesktopNative.Items.Count == 1, "password login caches the secret only in memory");
     SecretHelper.ClearSession();
     Check(helper.ReadSecret("container", "test-hash") == "", "logout clears the session password");
     Check(helper.ReadSecret("container", "WDPassword") == "synthetic-webdav-password", "WebDAV credentials survive session locking in Keychain");
     SettingsService.Instance.ActivateBiometricLogin = true;
     string biometricKey = SecretHelper.BiometricKey("test-hash");
     helper.RemoveSecret("container", "test-hash");
-    Check(MacOSNative.Deleted.Contains(biometricKey) && !SettingsService.Instance.ActivateBiometricLogin, "password removal revokes Touch ID and disables its setting");
+    Check(DesktopNative.Deleted.Contains(biometricKey) && !SettingsService.Instance.ActivateBiometricLogin, "password removal revokes Touch ID and disables its setting");
     SettingsService.Instance.DataFilePath = "/synthetic/another.2fa";
     Check(SecretHelper.BiometricKey("test-hash") != biometricKey, "Touch ID credentials are bound to the selected vault");
 }

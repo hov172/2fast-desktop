@@ -1,4 +1,4 @@
-using Project2FA.Services.MacOS;
+using Project2FA.Services.Desktop;
 using BiometryService;
 if (!OperatingSystem.IsWindows()) { Console.WriteLine("SKIP: Windows native tests require Windows."); return; }
 string name = "2fast-native-test-" + Guid.NewGuid().ToString("N");
@@ -12,7 +12,7 @@ try
     catch (BiometryException error) when (error.Reason == BiometryExceptionReason.KeyInvalidated) { }
     Console.WriteLine("PASS: Windows DPAPI credential round trip, deletion and missing-item rejection.");
     using var canceled = new CancellationTokenSource(); canceled.Cancel();
-    try { await MacOSNative.WithAuthentication<bool>(canceled.Token, _ => throw new Exception("Canceled operation ran")); }
+    try { await DesktopNative.WithAuthentication<bool>(canceled.Token, _ => throw new Exception("Canceled operation ran")); }
     catch (OperationCanceledException) { Console.WriteLine("PASS: Canceled secure operation did not run."); }
     bool available = WindowsCredentialStore.HelloAvailable();
     Console.WriteLine("Windows Hello enrolled: " + available);
@@ -28,7 +28,7 @@ try
     }
 }
 finally { WindowsCredentialStore.Delete(name); }
-namespace Project2FA.Services.MacOS
+namespace Project2FA.Services.Desktop
 {
     internal static class WindowsQrScanner
     {
