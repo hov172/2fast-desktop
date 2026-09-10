@@ -160,6 +160,47 @@ generated half. Installing the workload took the generated file count from **1 t
 58** and the error count from **285 to 0**. If you see those errors, check the
 workload before reading any C#.
 
+**It builds and launches, but renders nothing.** Registering the Debug layout and
+running it produces a live, responsive window with correct chrome and title
+(`2fast - two factor authenticator`) and an entirely black client area. This is
+**pre-existing**, not caused by any change on this branch: the same build from
+unmodified `main` (`2b6d3eb`), in a separate worktree, behaves identically. When
+checking that, note that `Add-AppxPackage -Register` silently no-ops if the same
+identity and version is already registered — remove the package first, then
+register, and confirm `InstallLocation` actually moved, or the "baseline" run is
+really the branch build.
+
+The startup logic is *correct*. Instrumenting `OnStartAsync` showed the full
+sequence completing cleanly on a fresh install:
+
+```
+CreateShell called → ShellPage resolved → OnStartAsync entered (Content == null)
+→ fresh-install branch → NavigateAsync("/TutorialPage") success=True
+→ Window.Current.Content = ShellPage (MainFrame content: TutorialPage)
+→ Activate() returned
+```
+
+No exception, nothing in the Application event log, nothing in
+`App_UnhandledException`, and `LocalState` stays empty. So the visual tree is
+fully constructed and the window is activated — the content simply never paints.
+That points at rendering/composition in UWP-on-.NET-10 rather than at anything in
+this repository's code, which is why no amount of reading the C# will find it.
+
+Running it needs one thing beyond the build: the **Debug** VCLibs framework
+package, or registration fails with `0x80073CF3`:
+
+```
+Add-AppxPackage "C:\Program Files (x86)\Microsoft SDKs\Windows Kits\10\ExtensionSDKs\Microsoft.VCLibs\14.0\Appx\Debug\x64\Microsoft.VCLibs.x64.Debug.14.00.appx"
+Add-AppxPackage -Register "<bin>\net10.0-windows10.0.26100.0\AppxManifest.xml"
+```
+
+Remove it again with `Get-AppxPackage *2fastBeta* | Remove-AppxPackage`.
+
+**Recommendation:** treat this head as compile-only. It ships nothing, and its
+value is as a second compiler over `Project2FA.Shared`. Chasing the render
+failure means debugging a very new platform combination for an app this project
+does not distribute.
+
 **Signing:** the project pins a Store certificate
 (`PackageCertificateThumbprint 7DA25049…`) that exists only on the release
 machine. It previously had `AppxPackageSigningEnabled=True` unconditionally, so
