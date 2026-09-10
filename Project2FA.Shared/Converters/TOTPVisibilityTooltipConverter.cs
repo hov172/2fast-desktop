@@ -1,29 +1,9 @@
-﻿using System;
-#if WINDOWS_UWP
-using Windows.UI.Xaml.Data;
-#else
-using Microsoft.UI.Xaml.Data;
-#endif
-
 namespace Project2FA.Converters
 {
-    public partial class TOTPVisibilityTooltipConverter : IValueConverter
+    // Bound to HideTOTPCode: hidden codes offer "show", visible codes offer "hide".
+    public partial class TOTPVisibilityTooltipConverter : BoolToValueConverter
     {
-        public object Convert(object value, Type targetType, object parameter, string language)
-        {
-            if (!(bool)value)
-            {
-                return Strings.Resources.AccountCodePageTooltipHideTOTP;
-            }
-            else
-            {
-                return Strings.Resources.AccountCodePageTooltipShowTOTP;
-            }
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, string language)
-        {
-            throw new NotImplementedException();
-        }
+        protected override object TrueValue => Strings.Resources.AccountCodePageTooltipShowTOTP;
+        protected override object FalseValue => Strings.Resources.AccountCodePageTooltipHideTOTP;
     }
 }

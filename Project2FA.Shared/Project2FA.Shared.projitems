@@ -26,6 +26,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Controls\Shimmer\Shimmer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Controls\Shimmer\Shimmer.Properties.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Converters\BoolToCommandBarVisibilityConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Converters\BoolToValueConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Converters\BytesToHumanReadableConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Converters\DateTimeToStringConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Converters\DoubleToInt32ToStringConverter.cs" />
@@ -76,6 +77,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Services\Crypto\ProtectData.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Importer\AegisBackupImportService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Importer\AndOTPBackupImportService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Importer\BackupCryptoHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Importer\BackupImporterService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Importer\ITwoFASBackupImportService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Importer\IAndOTPBackupImportService.cs" />

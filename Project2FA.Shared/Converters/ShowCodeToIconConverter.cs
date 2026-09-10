@@ -1,22 +1,8 @@
-﻿using System;
-#if WINDOWS_UWP
-using Windows.UI.Xaml.Data;
-#else
-using Microsoft.UI.Xaml.Data;
-#endif
-
 namespace Project2FA.Converters
 {
-    public partial class ShowCodeToIconConverter : IValueConverter
+    public partial class ShowCodeToIconConverter : BoolToValueConverter
     {
-        public object Convert(object value, Type targetType, object parameter, string language)
-        {
-            return (bool)value ? "\uE5F0" : "\uE5F4";
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, string language)
-        {
-            return (bool)value ? "\uE5F0" : "\uE5F4";
-        }
+        protected override object TrueValue => "\uE5F0";
+        protected override object FalseValue => "\uE5F4";
     }
 }

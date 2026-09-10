@@ -1,6 +1,5 @@
 ﻿using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Digests;
-using Org.BouncyCastle.Crypto.Generators;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Security;
 using OtpNet;
@@ -21,13 +20,9 @@ namespace Project2FA.Services.Importer
 {
     public class TwoFASBackupImportService : ITwoFASBackupImportService
     {
-        private const string BaseAlgorithm = "AES";
-        private const string Mode = "GCM";
-        private const string Padding = "NoPadding";
-        private const string AlgorithmDescription = BaseAlgorithm + "/" + Mode + "/" + Padding;
+        private const string AlgorithmDescription = BackupCryptoHelper.AlgorithmDescription;
 
         private const int Iterations = 10000;
-        private const int KeyLength = 32;
 
         ISerializationService SerializationService { get; }
         private ILoggingService LoggingService { get; }
@@ -62,13 +57,7 @@ namespace Project2FA.Services.Importer
                             OtpHashMode algorithm;
                             try
                             {
-                                algorithm = backup.Services[i].Otp.Algorithm switch
-                                {
-                                    "SHA1" => OtpHashMode.Sha1,
-                                    "SHA256" => OtpHashMode.Sha256,
-                                    "SHA512" => OtpHashMode.Sha512,
-                                    _ => throw new ArgumentException($"Algorithm '{backup.Services[i].Otp.Algorithm}' not supported")
-                                };
+                                algorithm = BackupCryptoHelper.ToHashMode(backup.Services[i].Otp.Algorithm);
                             }
                             catch (Exception exc)
                             {
@@ -150,10 +139,6 @@ namespace Project2FA.Services.Importer
         }
 
         private KeyParameter DeriveKey(byte[] bytePassword, byte[] salt)
-        {
-            var generator = new Pkcs5S2ParametersGenerator(new Sha256Digest());
-            generator.Init(bytePassword, salt, Iterations);
-            return (KeyParameter)generator.GenerateDerivedParameters(BaseAlgorithm, KeyLength * 8);
-        }
+            => BackupCryptoHelper.DeriveKey(new Sha256Digest(), bytePassword, salt, Iterations);
     }
 }
