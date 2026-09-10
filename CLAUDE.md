@@ -38,7 +38,7 @@ to be editing.
 The desktop fork accumulated a parallel set of classes because earlier work did
 not locate the shared ones. Two facts to internalise:
 
-1. **`MacOS*` names are not macOS-only.** 19 of the 20 `MacOS*.cs` files under
+1. **`MacOS*` names are not macOS-only.** 17 of the 18 `MacOS*.cs` files under
    `src/Project2FA.Uno/Platforms/Desktop/` are guarded by `#if TWOFAST_DESKTOP`,
    so they compile into the **Windows** build too. Only `MacOSNative.cs` is
    really macOS (`#if TWOFAST_MACOS`). The prefix is a historical misnomer; it
@@ -162,12 +162,17 @@ is passed, so a build without `-r win-x64` (or `osx-…`) excludes all the deskt
 platform files and fails with missing-handler errors. The release process is in
 [docs/RELEASING.md](docs/RELEASING.md).
 
-**The legacy UWP head ships nothing, but it does compile** — and it is a useful
-second compiler over `Project2FA.Shared`. Both build scripts publish only
-`src/Project2FA.Uno/Project2FA.Uno.csproj`; no script or CI touches
-`Project2FA/Project2FA.UWP`, and it cannot be built from macOS at all. On
-Windows it needs the 10.0.26100 SDK, MSBuild 18 (Visual Studio 2026) and the UWP
-workload:
+**The legacy UWP head is compile-only.** It compiles, and that is its whole
+value here — a second compiler over `Project2FA.Shared`. It ships nothing, and
+**it does not render**: it launches to a live window with an entirely black
+client area. That is pre-existing and reproduces at `HEAD`, so do not go looking
+for it in this repo's C# — the startup path was traced and completes correctly.
+See [docs/plan.md](docs/plan.md) before spending time on it.
+
+Both build scripts publish only `src/Project2FA.Uno/Project2FA.Uno.csproj`; no
+script or CI touches `Project2FA/Project2FA.UWP`, and it cannot be built from
+macOS at all. On Windows it needs the 10.0.26100 SDK, MSBuild 18 (Visual Studio
+2026) and the UWP workload:
 
 ```
 "C:\Program Files\Microsoft Visual Studio\18\Community\MSBuild\Current\Bin\MSBuild.exe" \

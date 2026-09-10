@@ -2,6 +2,9 @@
 
 Current release: **1.4.5**. Last reviewed: **2026-09-10**.
 
+**Done:** Phase 0 (context stack), 1b (dead code), 1c (duplicate collapse),
+1d (coverage). **Next up: Phase 1 — the `MacOS*` → `Desktop*` rename.**
+
 This file states what phase the project is in. Implement the current phase only.
 Do not scaffold later phases; do not fold consolidation work into an unrelated
 fix. If a change you were asked for requires a later phase, say so and stop.
@@ -16,7 +19,7 @@ neither, and goes last with tests written first.
 
 ---
 
-## Phase 0 — Context stack ✅ (current)
+## Phase 0 — Context stack ✅ done
 
 Give the repo the six-layer context every contributor and agent reads before
 touching code.
@@ -41,11 +44,11 @@ commit*.
 
 ---
 
-## Phase 1 — Make the names honest
+## Phase 1 — Make the names honest ← current
 
 Pure rename and namespace correction. No behaviour change, no logic moved.
 
-- Rename `MacOS*` → `Desktop*` for the 19 files compiled under
+- Rename `MacOS*` → `Desktop*` for the 17 files compiled under
   `#if TWOFAST_DESKTOP`. `MacOSNative.cs` (`#if TWOFAST_MACOS`) keeps its name.
 - Move namespace `Project2FA.Services.MacOS` → `Project2FA.Services.Desktop`.
   This includes `WindowsCameras`, `WindowsQrScanner`, `WindowsScreenCapture` and
@@ -124,8 +127,14 @@ broken input before being accepted.
 
 Both are wired into `scripts/test-windows.ps1` and `scripts/test-macos.sh`.
 
-**The legacy UWP head now builds.** This section records how it was diagnosed and
-what it costs to build, because none of it is obvious from the project file.
+---
+
+## The legacy UWP head — compile-only
+
+Not a phase; a reference. It builds, it does not render, and nothing here ships
+it. This section records what it costs and how it was diagnosed, because none of
+that is discoverable from the project file and all of it is expensive to
+rediscover.
 
 **Requirements — all three are needed, and any one missing looks like broken source:**
 
