@@ -16,15 +16,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Messenger\**" />
-    <Compile Remove="Services\WebDAV\**" />
-    <EmbeddedResource Remove="Messenger\**" />
-    <EmbeddedResource Remove="Services\WebDAV\**" />
-    <None Remove="Messenger\**" />
-    <None Remove="Services\WebDAV\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="10.0.302">
       <PrivateAssets>all</PrivateAssets>
