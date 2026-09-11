@@ -232,3 +232,6 @@ documented migration path and existing vault formats.
 - No third implementation of anything in the reuse table in `CLAUDE.md`.
 - No change to V4 crypto parameters without a migration path.
 - No new reference from `Project2FA.Core` or `Project2FA.Shared` into a head.
+  Note that 38 `App.ShellPageInstance` references across 16 shared files predate
+  the boundary work and remain — see [architecture.md](architecture.md) §6. Do
+  not add a 39th; use `IDesktopShellContext` or an injected service instead.
