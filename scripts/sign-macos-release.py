@@ -12,6 +12,10 @@ root = Path(__file__).resolve().parent.parent
 app = Path(sys.argv[1]).resolve()
 identity = os.environ['APPLE_DEVELOPER_ID']
 entitlements = root / 'build/macos-signing/Entitlements.plist'
+# Fresh universal bundles can contain inherited com.apple.cs.* attributes from
+# local publish output. They make Gatekeeper assess data files as stale signed
+# code, so remove them before applying the release signature.
+subprocess.run(['xattr', '-cr', str(app)], check=True)
 profile_value = os.environ.get('APPLE_DISTRIBUTION_PROFILE')
 profile = Path(profile_value).resolve() if profile_value else None
 if profile:
@@ -33,11 +37,12 @@ else:
             embedded.unlink()
 magic = {bytes.fromhex(s) for s in ['feedface', 'cefaedfe', 'feedfacf', 'cffaedfe', 'cafebabe', 'bebafeca', 'cafebabf', 'bfbafeca']}
 count = 0
-for path in app.rglob('*'):
+paths = sorted(app.rglob('*'), key=lambda path: path.name in ('Project2FA.Uno', '2fast-launcher'))
+for path in paths:
     if not path.is_file() or path.is_symlink():
         continue
     with path.open('rb') as stream:
-        if stream.read(4) not in magic:
+        if stream.read(4) not in magic and path.parent.name != 'MacOS':
             continue
     cmd = ['codesign', '--force', '--sign', identity, '--options', 'runtime', '--timestamp']
     if path.parent.name == 'MacOS' and path.suffix != '.dylib':
