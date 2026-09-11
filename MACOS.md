@@ -113,6 +113,7 @@ Xcode with the appropriate Apple developer account:
 ```sh
 ./scripts/setup-macos-signing.sh YOUR_APPLE_TEAM_ID
 export APPLE_DEVELOPER_ID=YOUR_DEVELOPER_ID_CERTIFICATE_SHA1
+export APPLE_DISTRIBUTION_PROFILE="$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles/<direct-profile>.provisionprofile"
 export APPLE_NOTARY_PROFILE=Jay_SIGNARO
 bash scripts/build-macos.sh universal
 ```
@@ -180,7 +181,10 @@ Developer ID certificate holder and team. Older application downloads have been
 withdrawn as part of this cleanup; use the current release.
 
 For universal release packaging, export `APPLE_DEVELOPER_ID` with your Developer
-ID certificate SHA-1. Developer ID apps do not need a provisioning profile; the
+ID certificate SHA-1 and `APPLE_DISTRIBUTION_PROFILE` with the path to the
+"Mac Team Direct Provisioning Profile" for `jpweber.it.Project2FA.Uno`. The
+keychain entitlements are restricted, so without that embedded profile macOS
+refuses to launch the signed app (`RBSRequestErrorDomain Code=5`). The
 notarytool keychain profile (for example `Jay_SIGNARO`) is used for notarization.
 The resulting ZIP and DMG must be notarized and stapled before publication; see
 [release procedure](docs/RELEASING.md).

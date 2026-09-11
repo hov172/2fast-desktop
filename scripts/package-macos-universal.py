@@ -15,6 +15,9 @@ DIST = ROOT / 'dist'
 DIST.mkdir(exist_ok=True)
 if not os.environ.get('APPLE_DEVELOPER_ID'):
     raise SystemExit('Set APPLE_DEVELOPER_ID (certificate SHA-1) for release packaging.')
+if not os.environ.get('APPLE_DISTRIBUTION_PROFILE'):
+    raise SystemExit('Set APPLE_DISTRIBUTION_PROFILE to the Developer ID (Direct) provisioning profile; '
+                     'the keychain entitlements do not launch without it.')
 
 def run(*args):
     subprocess.run([str(arg) for arg in args], check=True)

@@ -30,13 +30,23 @@ if profile:
         raise SystemExit('Release signing requires an all-device distribution profile, without registered devices.')
     if identity.upper() not in {hashlib.sha1(c).hexdigest().upper() for c in claims['DeveloperCertificates']}:
         raise SystemExit('The configured certificate fingerprint is not authorized by the distribution profile.')
+# com.apple.application-identifier and keychain-access-groups are restricted
+# entitlements. launchd refuses to spawn a signed app that claims them without
+# a matching embedded.provisionprofile (RBSRequestErrorDomain Code=5, POSIX 163),
+# so a profile is mandatory whenever the entitlements carry them.
+RESTRICTED_ENTITLEMENTS = ('com.apple.application-identifier', 'com.apple.developer.team-identifier', 'keychain-access-groups')
+claimed = plistlib.loads(entitlements.read_bytes())
+restricted = [name for name in RESTRICTED_ENTITLEMENTS if name in claimed]
+if restricted and not profile:
+    raise SystemExit('Entitlements claim ' + ', '.join(restricted) + '. Set APPLE_DISTRIBUTION_PROFILE to the '
+                     'Developer ID (Direct) provisioning profile, or the app will not launch.')
 bundles = sorted([app, *app.rglob('*.app')], key=lambda p: len(p.parts), reverse=True)
 if profile:
     for bundle in bundles:
         shutil.copy2(profile, bundle / 'Contents/embedded.provisionprofile')
 else:
-    # Developer ID distribution apps are not provisioned. Remove any
-    # development profile emitted by the local Uno publish target.
+    # No restricted entitlements: remove any development profile emitted by
+    # the local Uno publish target.
     for bundle in bundles:
         embedded = bundle / 'Contents/embedded.provisionprofile'
         if embedded.exists():
