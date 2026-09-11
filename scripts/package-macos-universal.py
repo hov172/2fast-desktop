@@ -31,8 +31,15 @@ with tempfile.TemporaryDirectory(prefix='universal-', dir=ROOT / 'build') as sta
                 slices = subprocess.check_output(['lipo', '-archs', str(binary)], text=True).split()
                 if cpu not in slices:
                     raise RuntimeError(f'{binary.name} is missing {cpu}')
-        run('codesign', '--verify', '--deep', '--strict', source)
         run('ditto', source, contents / f'Helpers/{arch}/2fast.app')
+        # Uno publish output can carry external code-signing attributes on
+        # runtime JSON files. Do not copy those stale signatures into the
+        # release bundle; the release signer will add embedded signatures to
+        # native Mach-O files only.
+        copied = contents / f'Helpers/{arch}/2fast.app'
+        for file in copied.rglob('*'):
+            if file.is_file() and not file.is_symlink():
+                run('xattr', '-c', file)
         if arch == 'arm64':
             info = plistlib.loads((source / 'Contents/Info.plist').read_bytes())
             for icon in (source / 'Contents/Resources').glob('*.icns'):
@@ -49,7 +56,10 @@ with tempfile.TemporaryDirectory(prefix='universal-', dir=ROOT / 'build') as sta
     destination = DIST / '2fast.app'
     if destination.exists():
         destination.rename(DIST / ('2fast-before-universal-' + datetime.datetime.now().strftime('%Y%m%d-%H%M%S-%f') + '.app'))
-    run('ditto', app, destination)
+    # Move the signed bundle without a second copy operation. Copying a
+    # signed bundle can invalidate external signatures attached to runtime
+    # metadata by the macOS code-signing tool.
+    shutil.move(str(app), str(destination))
     archive = DIST / '2fast-macos-universal.zip'
     run('ditto', '-c', '-k', '--sequesterRsrc', '--keepParent', destination, archive)
     sums = []

@@ -16,6 +16,12 @@ entitlements = root / 'build/macos-signing/Entitlements.plist'
 # local publish output. They make Gatekeeper assess data files as stale signed
 # code, so remove them before applying the release signature.
 subprocess.run(['xattr', '-cr', str(app)], check=True)
+# `xattr -cr` does not clear protected com.apple.cs.* attributes on every
+# filesystem provider. Explicitly clear each regular file as well.
+for file in app.rglob('*'):
+    if file.is_file() and not file.is_symlink():
+        subprocess.run(['xattr', '-c', str(file)], check=True,
+                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 profile_value = os.environ.get('APPLE_DISTRIBUTION_PROFILE')
 profile = Path(profile_value).resolve() if profile_value else None
 if profile:
