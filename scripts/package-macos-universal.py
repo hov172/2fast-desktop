@@ -40,6 +40,17 @@ with tempfile.TemporaryDirectory(prefix='universal-', dir=ROOT / 'build') as sta
         for file in copied.rglob('*'):
             if file.is_file() and not file.is_symlink():
                 run('xattr', '-c', file)
+        # codesign treats every regular file in Contents/MacOS as nested
+        # executable code. Keep .NET host metadata in Resources and expose
+        # it through relative symlinks so the host resolver still finds it.
+        macos = copied / 'Contents/MacOS'
+        resources = copied / 'Contents/Resources'
+        for name in ('Project2FA.Uno.deps.json', 'Project2FA.Uno.runtimeconfig.json'):
+            metadata = macos / name
+            if metadata.exists() and not metadata.is_symlink():
+                destination_metadata = resources / name
+                shutil.move(str(metadata), str(destination_metadata))
+                metadata.symlink_to(Path('../Resources') / name)
         if arch == 'arm64':
             info = plistlib.loads((source / 'Contents/Info.plist').read_bytes())
             for icon in (source / 'Contents/Resources').glob('*.icns'):
