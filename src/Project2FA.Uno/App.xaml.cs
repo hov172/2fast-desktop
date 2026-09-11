@@ -94,6 +94,27 @@ namespace Project2FA.UnoApp
             }
 #endif
 
+#if TWOFAST_DESKTOP
+            // Uno.Toolkit's SetWindowIcon leaves the Win32 window icon unset on the
+            // Skia desktop target: WM_GETICON returned 0 for ICON_SMALL, ICON_BIG and
+            // ICON_SMALL2, so the taskbar button showed no icon even though
+            // <ApplicationIcon> had embedded one in the executable. Set it explicitly
+            // from the generated .ico that ships beside the app.
+            try
+            {
+                string windowIcon = System.IO.Path.Combine(AppContext.BaseDirectory, "schluessel.ico");
+                if (System.IO.File.Exists(windowIcon))
+                {
+                    MainWindow.AppWindow.SetIcon(windowIcon);
+                }
+            }
+            catch (Exception iconFailure)
+            {
+                // An icon is cosmetic - never block startup - but do not swallow silently.
+                global::System.Diagnostics.Debug.WriteLine("Window icon could not be set: " + iconFailure);
+            }
+#endif
+
 #if __ANDROID__ || __IOS__
             //FeatureConfiguration.ListViewBase.AnimateScrollIntoView = false;
 #endif
