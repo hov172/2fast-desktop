@@ -107,8 +107,8 @@ Install Xcode Command Line Tools, XcodeGen, and the .NET SDK specified by
 Dependency source is vendored in this repository, including local modifications;
 there are no submodules to initialize.
 
-Protected Keychain access needs Apple-authorized signing entitlements and a
-provisioning profile. Sign into Xcode with the appropriate Apple developer account:
+Protected Keychain access needs Apple-authorized signing entitlements. Sign into
+Xcode with the appropriate Apple developer account:
 
 ```sh
 ./scripts/setup-macos-signing.sh YOUR_APPLE_TEAM_ID

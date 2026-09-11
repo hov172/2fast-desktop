@@ -29,12 +29,12 @@ Get the builds from [Releases](https://github.com/hov172/2fast-desktop/releases)
 | Package | Platform |
 | --- | --- |
 | `2fast-macos-universal.dmg` / `.zip` | macOS, Apple Silicon and Intel |
-| `2fast-windows-x64.zip` / `.exe` | Windows, Intel/AMD x64 |
-| `2fast-windows-arm64.zip` / `.exe` | Windows ARM64 |
+| `2fast-windows-x64.zip` | Windows, Intel/AMD x64 |
+| `2fast-windows-arm64.zip` | Windows ARM64 |
 
 Extract the Windows archive before launching `Project2FA.Uno.exe`. Windows
-packages are unsigned portable builds; standalone executables are also available. Open the
-Mac DMG and drag 2fast into Applications. The published Mac app and DMG use
+packages are unsigned portable builds. Open the Mac DMG and drag 2fast into
+Applications. The published Mac app and DMG use
 Developer ID signing with Apple notarization and stapled tickets.
 
 ## Features
@@ -120,8 +120,8 @@ Use the .NET SDK pinned in `global.json`. Desktop build and test scripts are in
 Vendored dependency source is included in this repository, including local
 platform changes; no submodule initialization is needed.
 
-Windows x64/ARM64 builds and managed regression tests pass. Synthetic V4 vault
-exchange passes in both directions. Actual Windows UI, camera/screen capture,
+Windows x64/ARM64 and notarized macOS universal builds pass their release
+validation. Synthetic V4 vault exchange passes in both directions. Actual Windows UI, camera/screen capture,
 and Hello acceptance still require a Windows PC. Successful Touch ID unlock
 requires enrollment and has not been exercised on the available Mac. Physical
 Intel Mac acceptance remains outstanding.

@@ -1,7 +1,8 @@
 # Desktop releases
 
 The current desktop release is `v1.5.1`, following `v1.5.0`. Its app
-version is 1.5.1 and build number is 151. This release includes macOS packages and Windows x64/ARM64 ZIPs and standalone executables.
+version is 1.5.1 and build number is 151. This release includes a notarized macOS
+universal DMG/app ZIP and Windows x64/ARM64 portable ZIPs.
 This private distribution does not replace upstream version history.
 
 1. Run the documented platform builds and regression checks. Mac packaging needs
@@ -38,7 +39,7 @@ and upstream documentation clearly identified as historical material.
 After all platform builds finish, run `python3 scripts/package-release-docs.py` to assemble the current-version guides, refresh the Windows packages with those guides, and checksum all current release downloads.
 
 For 1.5.1, the asset set is the notarized Mac DMG and app ZIP, Windows x64/ARM64
-portable ZIPs and standalone EXEs, the versioned documentation ZIP, and SHA256SUMS.
+portable ZIPs, the versioned documentation ZIP, and SHA256SUMS.
 Upload the flattened guides alongside the archive. Verify remote asset digests
 against the local files before declaring the release complete.
 
@@ -47,8 +48,8 @@ against the local files before declaring the release complete.
 Release targets disable generated debug symbols and map compiler source paths to
 `/_/src`. Publish into fresh output directories: deleting PDB files from an older
 build does not remove the CodeView paths already stored in assemblies or bundled
-EXEs. Run `python3 scripts/verify-release-privacy.py` on final app directories and
-standalone EXEs. Documentation packaging invokes the same gate automatically.
+executables. Run `python3 scripts/verify-release-privacy.py` on final app
+directories. Documentation packaging invokes the same gate automatically.
 
 Universal Mac packaging requires `APPLE_DEVELOPER_ID` (certificate SHA-1). It
 signs nested code with Developer ID and Hardened Runtime/timestamps. Use the
