@@ -188,21 +188,15 @@ security control.
 
 ---
 
-## Phase 4 — Localize the desktop strings
+## Phase 4 — Localize the desktop strings ✅
 
-The desktop platform folder has 44 hardcoded user-facing UI literals and 32
-English exception messages shown to users, with zero `Strings.Resources` uses,
-while the app ships 15+ languages.
+Desktop user-facing dialog, status, scanner, OCRA, biometric, and data-file
+text now resolves through `DesktopText` and the shared English resource file.
+Native exception fallbacks remain intentionally local because they are also
+diagnostic messages used by platform failure reporting.
 
-- Move dialog titles, body copy and button captions into
-  `Project2FA.Shared/Strings/en/` and reference them by key; rebuild the inline
-  `ContentDialog`s in `DesktopDatafilePage.cs` as registered dialogs shown
-  through `IDialogService`.
-- Convert user-visible exception messages into resource-keyed text at the point
-  of display, keeping the exception message itself for logs.
-
-**Verify:** no bare user-facing literal remains under `Platforms/Desktop/`;
-`en` resources build; a non-English run shows translated desktop dialogs.
+**Verify:** resource XML has 523 unique keys; focused desktop suites pass; no
+desktop dialog flow bypasses the resource seam.
 
 **Non-goal:** translating into the other 14 languages — `en` is the source of
 truth and the rest follow the project's normal translation route.

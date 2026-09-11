@@ -42,10 +42,10 @@ Mobile swaps the `NavigationView` for a `TabBar` via `ViewModel.IsMobile`.
 - Transient confirmations (code copied, and similar) use `AutoCloseTeachingTip`.
 - Recoverable errors are inline and specific to the field. A failed unlock clears
   the password box and shows the error in place; it does not navigate away.
-- Blocking errors and confirmations use a `ContentDialog` registered through
-  `RegisterDialog` and shown via `IDialogService`. Do not construct dialogs ad hoc
-  from a view-model — `DesktopSession.Message` does, and that is debt, not a
-  pattern (see [architecture.md](architecture.md)).
+- Blocking errors and confirmations use a `ContentDialog` through
+  `IDialogService`. Desktop-only dialogs use the `DesktopSession` shell context
+  for their XamlRoot; the context is injected from app startup and does not
+  reach through `App.ShellPageInstance`.
 - Error text never contains a secret, a password, or a vault path.
 
 ## Lock and session behaviour
