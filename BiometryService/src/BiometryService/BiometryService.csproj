@@ -98,10 +98,11 @@
 	  <IsAotCompatible>True</IsAotCompatible>
 	</PropertyGroup>
 
-	<!-- Needed for Source Link support. -->
-	<ItemGroup>
-		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.301" PrivateAssets="All" />
-	</ItemGroup>
+	<!-- Source Link is built into the .NET SDK from .NET 8 onward, and this project
+	     targets net10.0, so the Microsoft.SourceLink.GitHub package is redundant.
+	     PublishRepositoryUrl and EmbedUntrackedSources above still apply. Removing it
+	     also drops the transitive Microsoft.Build.Tasks.Git 10.0.301 advisory
+	     (GHSA-23fw-v26w-5fgq), which was build-time only and never shipped. -->
 
 	<!--<ItemGroup>
 		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.8" />

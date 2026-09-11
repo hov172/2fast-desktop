@@ -17,17 +17,6 @@
   </Folder>
   <Folder Name="/Platforms/">
     <Project Path="Project2FA.Shared/Project2FA.Shared.shproj" />
-    <Project Path="Project2FA/Project2FA.UWP/Project2FA.UWP.csproj" Id="f23d0efe-2c91-4976-9dcb-065b91fc2797">
-      <BuildType Solution="Ad-Hoc|*" Project="Debug" />
-      <BuildType Solution="AppStore|*" Project="Debug" />
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-      <Platform Solution="Ad-Hoc|Any CPU" Project="ARM" />
-      <Platform Solution="AppStore|Any CPU" Project="ARM" />
-      <Platform Solution="Debug|Any CPU" Project="x64" />
-      <Platform Solution="Release|Any CPU" Project="x64" />
-      <Deploy />
-    </Project>
     <Project Path="Project2FA/Project2FA.UWP/Project2FA.UWPNet.csproj">
       <BuildType Solution="Ad-Hoc|*" Project="Release" />
       <BuildType Solution="AppStore|*" Project="Release" />
