@@ -56,6 +56,10 @@ with tempfile.TemporaryDirectory(prefix='universal-', dir=ROOT / 'build') as sta
             for icon in (source / 'Contents/Resources').glob('*.icns'):
                 shutil.copy2(icon, contents / 'Resources' / icon.name)
     info['CFBundleExecutable'] = '2fast-launcher'
+    # The nested architecture-specific Uno apps retain the product bundle ID.
+    # Give the Finder-facing launcher its own ID so LaunchServices does not
+    # confuse the outer app with one of its embedded helpers.
+    info['CFBundleIdentifier'] = 'jpweber.it.Project2FA.Uno.macOS'
     info['LSArchitecturePriority'] = ['arm64', 'x86_64']
     info['LSMinimumSystemVersion'] = '15.0'
     (contents / 'Info.plist').write_bytes(plistlib.dumps(info))
