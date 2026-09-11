@@ -30,8 +30,15 @@ for arch, machine in [('x64', 0x8664), ('arm64', 0xaa64)]:
         for path in sorted(folder.rglob('*')):
             if path.is_file():
                 archive.write(path, Path('2fast') / path.relative_to(folder))
+    single = dist / ('windows-' + arch + '-singlefile') / 'Project2FA.Uno.exe'
+    if single.exists():
+        binary = single.read_bytes()
+        pe = struct.unpack_from('<I', binary, 0x3c)[0]
+        assert binary[pe:pe+4] == b'PE\0\0' and struct.unpack_from('<H', binary, pe+4)[0] == machine, 'Wrong architecture: single-file exe'
+        subprocess.run([sys.executable, str(root / 'scripts/verify-release-privacy.py'), str(single)], check=True)
+        (dist / ('2fast-windows-' + arch + '.exe')).write_bytes(binary)
 lines = []
-for path in sorted(dist.glob('2fast-*.zip')):
+for path in sorted([*dist.glob('2fast-*.zip'), *dist.glob('2fast-windows-*.exe')]):
     lines.append(hashlib.sha256(path.read_bytes()).hexdigest() + '  ' + path.name)
 (dist / 'SHA256SUMS').write_text('\n'.join(lines) + '\n')
 print('Windows archives created; app host, CLR and camera native architectures verified.')

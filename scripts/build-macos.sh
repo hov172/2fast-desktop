@@ -21,7 +21,9 @@ for dependency in BiometryService Otp.NET UNOversalTemplate ZXing.Net.Uno; do
   fi
 done
 
-dotnet restore src/Project2FA.Uno/Project2FA.Uno.csproj \
+# Restore in Release: the Uno SDK adds its Hot Design / MCP dev tooling to a
+# Debug (non-Optimize) graph, and a --no-restore Release publish would ship it.
+dotnet restore src/Project2FA.Uno/Project2FA.Uno.csproj -p:Configuration=Release \
   "-p:RuntimeIdentifier=$runtime" "-p:DirectoryBuildTargetsPath=$repo_root/build/MacOS.targets"
 dotnet publish src/Project2FA.Uno/Project2FA.Uno.csproj \
   -c Release -f net10.0-desktop -r "$runtime" \

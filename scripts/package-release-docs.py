@@ -57,5 +57,7 @@ for arch in ('x64', 'arm64'):
             if path.is_file():
                 archive.write(path, Path('2fast') / path.relative_to(folder))
 assets = ['2fast-macos-universal.zip', '2fast-macos-universal.dmg', '2fast-windows-x64.zip', '2fast-windows-arm64.zip', f'2fast-{version}-documentation.zip']
+# Standalone single-file Windows executables are optional release assets.
+assets += [name for name in ('2fast-windows-x64.exe', '2fast-windows-arm64.exe') if (dist / name).exists()]
 (dist / 'SHA256SUMS').write_text(''.join(hashlib.sha256((dist / name).read_bytes()).hexdigest() + '  ' + name + '\n' for name in assets))
 print(f'Packaged {version} documentation and checksums for {len(assets)} archives.')
