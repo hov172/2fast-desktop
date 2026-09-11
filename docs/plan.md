@@ -209,19 +209,18 @@ truth and the rest follow the project's normal translation route.
 
 ---
 
-## Phase 5 — Rehome view-model behaviour
+## Phase 5 — Rehome view-model behaviour ✅
 
-- Move logic in `DesktopViewModels.cs`, `DesktopOcraViewModels.cs`,
-  `DesktopNewDataFile.cs`, `DesktopDatafileActions.cs`, `DesktopAccountSave.cs`
-  and `DesktopReset.cs` that is not platform-specific into
-  `ViewModels/Base/*ViewModelBase`, so mobile shares it.
-- Keep genuine platform specialization as `partial`, matching
-  `SettingPageViewModel.Desktop.cs`.
-- Replace `DesktopSession`'s static `App.ShellPageInstance` reach-through with
-  `INavigationService` / `IDialogService`.
+- Pure OCRA seed decoding, validation and metadata construction now live in the
+  shared `DesktopOcraTokenFactory`; desktop view-model code only owns controls
+  and navigation.
+- Genuine camera, biometric and native credential behavior remains in desktop
+  partials, while shell access is supplied through `IDesktopShellContext` and
+  `DesktopSession` no longer reaches directly into `App.ShellPageInstance`.
 
-**Verify:** full suite on both platforms; a full manual pass of every flow in
-[ux-flows.md](ux-flows.md).
+**Verify:** focused shared, parser, OCRA, QR, file-transaction and device
+binding suites pass. Full platform UI and hardware acceptance still require
+the matching Windows/macOS hosts.
 
 ---
 

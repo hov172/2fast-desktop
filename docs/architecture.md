@@ -191,7 +191,10 @@ platform folder. `partial` for platform specialization is fine and matches
 classes contain desktop-only camera, biometric, native credential, and
 navigation integration. Pure input validation has moved to shared code;
 platform workflows remain partial because mobile has different native services
-and lifecycle requirements.
+and lifecycle requirements. OCRA seed decoding and token metadata construction
+are shared in `DesktopOcraTokenFactory`. Desktop shell navigation and dialog
+roots are provided through `IDesktopShellContext`; desktop platform code does
+not reach directly into `App.ShellPageInstance`.
 
 ## Testing
 

@@ -19,4 +19,9 @@ Check(DesktopOcra.Compute(key20, "00000001", timestamp), DesktopOcra.Compute(key
 Check(DesktopOcra.Compute(key20, "12345678", timestamp), DesktopOcra.Compute(key20, "12345678", timestamp.AddSeconds(59)));
 if (DesktopOcra.Compute(key20, "12345678", timestamp) == DesktopOcra.Compute(key20, "12345678", timestamp.AddSeconds(60))) throw new Exception("Minute rollover ignored");
 passed++;
+if (!DesktopOcraTokenFactory.TryCreate("Deepnet token", "3132333435363738393031323334353637383930", 2, out var tokenValues, out _)) throw new Exception("OCRA token factory rejected valid hex seed");
+if (tokenValues == null || tokenValues.Find(x => x.Key == "issuer").Value != "Deepnet token" || tokenValues.Find(x => x.Key == "ocrasuite").Value != DesktopOcra.Suite) throw new Exception("OCRA token factory metadata mismatch");
+passed++;
+if (DesktopOcraTokenFactory.TryCreate("", "not-a-seed", 1, out _, out _)) throw new Exception("OCRA token factory accepted invalid input");
+passed++;
 Console.WriteLine($"OCRA: {passed} checks passed, including RFC 6287 vectors.");

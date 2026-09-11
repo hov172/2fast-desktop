@@ -1583,4 +1583,22 @@ The application supports an MDM configuration for centralised management of the 
   <data name="Import" xml:space="preserve"><value>Import</value></data>
   <data name="UnableImportQr" xml:space="preserve"><value>Unable to import this QR</value></data>
   <data name="ScanAnotherQr" xml:space="preserve"><value>Scan another QR</value></data>
+  <data name="Ok" xml:space="preserve"><value>OK</value></data>
+  <data name="DatafilePassword" xml:space="preserve"><value>Data-file password</value></data>
+  <data name="EnableBiometric" xml:space="preserve"><value>Enable {0}</value></data>
+  <data name="DeepnetAuthorizationCode" xml:space="preserve"><value>Deepnet authorization code</value></data>
+  <data name="QrScannerTitle" xml:space="preserve"><value>Scan QR code</value></data>
+  <data name="QrCaptureSource" xml:space="preserve"><value>Capture source</value></data>
+  <data name="QrRefreshSources" xml:space="preserve"><value>Refresh sources</value></data>
+  <data name="QrScannerInstructions" xml:space="preserve"><value>Choose a camera, window or screen. Scanning continues until a QR code is found or you close this dialog.</value></data>
+  <data name="QrScannerCancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="OcraInstructions" xml:space="preserve"><value>{0}
+Use the raw seed and encoding supplied by your administrator. This token requires a login challenge.</value></data>
+  <data name="Base32" xml:space="preserve"><value>Base32</value></data>
+  <data name="Base64" xml:space="preserve"><value>Base64</value></data>
+  <data name="Hex" xml:space="preserve"><value>Hex</value></data>
+  <data name="QrOpeningCamera" xml:space="preserve"><value>Opening camera… If access fails, use a window or screen, or allow desktop camera access in Windows Settings.</value></data>
+  <data name="QrScanningContinuously" xml:space="preserve"><value>Scanning continuously. Keep the QR visible. If a window preview is black, select its screen instead.</value></data>
+  <data name="QrPreviewFailed" xml:space="preserve"><value>Preview could not be displayed. Select the source again.</value></data>
+  <data name="QrCaptureFailed" xml:space="preserve"><value>Capture failed. Try another source or check camera permissions.</value></data>
 </root>

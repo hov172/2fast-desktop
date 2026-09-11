@@ -16,9 +16,23 @@ using UNOversal.Services.Secrets;
 
 namespace Project2FA.Services.Desktop
 {
+    internal interface IDesktopShellContext
+    {
+        ShellPage Shell { get; }
+    }
+
+    internal sealed class DesktopShellContext : IDesktopShellContext
+    {
+        public DesktopShellContext(ShellPage shell) => Shell = shell ?? throw new ArgumentNullException(nameof(shell));
+        public ShellPage Shell { get; }
+    }
+
     internal static class DesktopSession
     {
         private static CancellationTokenSource lifetime = new();
+        private static IDesktopShellContext? shellContext;
+        internal static void ConfigureShell(ShellPage shell) => shellContext = new DesktopShellContext(shell);
+        internal static ShellPage Shell => shellContext?.Shell ?? throw new InvalidOperationException("The desktop shell has not been initialized.");
         internal static CancellationToken Token => lifetime.Token;
         internal static void CancelOperations()
         {
@@ -28,7 +42,7 @@ namespace Project2FA.Services.Desktop
         }
         internal static void Lock()
         {
-            App.ShellPageInstance.ViewModel.NavigationIsAllowed = false;
+            Shell.ViewModel.NavigationIsAllowed = false;
             CancelOperations();
             SecretHelper.ClearSession();
             DataService.Instance.ClearLockedAccounts();
@@ -36,7 +50,7 @@ namespace Project2FA.Services.Desktop
         internal static Task Message(IDialogService service, string title, string text) => service.ShowDialogAsync(new ContentDialog
         {
             Title = title, Content = new TextBlock { Text = text, TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap },
-            CloseButtonText = "OK", XamlRoot = App.ShellPageInstance.XamlRoot
+            CloseButtonText = DesktopText.Get("Ok", "OK"), XamlRoot = Shell.XamlRoot
         }, new DialogParameters());
     }
 }
@@ -128,12 +142,12 @@ namespace Project2FA.ViewModels
                 }
                 else
                 {
-                    var passwordBox = new PasswordBox { Header = "Data-file password", MaxLength = 0, PasswordRevealMode = PasswordRevealMode.Peek };
+                    var passwordBox = new PasswordBox { Header = DesktopText.Get("DatafilePassword", "Data-file password"), MaxLength = 0, PasswordRevealMode = PasswordRevealMode.Peek };
                     var dialog = new ContentDialog
                     {
-                        Title = "Enable " + DesktopPlatform.BiometricName, Content = passwordBox,
+                        Title = DesktopText.Get("EnableBiometric", "Enable {0}").Replace("{0}", DesktopPlatform.BiometricName), Content = passwordBox,
                         PrimaryButtonText = DesktopText.Get("Continue", "Continue"), CloseButtonText = DesktopText.Get("Cancel", "Cancel"),
-                        XamlRoot = App.ShellPageInstance.XamlRoot
+                        XamlRoot = DesktopSession.Shell.XamlRoot
                     };
                     if (await DialogService.ShowDialogAsync(dialog, new DialogParameters()) != ContentDialogResult.Primary) return;
                     token.ThrowIfCancellationRequested();
@@ -200,8 +214,8 @@ namespace Project2FA.ViewModels
                     bool parsed = StrictProject2FAParser.TryParse(payload, out var values, out var parseError);
                     if (!parsed && parseError == "Authorization code required")
                     {
-                        var password = new PasswordBox { Header = "Deepnet authorization code", MaxLength = 0, PasswordRevealMode = PasswordRevealMode.Peek };
-                        var prompt = new ContentDialog { DefaultButton = ContentDialogButton.Primary, Title = DesktopText.Get("UnlockMobileId", "Unlock MobileID token"), Content = password, PrimaryButtonText = DesktopText.Get("Import", "Import"), CloseButtonText = DesktopText.Get("Cancel", "Cancel"), XamlRoot = App.ShellPageInstance.XamlRoot };
+                        var password = new PasswordBox { Header = DesktopText.Get("DeepnetAuthorizationCode", "Deepnet authorization code"), MaxLength = 0, PasswordRevealMode = PasswordRevealMode.Peek };
+                        var prompt = new ContentDialog { DefaultButton = ContentDialogButton.Primary, Title = DesktopText.Get("UnlockMobileId", "Unlock MobileID token"), Content = password, PrimaryButtonText = DesktopText.Get("Import", "Import"), CloseButtonText = DesktopText.Get("Cancel", "Cancel"), XamlRoot = DesktopSession.Shell.XamlRoot };
                         using var cancelPrompt = token.Register(() => prompt.DispatcherQueue.TryEnqueue(() => prompt.Hide()));
                         try
                         {
@@ -212,7 +226,7 @@ namespace Project2FA.ViewModels
                     }
                     if (!parsed)
                     {
-                        var retry = new ContentDialog { Title = DesktopText.Get("UnableImportQr", "Unable to import this QR"), Content = new TextBlock { Text = parseError, TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap }, PrimaryButtonText = DesktopText.Get("ScanAnotherQr", "Scan another QR"), CloseButtonText = DesktopText.Get("Cancel", "Cancel"), XamlRoot = App.ShellPageInstance.XamlRoot };
+                        var retry = new ContentDialog { Title = DesktopText.Get("UnableImportQr", "Unable to import this QR"), Content = new TextBlock { Text = parseError, TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap }, PrimaryButtonText = DesktopText.Get("ScanAnotherQr", "Scan another QR"), CloseButtonText = DesktopText.Get("Cancel", "Cancel"), XamlRoot = DesktopSession.Shell.XamlRoot };
                         using var cancelRetry = token.Register(() => retry.DispatcherQueue.TryEnqueue(() => retry.Hide()));
                         if (await retry.ShowAsync() == ContentDialogResult.Primary) continue;
                         return;

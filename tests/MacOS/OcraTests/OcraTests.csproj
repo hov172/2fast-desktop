@@ -1,4 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net10.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><DefineConstants>TWOFAST_MACOS;TWOFAST_DESKTOP</DefineConstants></PropertyGroup>
-<ItemGroup><Compile Include="../../../src/Project2FA.Uno/Platforms/Desktop/DesktopOcra.cs" Link="DesktopOcra.cs" /></ItemGroup>
+<ItemGroup><ProjectReference Include="../../../Otp.NET/src/Otp.NET/Otp.NET.csproj" /></ItemGroup>
+<ItemGroup>
+  <Compile Include="../../../src/Project2FA.Uno/Platforms/Desktop/DesktopOcra.cs" Link="DesktopOcra.cs" />
+  <Compile Include="../../../Project2FA.Shared/Services/DesktopOcraTokenFactory.cs" Link="DesktopOcraTokenFactory.cs" />
+</ItemGroup>
 </Project>

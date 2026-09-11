@@ -7,7 +7,6 @@ using Project2FA.Services.Desktop;
 using Project2FA.Uno.Views;
 using Project2FA.UnoApp;
 using UNOversal.Navigation;
-using System.Security.Cryptography;
 using Windows.ApplicationModel.DataTransfer;
 
 namespace Project2FA.ViewModels;
@@ -18,34 +17,20 @@ public partial class AccountCodePageViewModel
     {
         var name = new TextBox { Header = DesktopText.Get("OcraTokenName", "Token name") };
         var seed = new PasswordBox { Header = DesktopText.Get("OcraTokenSeed", "Token seed"), MaxLength = 0, PasswordRevealMode = PasswordRevealMode.Peek };
-        var encoding = new ComboBox { Header = DesktopText.Get("OcraSeedEncoding", "Seed encoding"), ItemsSource = new[] { "Base32", "Base64", "Hex" }, SelectedIndex = 0 };
+        var encoding = new ComboBox { Header = DesktopText.Get("OcraSeedEncoding", "Seed encoding"), ItemsSource = new[] { DesktopText.Get("Base32", "Base32"), DesktopText.Get("Base64", "Base64"), DesktopText.Get("Hex", "Hex") }, SelectedIndex = 0 };
         var error = new TextBlock { TextWrapping = TextWrapping.Wrap };
         var panel = new StackPanel { Spacing = 10 };
-        panel.Children.Add(new TextBlock { Text = DesktopOcra.Suite + "\nUse the raw seed and encoding supplied by your administrator. This token requires a login challenge.", TextWrapping = TextWrapping.Wrap });
+        panel.Children.Add(new TextBlock { Text = DesktopText.Get("OcraInstructions", "{0}\nUse the raw seed and encoding supplied by your administrator. This token requires a login challenge.").Replace("{0}", DesktopOcra.Suite), TextWrapping = TextWrapping.Wrap });
         panel.Children.Add(name); panel.Children.Add(seed); panel.Children.Add(encoding); panel.Children.Add(error);
-        var dialog = new ContentDialog { DefaultButton = ContentDialogButton.Primary, Title = DesktopText.Get("AddOcraToken", "Add OCRA token"), Content = panel, PrimaryButtonText = DesktopText.Get("Continue", "Continue"), CloseButtonText = DesktopText.Get("Cancel", "Cancel"), XamlRoot = App.ShellPageInstance.XamlRoot };
+        var dialog = new ContentDialog { DefaultButton = ContentDialogButton.Primary, Title = DesktopText.Get("AddOcraToken", "Add OCRA token"), Content = panel, PrimaryButtonText = DesktopText.Get("Continue", "Continue"), CloseButtonText = DesktopText.Get("Cancel", "Cancel"), XamlRoot = DesktopSession.Shell.XamlRoot };
         List<KeyValuePair<string, string>>? values = null;
         dialog.PrimaryButtonClick += (_, e) =>
         {
-            byte[]? key = null;
-            try
+            if (!DesktopOcraTokenFactory.TryCreate(name.Text, seed.Password, encoding.SelectedIndex, out values, out var validationError))
             {
-                if (string.IsNullOrWhiteSpace(name.Text)) throw new ArgumentException();
-                key = encoding.SelectedIndex switch
-                {
-                    0 => OtpNet.Base32Encoding.ToBytes(seed.Password.Trim().ToUpperInvariant()),
-                    1 => Convert.FromBase64String(seed.Password.Trim()),
-                    2 => Convert.FromHexString(seed.Password.Trim()),
-                    _ => throw new ArgumentException()
-                };
-                if (key.Length < 10) throw new ArgumentException();
-                values = new() { new("label", "Deepnet"), new("issuer", name.Text.Trim()),
-                    new("secret", OtpNet.Base32Encoding.ToString(key)), new("period", "60"),
-                    new("digits", "6"), new("algorithm", "SHA1"), new("ocrasuite", DesktopOcra.Suite) };
+                e.Cancel = true;
+                error.Text = DesktopText.Get("OcraInvalidSeed", validationError);
             }
-            catch (Exception e2) when (e2 is ArgumentException or FormatException)
-            { e.Cancel = true; error.Text = DesktopText.Get("OcraInvalidSeed", "Enter a token name and valid seed in the selected encoding (at least 10 bytes)."); }
-            finally { if (key != null) CryptographicOperations.ZeroMemory(key); }
         };
         var token = DesktopSession.Token;
         using var cancel = token.Register(() => dialog.DispatcherQueue.TryEnqueue(() => dialog.Hide()));
@@ -70,7 +55,7 @@ public partial class AccountCodePageViewModel
         var panel = new StackPanel { Spacing = 12 };
         panel.Children.Add(challenge); panel.Children.Add(response); panel.Children.Add(status);
         var dialog = new ContentDialog { DefaultButton = ContentDialogButton.Primary, Title = model.Issuer + " — OCRA", Content = panel,
-            PrimaryButtonText = DesktopText.Get("Generate", "Generate"), SecondaryButtonText = DesktopText.Get("CopyResponse", "Copy response"), CloseButtonText = DesktopText.Get("Close", "Close"), XamlRoot = App.ShellPageInstance.XamlRoot };
+            PrimaryButtonText = DesktopText.Get("Generate", "Generate"), SecondaryButtonText = DesktopText.Get("CopyResponse", "Copy response"), CloseButtonText = DesktopText.Get("Close", "Close"), XamlRoot = DesktopSession.Shell.XamlRoot };
         long responseMinute = -1;
         bool Generate()
         {

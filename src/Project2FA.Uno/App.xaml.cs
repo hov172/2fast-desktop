@@ -296,6 +296,9 @@ namespace Project2FA.UnoApp
         protected override UIElement CreateShell()
         {
             ShellPageInstance = new ShellPage();
+#if TWOFAST_DESKTOP
+            Project2FA.Services.Desktop.DesktopSession.ConfigureShell(ShellPageInstance);
+#endif
             return ShellPageInstance;
         }
 

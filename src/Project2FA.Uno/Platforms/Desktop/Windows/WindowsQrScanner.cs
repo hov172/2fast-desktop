@@ -4,6 +4,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using OpenCvSharp;
+using Project2FA.Services;
 using Project2FA.UnoApp;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
@@ -24,8 +25,8 @@ internal static class WindowsQrScanner
     {
         private readonly Image preview = new() { Height = 330, Stretch = Stretch.Uniform };
         private readonly TextBlock status = new() { TextWrapping = TextWrapping.Wrap, MaxWidth = 560 };
-        private readonly ComboBox sources = new() { Header = "Capture source", MinWidth = 360 };
-        private readonly Button refresh = new() { Content = "Refresh sources" };
+        private readonly ComboBox sources = new() { Header = DesktopText.Get("QrCaptureSource", "Capture source"), MinWidth = 360 };
+        private readonly Button refresh = new() { Content = DesktopText.Get("QrRefreshSources", "Refresh sources") };
         private ContentDialog dialog;
         private CancellationTokenSource capture;
         private Task loop = Task.CompletedTask;
@@ -35,9 +36,9 @@ internal static class WindowsQrScanner
         internal async Task<string?> Run(CancellationToken token, bool screen)
         {
             var panel = new StackPanel { Spacing = 12, MinWidth = 560 };
-            panel.Children.Add(new TextBlock { Text = "Choose a camera, window or screen. Scanning continues until a QR code is found or you close this dialog.", TextWrapping = TextWrapping.Wrap, MaxWidth = 560 });
+            panel.Children.Add(new TextBlock { Text = DesktopText.Get("QrScannerInstructions", "Choose a camera, window or screen. Scanning continues until a QR code is found or you close this dialog."), TextWrapping = TextWrapping.Wrap, MaxWidth = 560 });
             panel.Children.Add(sources); panel.Children.Add(refresh); panel.Children.Add(preview); panel.Children.Add(status);
-            dialog = new ContentDialog { Title = "Scan QR code", Content = panel, CloseButtonText = "Cancel", XamlRoot = App.ShellPageInstance.XamlRoot };
+            dialog = new ContentDialog { Title = DesktopText.Get("QrScannerTitle", "Scan QR code"), Content = panel, CloseButtonText = DesktopText.Get("QrScannerCancel", "Cancel"), XamlRoot = DesktopSession.Shell.XamlRoot };
             void Refresh()
             {
                 var choices = WindowsScreenCapture.Sources();
@@ -66,7 +67,7 @@ internal static class WindowsQrScanner
                 generation++; capture?.Cancel(); await StopLoop(); capture?.Dispose(); preview.Source = null;
                 if (closed || sources.SelectedItem is not WindowsCaptureSource source) return;
                 capture = new CancellationTokenSource(); int current = generation;
-                status.Text = source.Camera >= 0 ? "Opening camera… If access fails, use a window or screen, or allow desktop camera access in Windows Settings." : "Scanning continuously. Keep the QR visible. If a window preview is black, select its screen instead.";
+                status.Text = source.Camera >= 0 ? DesktopText.Get("QrOpeningCamera", "Opening camera… If access fails, use a window or screen, or allow desktop camera access in Windows Settings.") : DesktopText.Get("QrScanningContinuously", "Scanning continuously. Keep the QR visible. If a window preview is black, select its screen instead.");
                 var captureToken = capture.Token;
                 loop = Task.Run(() => CaptureLoop(source, current, captureToken));
             }
@@ -128,7 +129,7 @@ internal static class WindowsQrScanner
                                 if (decoded != null)
                                 { result = decoded; dialog.Hide(); }
                             }
-                            catch (Exception error) { DesktopScanDiagnostics.Record("Windows scan preview", error); if (!closed) status.Text = "Preview could not be displayed. Select the source again."; }
+                            catch (Exception error) { DesktopScanDiagnostics.Record("Windows scan preview", error); if (!closed) status.Text = DesktopText.Get("QrPreviewFailed", "Preview could not be displayed. Select the source again."); }
                             finally { CryptographicOperations.ZeroMemory(bytes); applied.TrySetResult(); }
                         })) break;
                         await applied.Task.WaitAsync(token);
@@ -142,7 +143,7 @@ internal static class WindowsQrScanner
             catch (Exception error)
             {
                 DesktopScanDiagnostics.Record("Windows scanner", error);
-                dialog.DispatcherQueue.TryEnqueue(() => { if (!closed && current == generation) status.Text = error is IOException ? error.Message : "Capture failed. Try another source or check camera permissions."; });
+                dialog.DispatcherQueue.TryEnqueue(() => { if (!closed && current == generation) status.Text = error is IOException ? error.Message : DesktopText.Get("QrCaptureFailed", "Capture failed. Try another source or check camera permissions."); });
             }
             finally { camera?.Dispose(); if (ownsCamera) CameraGate.Release(); }
         }

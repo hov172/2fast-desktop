@@ -98,6 +98,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Services\Serialization\ISerializationCryptoService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Serialization\SerializationCryptoService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Serialization\DesktopVaultCodec.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\DesktopOcraTokenFactory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Serialization\SerializationService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Serialization\SerializationContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\SettingsService\Enums\Theme.cs" />
