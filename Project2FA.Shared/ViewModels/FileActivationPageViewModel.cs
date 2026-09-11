@@ -114,7 +114,7 @@ namespace Project2FA.ViewModels
 #endif
                 ShellContext.Current.ViewModel.NavigationIsAllowed = true;
                 await ShellContext.Current.ViewModel.NavigationService.NavigateAsync("/" + nameof(AccountCodePage));
-                Window.Current.Content = ShellContext.Current;
+                Window.Current.Content = ShellContext.Current.Shell;
                 return true;
             }
             else

@@ -41,7 +41,7 @@ namespace Project2FA.ViewModels
                     parameter.Add("AccountValuePair", valuePair);
                     parameter.Add("QRCodeStr", qrcodeStr);
                     _foundAccount = true;
-                    await ShellContext.Current.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
+                    await ShellContext.Current.RunAsync(async () =>
                     {
                         await NavigationService.NavigateAsync("/" + nameof(AddAccountPage), parameter);
                     });

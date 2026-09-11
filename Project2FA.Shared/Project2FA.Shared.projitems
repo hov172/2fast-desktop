@@ -9,6 +9,7 @@
     <Import_RootNamespace>Project2FA.Shared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)GlobalUsings.Shared.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\DesktopText.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModels\DesktopInputValidation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GlobalUsings.Desktop.cs" />

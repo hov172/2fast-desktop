@@ -26,12 +26,22 @@ namespace Project2FA.Services.Desktop
     {
         public DesktopShellContext(ShellPage shell) => Shell = shell ?? throw new ArgumentNullException(nameof(shell));
         public ShellPage Shell { get; }
+        dynamic IShellContext.Shell => Shell;
         public ShellPageViewModel ViewModel => Shell.ViewModel;
         public dynamic XamlRoot => Shell.XamlRoot;
         public dynamic MainFrame => Shell.MainFrame;
-        public dynamic Dispatcher => Shell.Dispatcher;
-        public void SetTitleBarAsDraggable() => Shell.SetTitleBarAsDraggable();
-        public void SetupBackButton() => Shell.SetupBackButton();
+        public async Task RunAsync(Func<Task> action)
+        {
+            var completion = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            await Shell.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, async () =>
+            {
+                try { await action(); completion.SetResult(true); }
+                catch (Exception error) { completion.SetException(error); }
+            });
+            await completion.Task;
+        }
+        public void SetTitleBarAsDraggable() { }
+        public void SetupBackButton() { }
     }
 
     internal static class DesktopSession

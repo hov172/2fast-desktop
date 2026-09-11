@@ -766,7 +766,7 @@ namespace Project2FA.ViewModels
                 // analyse only every _vidioFrameDivider value
                 if (_videoFrameCounter % _vidioFrameDivider == 0)
                 {
-                    await ShellContext.Current.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
+                    await ShellContext.Current.RunAsync(async () =>
                     {
                         try
                         {

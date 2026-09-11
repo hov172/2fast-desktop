@@ -56,10 +56,20 @@ namespace Project2FA.UWP
         {
             private readonly ShellPage shell;
             public UwpShellContext(ShellPage shell) => this.shell = shell;
+            public dynamic Shell => shell;
             public ShellPageViewModel ViewModel => shell.ViewModel;
             public dynamic XamlRoot => shell.XamlRoot;
             public dynamic MainFrame => shell.MainFrame;
-            public dynamic Dispatcher => shell.Dispatcher;
+            public async Task RunAsync(Func<Task> action)
+            {
+                var completion = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+                await shell.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, async () =>
+                {
+                    try { await action(); completion.SetResult(true); }
+                    catch (Exception error) { completion.SetException(error); }
+                });
+                await completion.Task;
+            }
             public void SetTitleBarAsDraggable() => shell.SetTitleBarAsDraggable();
             public void SetupBackButton() => shell.SetupBackButton();
         }

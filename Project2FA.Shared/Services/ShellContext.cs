@@ -5,10 +5,11 @@ namespace Project2FA.Services;
 /// </summary>
 internal interface IShellContext
 {
+    dynamic Shell { get; }
     Project2FA.ViewModels.ShellPageViewModel ViewModel { get; }
     dynamic XamlRoot { get; }
     dynamic MainFrame { get; }
-    dynamic Dispatcher { get; }
+    Task RunAsync(Func<Task> action);
     void SetTitleBarAsDraggable();
     void SetupBackButton();
 }
