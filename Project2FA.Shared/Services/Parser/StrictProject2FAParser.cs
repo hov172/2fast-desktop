@@ -7,8 +7,14 @@ namespace Project2FA.Services.Parser;
 
 // Treat camera payloads as untrusted input. Decode each component once, without
 // unescaping the entire URI (which would turn escaped '&' into parameter separators).
-internal static class StrictProject2FAParser
+internal sealed class StrictProject2FAParser : IProject2FAParser
 {
+    public List<KeyValuePair<string, string>> ParseQRCodeStr(string qrCodeStr)
+        => TryParse(qrCodeStr, out var values) ? values : new List<KeyValuePair<string, string>>();
+
+    public List<KeyValuePair<string, string>> ParseCmdStr(string cmdStr)
+        => ParseQRCodeStr(cmdStr);
+
     internal static bool TryParse(string text, out List<KeyValuePair<string, string>> values)
         => TryParse(text, out values, out _);
 

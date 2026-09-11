@@ -15,6 +15,7 @@
     <EmbedUntrackedSources>false</EmbedUntrackedSources>
     <PathMap>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..'))=/_/src</PathMap>
     <Deterministic>true</Deterministic>
+    <UnoGenerateHotReloadInfo>false</UnoGenerateHotReloadInfo>
   </PropertyGroup>
   <Target Name="RemoveReleaseSymbolsFromPublish" AfterTargets="ComputeFilesToPublish" Condition="'$(Configuration)' == 'Release'">
     <ItemGroup>

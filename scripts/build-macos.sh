@@ -21,8 +21,12 @@ for dependency in BiometryService Otp.NET UNOversalTemplate ZXing.Net.Uno; do
   fi
 done
 
+dotnet restore src/Project2FA.Uno/Project2FA.Uno.csproj \
+  "-p:RuntimeIdentifier=$runtime" "-p:DirectoryBuildTargetsPath=$repo_root/build/MacOS.targets"
 dotnet publish src/Project2FA.Uno/Project2FA.Uno.csproj \
   -c Release -f net10.0-desktop -r "$runtime" \
+  --no-restore "-p:RuntimeIdentifier=$runtime" "-p:PathMap=$repo_root=/_/src" \
+  -p:UnoGenerateHotReloadInfo=false \
   "-p:DirectoryBuildTargetsPath=$repo_root/build/MacOS.targets" \
   -p:SelfContained=true -p:UseMonoRuntime=false -p:PackageFormat=app
 

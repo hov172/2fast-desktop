@@ -9,7 +9,13 @@ case "${1:-all}" in
 esac
 for runtime in "${runtimes[@]}"; do
   arch="${runtime#win-}"
-  dotnet publish src/Project2FA.Uno/Project2FA.Uno.csproj -c Release -f net10.0-desktop -r "$runtime" \
+  # Restore with the runtime explicitly selected so RID-specific native assets
+  # (OpenCvSharp and the Uno desktop host) are present in project.assets.json.
+  dotnet restore src/Project2FA.Uno/Project2FA.Uno.csproj \
+    "-p:RuntimeIdentifier=$runtime" "-p:DirectoryBuildTargetsPath=$repo_root/build/Desktop.targets" \
+    -p:EnableWindowsTargeting=true
+  dotnet publish src/Project2FA.Uno/Project2FA.Uno.csproj -c Release -f net10.0-desktop -r "$runtime" --no-restore \
+    "-p:RuntimeIdentifier=$runtime" "-p:PathMap=$repo_root=/_/src" -p:UnoGenerateHotReloadInfo=false \
     "-p:DirectoryBuildTargetsPath=$repo_root/build/Desktop.targets" -p:EnableWindowsTargeting=true \
     -p:SelfContained=true -p:UseMonoRuntime=false -o "$repo_root/dist/windows-$arch"
 done
