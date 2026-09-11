@@ -141,6 +141,10 @@
     <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0-desktop' and $([System.String]::Copy('$(RuntimeIdentifier)').StartsWith('win-'))">
         <ApplicationTitle>2fast</ApplicationTitle>
         <DefineConstants>$(DefineConstants);TWOFAST_WINDOWS;TWOFAST_DESKTOP</DefineConstants>
+        <!-- Resizetizer emits no .ico for the Skia desktop target, so the apphost
+             and single-file .exe would ship without an icon. This .ico is the
+             UnoIcon render (schluessel.svg on #FF009BC1) at 16-256 px. -->
+        <ApplicationIcon>Platforms/Desktop/icon.ico</ApplicationIcon>
     </PropertyGroup>
     <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-desktop' and $([System.String]::Copy('$(RuntimeIdentifier)').StartsWith('win-'))">
         <Compile Remove="../../UNOversalTemplate/UNOversalTemplate.Services/Secrets/Default/SecretHelper.cs" />
