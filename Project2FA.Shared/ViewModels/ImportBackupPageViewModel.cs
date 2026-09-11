@@ -57,7 +57,7 @@ namespace Project2FA.ViewModels
                 DataService.Instance.Collection.Add(Model);
             }
 #if __ANDROID__ || _IOS__
-            await App.ShellPageInstance.ViewModel.NavigationService.NavigateAsync("/" + nameof(AccountCodePage));
+            await ShellContext.Current.ViewModel.NavigationService.NavigateAsync("/" + nameof(AccountCodePage));
 #endif
         }
 

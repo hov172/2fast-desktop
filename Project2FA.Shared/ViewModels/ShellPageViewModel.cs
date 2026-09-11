@@ -61,7 +61,7 @@ namespace Project2FA.ViewModels
 #if !WINDOWS_UWP
         private async Task SettingsPageCommandTask()
         {
-            if(App.ShellPageInstance.MainFrame.Content is UIElement uIElement)
+            if(ShellContext.Current.MainFrame.Content is UIElement uIElement)
             {
                 if (uIElement is not SettingPage)
                 {
@@ -72,7 +72,7 @@ namespace Project2FA.ViewModels
 
         private async Task SearchPageCommandTask()
         {
-            if (App.ShellPageInstance.MainFrame.Content is UIElement uIElement)
+            if (ShellContext.Current.MainFrame.Content is UIElement uIElement)
             {
                 if (uIElement is SettingPage)
                 {
@@ -83,7 +83,7 @@ namespace Project2FA.ViewModels
 
         private async Task AccountCodePageCommandTask()
         {
-            if (App.ShellPageInstance.MainFrame.Content is UIElement uIElement)
+            if (ShellContext.Current.MainFrame.Content is UIElement uIElement)
             {
                 if (uIElement is not AccountCodePage)
                 {

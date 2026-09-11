@@ -39,7 +39,7 @@ namespace Project2FA.ViewModels
             _dialogService = dialogService;
             _navigationService = navigationService;
             // disable the navigation to other pages
-            App.ShellPageInstance.ViewModel.NavigationIsAllowed = false;
+            ShellContext.Current.ViewModel.NavigationIsAllowed = false;
 
             NewDatefileCommand = new AsyncRelayCommand(NewDatafileCommandTask);
 

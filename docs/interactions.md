@@ -45,7 +45,7 @@ Mobile swaps the `NavigationView` for a `TabBar` via `ViewModel.IsMobile`.
 - Blocking errors and confirmations use a `ContentDialog` through
   `IDialogService`. Desktop-only dialogs use the `DesktopSession` shell context
   for their XamlRoot; the context is injected from app startup and does not
-  reach through `App.ShellPageInstance`.
+  reach through `IShellContext`.
 - Error text never contains a secret, a password, or a vault path.
 
 ## Lock and session behaviour

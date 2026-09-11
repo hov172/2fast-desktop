@@ -209,12 +209,16 @@ truth and the rest follow the project's normal translation route.
   shared `DesktopOcraTokenFactory`; desktop view-model code only owns controls
   and navigation.
 - Genuine camera, biometric and native credential behavior remains in desktop
-  partials, while shell access is supplied through `IDesktopShellContext` and
-  `DesktopSession` no longer reaches directly into `App.ShellPageInstance`.
+  partials, while shell access is supplied through `IShellContext` and
+  `DesktopSession` configures the adapter during startup.
 
 **Verify:** focused shared, parser, OCRA, QR, file-transaction and device
 binding suites pass. Full platform UI and hardware acceptance still require
 the matching Windows/macOS hosts.
+
+The former `App.ShellPageInstance` dependency is retired. Shared workflows now
+consume `IShellContext`, configured by the application head during shell
+startup; a repository scan reports zero direct references in `Project2FA.Shared`.
 
 ---
 
@@ -232,6 +236,5 @@ documented migration path and existing vault formats.
 - No third implementation of anything in the reuse table in `CLAUDE.md`.
 - No change to V4 crypto parameters without a migration path.
 - No new reference from `Project2FA.Core` or `Project2FA.Shared` into a head.
-  Note that 38 `App.ShellPageInstance` references across 16 shared files predate
-  the boundary work and remain — see [architecture.md](architecture.md) §6. Do
-  not add a 39th; use `IDesktopShellContext` or an injected service instead.
+  Shared code must use `IShellContext`; direct head-static shell access is
+  prohibited.

@@ -52,6 +52,18 @@ namespace Project2FA.UWP
         /// </summary>
         public static ShellPage? ShellPageInstance { get; private set; }
 
+        private sealed class UwpShellContext : IShellContext
+        {
+            private readonly ShellPage shell;
+            public UwpShellContext(ShellPage shell) => this.shell = shell;
+            public ShellPageViewModel ViewModel => shell.ViewModel;
+            public dynamic XamlRoot => shell.XamlRoot;
+            public dynamic MainFrame => shell.MainFrame;
+            public dynamic Dispatcher => shell.Dispatcher;
+            public void SetTitleBarAsDraggable() => shell.SetTitleBarAsDraggable();
+            public void SetupBackButton() => shell.SetupBackButton();
+        }
+
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
         /// executed, and as such is the logical equivalent of main() or WinMain().
@@ -85,6 +97,7 @@ namespace Project2FA.UWP
         protected override UIElement CreateShell()
         {
             ShellPageInstance = Container.Resolve<ShellPage>();
+            ShellContext.Configure(new UwpShellContext(ShellPageInstance));
             return ShellPageInstance;
         }
 

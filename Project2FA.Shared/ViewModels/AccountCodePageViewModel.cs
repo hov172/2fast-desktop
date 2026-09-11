@@ -490,12 +490,12 @@ namespace Project2FA.ViewModels
 #if __IOS__ || __ANDROID__
             var param = new NavigationParameters();
             param.Add("model", model);
-            //App.ShellPageInstance.ViewModel.NavigationIsAllowed = false;
+            //ShellContext.Current.ViewModel.NavigationIsAllowed = false;
             await NavigationService.NavigateAsync(nameof(EditAccountPage), param);
 #else
             var dialog = new EditAccountContentDialog();
 #if !WINDOWS_UWP
-            dialog.XamlRoot = App.ShellPageInstance.XamlRoot;
+            dialog.XamlRoot = ShellContext.Current.XamlRoot;
 #endif
             dialog.Style = App.Current.Resources[Project2FA.Core.Constants.ContentDialogStyleName] as Style;
             var param = new DialogParameters();
@@ -623,7 +623,7 @@ namespace Project2FA.ViewModels
             param.Add("Model", model);
             var dialog = new DisplayQRCodeContentDialog();
 #if !WINDOWS_UWP
-            dialog.XamlRoot = App.ShellPageInstance.XamlRoot;
+            dialog.XamlRoot = ShellContext.Current.XamlRoot;
 #endif
             await DialogService.ShowDialogAsync(dialog, param);
         }
@@ -814,7 +814,7 @@ namespace Project2FA.ViewModels
 #if !WINDOWS_UWP
         public ShellPageViewModel ShellViewModel
         {
-            get => App.ShellPageInstance.ViewModel;
+            get => ShellContext.Current.ViewModel;
         }
 #endif
 #endregion

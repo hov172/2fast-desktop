@@ -8,6 +8,7 @@ using Project2FA.Services;
 using Project2FA.Services.Enums;
 using Project2FA.Services.Desktop;
 using Project2FA.Services.Parser;
+using Project2FA.ViewModels;
 using Project2FA.Uno.Views;
 using Project2FA.UnoApp;
 using UNOversal.Navigation;
@@ -16,7 +17,7 @@ using UNOversal.Services.Secrets;
 
 namespace Project2FA.Services.Desktop
 {
-    internal interface IDesktopShellContext
+    internal interface IDesktopShellContext : IShellContext
     {
         ShellPage Shell { get; }
     }
@@ -25,13 +26,23 @@ namespace Project2FA.Services.Desktop
     {
         public DesktopShellContext(ShellPage shell) => Shell = shell ?? throw new ArgumentNullException(nameof(shell));
         public ShellPage Shell { get; }
+        public ShellPageViewModel ViewModel => Shell.ViewModel;
+        public dynamic XamlRoot => Shell.XamlRoot;
+        public dynamic MainFrame => Shell.MainFrame;
+        public dynamic Dispatcher => Shell.Dispatcher;
+        public void SetTitleBarAsDraggable() => Shell.SetTitleBarAsDraggable();
+        public void SetupBackButton() => Shell.SetupBackButton();
     }
 
     internal static class DesktopSession
     {
         private static CancellationTokenSource lifetime = new();
         private static IDesktopShellContext? shellContext;
-        internal static void ConfigureShell(ShellPage shell) => shellContext = new DesktopShellContext(shell);
+        internal static void ConfigureShell(ShellPage shell)
+        {
+            shellContext = new DesktopShellContext(shell);
+            ShellContext.Configure(shellContext);
+        }
         internal static ShellPage Shell => shellContext?.Shell ?? throw new InvalidOperationException("The desktop shell has not been initialized.");
         internal static CancellationToken Token => lifetime.Token;
         internal static void CancelOperations()

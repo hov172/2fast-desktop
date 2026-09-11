@@ -136,7 +136,7 @@ namespace Project2FA.ViewModels
             );
 #endif
 #if ANDROID || IOS
-            App.ShellPageInstance.ViewModel.TabBarIsVisible = false;
+            ShellContext.Current.ViewModel.TabBarIsVisible = false;
             BiometricoLoginCommand = new AsyncRelayCommand(BiometricoLoginCommandTask);
 #endif
 
@@ -284,7 +284,7 @@ namespace Project2FA.ViewModels
                             Text = isFingerprintReader ? Resources.BiometricFingerPreferMessage : Resources.BiometricFacePreferMessage,
                             TextWrapping = Microsoft.UI.Xaml.TextWrapping.WrapWholeWords
                         };
-                        dialog.XamlRoot = App.ShellPageInstance.XamlRoot;
+                        dialog.XamlRoot = ShellContext.Current.XamlRoot;
                         dialog.Content = markdown;
                         dialog.PrimaryButtonText = Resources.Yes;
                         dialog.SecondaryButtonText = Resources.No;
@@ -397,18 +397,18 @@ namespace Project2FA.ViewModels
                 //var navigationParameters = new NavigationParameters();
                 //navigationParameters.Add("pwd", password);
 #if WINDOWS_UWP
-                App.ShellPageInstance.SetTitleBarAsDraggable();
-                WinUIWindow.Current.Content = App.ShellPageInstance;
+                ShellContext.Current.SetTitleBarAsDraggable();
+                WinUIWindow.Current.Content = ShellContext.Current;
 #endif
 
-                App.ShellPageInstance.ViewModel.NavigationIsAllowed = true;
-                var navigation = await App.ShellPageInstance.ViewModel.NavigationService.NavigateAsync("/" + nameof(AccountCodePage));
+                ShellContext.Current.ViewModel.NavigationIsAllowed = true;
+                var navigation = await ShellContext.Current.ViewModel.NavigationService.NavigateAsync("/" + nameof(AccountCodePage));
                 if (!navigation.Success)
                 {
 #if TWOFAST_DESKTOP
                     DesktopSession.Lock();
 #else
-                    App.ShellPageInstance.ViewModel.NavigationIsAllowed = false;
+                    ShellContext.Current.ViewModel.NavigationIsAllowed = false;
 #endif
                     return false;
                 }

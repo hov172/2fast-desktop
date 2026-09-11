@@ -484,7 +484,7 @@ namespace Project2FA.Utils
                 //    // TODO WebDav case
                 //}
                 // disable shell navigation
-                App.ShellPageInstance.ViewModel.NavigationIsAllowed = false;
+                ShellContext.Current.ViewModel.NavigationIsAllowed = false;
                 //Logger.Log("no datafile found", Category.Exception, Priority.High);
                 bool selectedOption = false;
 
@@ -515,7 +515,7 @@ namespace Project2FA.Utils
                     {
                         DataService.Instance.ErrorResolved();
                         // allow shell navigation
-                        App.ShellPageInstance.ViewModel.NavigationIsAllowed = true;
+                        ShellContext.Current.ViewModel.NavigationIsAllowed = true;
                         await DataService.Instance.ReloadDatafile();
                     }
                     if (result == ContentDialogResult.None)
@@ -567,7 +567,7 @@ namespace Project2FA.Utils
 #if WINDOWS_UWP
                     if (!(Window.Current.Content is ShellPage))
 #else
-                    if (App.ShellPageInstance == null)
+                    if (ShellContext.Current == null)
 #endif
                     {
                         App.Current.Exit();

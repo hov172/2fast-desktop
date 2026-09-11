@@ -196,26 +196,19 @@ are shared in `DesktopOcraTokenFactory`. Desktop shell navigation and dialog
 roots are provided through `IDesktopShellContext`; desktop platform code does
 not reach directly into `App.ShellPageInstance`.
 
-### 6. Shared code still reaches the head's `App` static
+### 6. Shared workflows use an injected shell seam
 
-The boundary work removed the desktop-specific inversion — fully-qualified
-`Project2FA.Services.Desktop.*` calls from shared code went from 42 to **0**. A
-second, older route remains: `Project2FA.Shared` contains **38 references to
-`App.ShellPageInstance` across 16 files**, including `DataService`,
-`ErrorDialogs`, `AccountCodePageViewModel`, `AddAccountViewModelBase`,
-`LoginPageViewModel` and `FileActivationPageViewModel`.
+The boundary cleanup removed both head-coupling routes. Fully-qualified
+`Project2FA.Services.Desktop.*` calls and direct `App.ShellPageInstance` calls
+from `Project2FA.Shared` are now **0**. Shared workflows use the narrow
+`IShellContext`/`ShellContext` seam for navigation, dialog roots, dispatching,
+and shell state. Each application head supplies its adapter during startup;
+shared code does not reach into a head-owned static.
 
-`App` is defined in each head; shared files reach it through a conditional using
-(`Project2FA.UWP` for UWP, `Project2FA.UnoApp` otherwise), so it compiles in both
-without a project reference. This is the inherited upstream pattern, not
-something the desktop work introduced — which is why it survived a boundary
-cleanup aimed at the `Desktop.*` namespace.
-
-It is the same class of coupling by a different mechanism: shared code depending
-on a head-owned static for navigation and dialog roots. `IDesktopShellContext`
-already exists as the abstraction that would replace it. Retiring it is a
-larger, cross-cutting change than the desktop boundary was, because it touches
-both heads and the mobile targets, so it is recorded here rather than scheduled.
+The desktop adapter also backs `IDesktopShellContext`, so desktop-specific
+workflows and shared workflows use the same shell instance. The seam keeps
+platform UI handles at the edge while exposing the shared shell view-model as a
+typed contract.
 
 ## Testing
 

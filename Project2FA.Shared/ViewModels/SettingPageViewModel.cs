@@ -578,7 +578,7 @@ namespace Project2FA.ViewModels
                     _settings.UseHeaderBackButton = value;
                     OnPropertyChanged(nameof(UseHeaderBackButton));
 #if WINDOWS_UWP
-                    App.ShellPageInstance.SetupBackButton();
+                    ShellContext.Current.SetupBackButton();
 #endif
                 }
             }

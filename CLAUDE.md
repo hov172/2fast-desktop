@@ -53,7 +53,8 @@ not locate the shared ones. Two facts to internalise:
    `TWOFAST_DESKTOP` global using and the shared `DesktopVaultCodec` seam; there
    are no fully-qualified `Project2FA.Services.Desktop.*` calls left in
    `Project2FA.Shared`. New shared code must still depend on interfaces when a
-   capability can be platform-neutral.
+   shell capability is needed: use `IShellContext`, never a head-owned
+   `App.ShellPageInstance` static when a capability can be platform-neutral.
 4. **Desktop strings use the resource seam.** User-facing dialog and status
    text in the desktop data-file, OCRA, biometric, and QR-import flows is
    retrieved through `DesktopText` with English fallbacks. New user-facing text

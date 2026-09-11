@@ -41,7 +41,7 @@ namespace Project2FA.ViewModels
                     parameter.Add("AccountValuePair", valuePair);
                     parameter.Add("QRCodeStr", qrcodeStr);
                     _foundAccount = true;
-                    await App.ShellPageInstance.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
+                    await ShellContext.Current.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
                     {
                         await NavigationService.NavigateAsync("/" + nameof(AddAccountPage), parameter);
                     });
@@ -65,7 +65,7 @@ namespace Project2FA.ViewModels
         public void Initialize(INavigationParameters parameters)
         {
             // TabBar should not be visible
-            App.ShellPageInstance.ViewModel.TabBarIsVisible = false;
+            ShellContext.Current.ViewModel.TabBarIsVisible = false;
         }
 
         public bool CanNavigate(INavigationParameters parameters)

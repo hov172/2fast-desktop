@@ -185,7 +185,7 @@ namespace Project2FA.ViewModels
             {
                 if (await CreateDataFileSettings(isWebDAV))
                 {
-                    App.ShellPageInstance.ViewModel.NavigationIsAllowed = true;
+                    ShellContext.Current.ViewModel.NavigationIsAllowed = true;
                     await NaviationService.NavigateAsync("/" + nameof(AccountCodePage));
                 }
                 else

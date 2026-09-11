@@ -262,7 +262,7 @@ namespace Project2FA.ViewModels
                 var result = await CreateDataFileSettings(isWebDAV);
                 if (result)
                 {
-                    App.ShellPageInstance.ViewModel.NavigationIsAllowed = true;
+                    ShellContext.Current.ViewModel.NavigationIsAllowed = true;
                     await NaviationService.NavigateAsync("/" + nameof(AccountCodePage));
                 }
                 else

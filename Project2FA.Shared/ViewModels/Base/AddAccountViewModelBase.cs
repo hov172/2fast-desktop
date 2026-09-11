@@ -178,7 +178,7 @@ namespace Project2FA.ViewModels
 #elif __ANDROID__ || __IOS__
             // Camera access on Android and iOS is handled via CommunityToolkit.Uno.Camera
             // through the CameraPage / CameraPageViewModel; navigation triggers camera use.
-            await App.ShellPageInstance.ViewModel.NavigationService.NavigateAsync(nameof(CameraPage));
+            await ShellContext.Current.ViewModel.NavigationService.NavigateAsync(nameof(CameraPage));
 #else
             // Desktop (Linux/macOS/Windows-Skia): camera capture via CommunityToolkit.Uno.Camera
             // is not universally available; show "no camera" fallback.
@@ -201,7 +201,7 @@ namespace Project2FA.ViewModels
             DataService.Instance.Collection.Add(Model);
 #endif
 #if __ANDROID__ || _IOS__ || TWOFAST_DESKTOP
-            await App.ShellPageInstance.ViewModel.NavigationService.NavigateAsync("/" + nameof(AccountCodePage));
+            await ShellContext.Current.ViewModel.NavigationService.NavigateAsync("/" + nameof(AccountCodePage));
 #endif
         }
 
@@ -766,7 +766,7 @@ namespace Project2FA.ViewModels
                 // analyse only every _vidioFrameDivider value
                 if (_videoFrameCounter % _vidioFrameDivider == 0)
                 {
-                    await App.ShellPageInstance.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
+                    await ShellContext.Current.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
                     {
                         try
                         {

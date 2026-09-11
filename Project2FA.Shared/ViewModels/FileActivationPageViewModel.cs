@@ -62,7 +62,7 @@ namespace Project2FA.ViewModels
             LoggingService = App.Current.Container.Resolve<ILoggingService>();
             SerializationService = App.Current.Container.Resolve<ISerializationService>();
             LoginCommand = new AsyncRelayCommand(CheckLoginTask);
-            App.ShellPageInstance.ViewModel.NavigationIsAllowed = false;
+            ShellContext.Current.ViewModel.NavigationIsAllowed = false;
             var title = Windows.ApplicationModel.Package.Current.DisplayName;
             ApplicationTitle = System.Diagnostics.Debugger.IsAttached ? "[Debug] " + title : title;
         }
@@ -105,16 +105,16 @@ namespace Project2FA.ViewModels
                     Constants.ContainerName, 
                     Constants.ActivatedDatafileHashName,
                     SerializationService.Serialize(ProtectData.Protect(Encoding.UTF8.GetBytes(Password))));
-                App.ShellPageInstance.SetTitleBarAsDraggable();
+                ShellContext.Current.SetTitleBarAsDraggable();
 #else
                 SecretService.Helper.WriteSecret(
                     Constants.ContainerName,
                     Constants.ActivatedDatafileHashName,
                     SerializationService.Serialize(Encoding.UTF8.GetBytes(Password)));
 #endif
-                App.ShellPageInstance.ViewModel.NavigationIsAllowed = true;
-                await App.ShellPageInstance.ViewModel.NavigationService.NavigateAsync("/" + nameof(AccountCodePage));
-                Window.Current.Content = App.ShellPageInstance;
+                ShellContext.Current.ViewModel.NavigationIsAllowed = true;
+                await ShellContext.Current.ViewModel.NavigationService.NavigateAsync("/" + nameof(AccountCodePage));
+                Window.Current.Content = ShellContext.Current;
                 return true;
             }
             else
@@ -209,7 +209,7 @@ namespace Project2FA.ViewModels
         public void Initialize(INavigationParameters parameters)
         {
 #if ANDROID || IOS
-            App.ShellPageInstance.ViewModel.TabBarIsVisible = false;
+            ShellContext.Current.ViewModel.TabBarIsVisible = false;
 #endif
         }
 

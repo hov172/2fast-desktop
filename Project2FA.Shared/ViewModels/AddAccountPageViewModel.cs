@@ -48,7 +48,7 @@ namespace Project2FA.ViewModels
             //ErrorsChanged += Validation_ErrorsChanged;
 
 #if __ANDROID__ || __IOS__
-            App.ShellPageInstance.ViewModel.TabBarIsVisible = false;
+            ShellContext.Current.ViewModel.TabBarIsVisible = false;
 #endif
         }
 

@@ -285,7 +285,7 @@ namespace Project2FA.Services
         private async Task CheckLocalDatafile()
         {
 #if TWOFAST_DESKTOP
-            if (!App.ShellPageInstance.ViewModel.NavigationIsAllowed) return;
+            if (!ShellContext.Current.ViewModel.NavigationIsAllowed) return;
             var loadToken = DesktopSession.Token;
 #endif
             if (Collection.Count == 0)
@@ -570,7 +570,7 @@ namespace Project2FA.Services
                             DesktopSession.Lock();
                             var parameters = new UNOversal.Navigation.NavigationParameters();
                             parameters.Add("isLogout", true);
-                            await App.ShellPageInstance.ViewModel.NavigationService.NavigateAsync("/LoginPage", parameters);
+                            await ShellContext.Current.ViewModel.NavigationService.NavigateAsync("/LoginPage", parameters);
                             await DesktopSession.Message(DialogService,
                                 "Unlock required", "Enter the current data-file password to unlock. Your data file has not been changed.");
                             return;

@@ -78,7 +78,7 @@ namespace Project2FA.ViewModels
 
             {
                 // disable the navigation to other pages
-                App.ShellPageInstance.ViewModel.NavigationIsAllowed = false;
+                ShellContext.Current.ViewModel.NavigationIsAllowed = false;
             }
            
         }
