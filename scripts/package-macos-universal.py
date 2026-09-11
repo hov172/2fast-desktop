@@ -13,8 +13,8 @@ import sys
 ROOT = Path(__file__).resolve().parent.parent
 DIST = ROOT / 'dist'
 DIST.mkdir(exist_ok=True)
-if not os.environ.get('APPLE_DEVELOPER_ID') or not os.environ.get('APPLE_DISTRIBUTION_PROFILE'):
-    raise SystemExit('Set APPLE_DEVELOPER_ID (certificate SHA-1) and APPLE_DISTRIBUTION_PROFILE for release packaging.')
+if not os.environ.get('APPLE_DEVELOPER_ID'):
+    raise SystemExit('Set APPLE_DEVELOPER_ID (certificate SHA-1) for release packaging.')
 
 def run(*args):
     subprocess.run([str(arg) for arg in args], check=True)

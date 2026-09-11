@@ -11,16 +11,26 @@ import sys
 root = Path(__file__).resolve().parent.parent
 app = Path(sys.argv[1]).resolve()
 identity = os.environ['APPLE_DEVELOPER_ID']
-profile = Path(os.environ['APPLE_DISTRIBUTION_PROFILE']).resolve()
 entitlements = root / 'build/macos-signing/Entitlements.plist'
-claims = plistlib.loads(subprocess.check_output(['security', 'cms', '-D', '-i', str(profile)]))
-if claims.get('ProvisionedDevices') or not claims.get('ProvisionsAllDevices'):
-    raise SystemExit('Release signing requires an all-device distribution profile, without registered devices.')
-if identity.upper() not in {hashlib.sha1(c).hexdigest().upper() for c in claims['DeveloperCertificates']}:
-    raise SystemExit('The configured certificate fingerprint is not authorized by the distribution profile.')
+profile_value = os.environ.get('APPLE_DISTRIBUTION_PROFILE')
+profile = Path(profile_value).resolve() if profile_value else None
+if profile:
+    claims = plistlib.loads(subprocess.check_output(['security', 'cms', '-D', '-i', str(profile)]))
+    if claims.get('ProvisionedDevices') or not claims.get('ProvisionsAllDevices'):
+        raise SystemExit('Release signing requires an all-device distribution profile, without registered devices.')
+    if identity.upper() not in {hashlib.sha1(c).hexdigest().upper() for c in claims['DeveloperCertificates']}:
+        raise SystemExit('The configured certificate fingerprint is not authorized by the distribution profile.')
 bundles = sorted([app, *app.rglob('*.app')], key=lambda p: len(p.parts), reverse=True)
-for bundle in bundles:
-    shutil.copy2(profile, bundle / 'Contents/embedded.provisionprofile')
+if profile:
+    for bundle in bundles:
+        shutil.copy2(profile, bundle / 'Contents/embedded.provisionprofile')
+else:
+    # Developer ID distribution apps are not provisioned. Remove any
+    # development profile emitted by the local Uno publish target.
+    for bundle in bundles:
+        embedded = bundle / 'Contents/embedded.provisionprofile'
+        if embedded.exists():
+            embedded.unlink()
 magic = {bytes.fromhex(s) for s in ['feedface', 'cefaedfe', 'feedfacf', 'cffaedfe', 'cafebabe', 'bebafeca', 'cafebabf', 'bfbafeca']}
 count = 0
 for path in app.rglob('*'):

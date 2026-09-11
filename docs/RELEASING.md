@@ -50,12 +50,11 @@ build does not remove the CodeView paths already stored in assemblies or bundled
 EXEs. Run `python3 scripts/verify-release-privacy.py` on final app directories and
 standalone EXEs. Documentation packaging invokes the same gate automatically.
 
-Universal Mac packaging requires `APPLE_DEVELOPER_ID` (certificate SHA-1) and
-`APPLE_DISTRIBUTION_PROFILE` (local distribution profile path). It signs nested
-code with Developer ID, requires Hardened Runtime/timestamps, rejects profiles
-with registered devices and scans the signed app before creating its ZIP. Keep
-these local signing inputs outside Git. Submit the app and DMG separately for
-notarization, staple both, and regenerate the app ZIP from the stapled app.
+Universal Mac packaging requires `APPLE_DEVELOPER_ID` (certificate SHA-1). It
+signs nested code with Developer ID and Hardened Runtime/timestamps. Use the
+`Jay_SIGNARO` (or equivalent) notarytool keychain profile to submit the ZIP and
+DMG, staple both, and regenerate the app ZIP from the stapled app. Keep signing
+credentials outside Git.
 
 Use a GitHub noreply identity for new author, committer and tagger metadata.
 The 1.4.5 privacy cleanup rewrites prior maintainer identity metadata while
