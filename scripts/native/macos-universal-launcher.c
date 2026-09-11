@@ -3,8 +3,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <spawn.h>
+#include <sys/wait.h>
 #include <limits.h>
 #include <errno.h>
+
+extern char **environ;
 
 #if defined(__arm64__)
 #define RUNTIME_ARCH "arm64"
@@ -34,7 +38,20 @@ int main(int argc, char **argv) {
         return 0;
     }
     argv[0] = target;
-    execv(target, argv);
-    fprintf(stderr, "2fast: could not start the %s runtime (error %d).\n", RUNTIME_ARCH, errno);
+    pid_t child = 0;
+    int error = posix_spawn(&child, target, NULL, NULL, argv, environ);
+    if (error != 0) {
+        fprintf(stderr, "2fast: could not start the %s runtime (error %d).\n", RUNTIME_ARCH, error);
+        return 1;
+    }
+    int status = 0;
+    while (waitpid(child, &status, 0) < 0) {
+        if (errno != EINTR) {
+            fprintf(stderr, "2fast: could not wait for the %s runtime (error %d).\n", RUNTIME_ARCH, errno);
+            return 1;
+        }
+    }
+    if (WIFEXITED(status)) return WEXITSTATUS(status);
+    if (WIFSIGNALED(status)) return 128 + WTERMSIG(status);
     return 1;
 }
