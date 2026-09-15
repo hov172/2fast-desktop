@@ -92,12 +92,10 @@ public sealed partial class AddAccountPage : Page
 
     private async void BTN_ManageCategories_Click(object sender, RoutedEventArgs e)
     {
-        var dialogService = App.Current.Container.Resolve<UNOversal.Services.Dialogs.IDialogService>();
-        await dialogService.ShowDialogAsync(new ManageCategoriesContentDialog(), new UNOversal.Services.Dialogs.DialogParameters());
+        var dialogService = App.Current.Container.Resolve<IDialogService>();
+        await dialogService.ShowDialogAsync(new ManageCategoriesContentDialog(), new DialogParameters());
         // Refresh the selectable tokens with the latest global categories, keeping current selections.
-        var selected = System.Linq.Enumerable.ToHashSet(
-            System.Linq.Enumerable.Select(
-                System.Linq.Enumerable.Where(ViewModel.GlobalTempCategories, x => x.IsSelected), x => x.Guid));
+        var selected = ViewModel.GlobalTempCategories.Where(x => x.IsSelected).Select(x => x.Guid).ToHashSet();
         ViewModel.GlobalTempCategories.Clear();
         foreach (var category in Project2FA.Services.DataService.Instance.GlobalCategories)
         {

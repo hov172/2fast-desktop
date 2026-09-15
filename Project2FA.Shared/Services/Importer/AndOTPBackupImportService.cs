@@ -28,6 +28,9 @@ namespace Project2FA.Services.Importer
         private const int SaltLength = 12;
         private const int IvLength = 12;
 
+        // Above this the payload is not a valid andOTP backup, not a slow one.
+        private const uint MaxIterations = 500000;
+
         ISerializationService SerializationService { get; }
         private ILoggingService LoggingService { get; }
         public AndOTPBackupImportService(ILoggingService loggingService, ISerializationService serializationService)
@@ -38,76 +41,70 @@ namespace Project2FA.Services.Importer
 
         public async Task<(List<TwoFACodeModel> accountList, bool successful)> ImportBackup(string content, byte[] bytePassword)
         {
-            string json;
+            string json = bytePassword is null || bytePassword.Length == 0
+                ? content
+                : Decrypt(Encoding.UTF8.GetBytes(content), bytePassword);
 
-            if (bytePassword is null || bytePassword.Length == 0)
+            if (string.IsNullOrWhiteSpace(json))
             {
-                json = content;
-            }
-            else
-            {
-                json = Decrypt(Encoding.UTF8.GetBytes(content), bytePassword);
+                return (new List<TwoFACodeModel>(), false);
             }
 
-            if (!string.IsNullOrWhiteSpace(json))
-            {
-                List<AndOTPModel<string>> decryptedModel = SerializationService.Deserialize<List<AndOTPModel<string>>>(json);
-                List<TwoFACodeModel> accountList = new List<TwoFACodeModel>();
+            List<AndOTPModel<string>> decryptedModel = SerializationService.Deserialize<List<AndOTPModel<string>>>(json);
+            List<TwoFACodeModel> accountList = new List<TwoFACodeModel>();
 
-                for (int i = 0; i < decryptedModel.Count; i++)
+            for (int i = 0; i < decryptedModel.Count; i++)
+            {
+                // check if the authentication methode is supported
+                if (decryptedModel[i].Type == OTPType.totp.ToString().ToUpper() || decryptedModel[i].Type == OTPType.steam.ToString().ToUpper())
                 {
-                    // check if the authentication methode is supported
-                    if (decryptedModel[i].Type == OTPType.totp.ToString().ToUpper() || decryptedModel[i].Type == OTPType.steam.ToString().ToUpper())
+                    OtpHashMode algorithm;
+                    try
                     {
-                        OtpHashMode algorithm;
-                        try
-                        {
-                            algorithm = BackupCryptoHelper.ToHashMode(decryptedModel[i].Algorithm);
+                        algorithm = BackupCryptoHelper.ToHashMode(decryptedModel[i].Algorithm);
 
-                        }
-                        catch (Exception exc)
-                        {
-                            await LoggingService.LogException(exc, SettingsService.Instance.LoggingSetting);
-                            throw;
-                        }
-
-                        var model = new TwoFACodeModel
-                        {
-                            Label = decryptedModel[i].Label,
-                            TotpSize = decryptedModel[i].Digits,
-                            Issuer = decryptedModel[i].Issuer,
-                            Period = decryptedModel[i].Period,
-                            HashMode = algorithm,
-                            SelectedCategories = new System.Collections.ObjectModel.ObservableCollection<CategoryModel>(),
-                            SecretByteArray = Base32Encoding.ToBytes(decryptedModel[i].Secret),
-                            AccountIconName = DataService.Instance.GetIconForLabel(decryptedModel[i].Label.ToLower())
-                        };
-                        if (string.IsNullOrWhiteSpace(model.Issuer))
-                        {
-                            model.Issuer = decryptedModel[i].Label;
-                        }
-                        if (decryptedModel[i].Type == OTPType.steam.ToString().ToUpper())
-                        {
-                            model.OTPType = OTPType.steam.ToString();
-                        }
-                        accountList.Add(model);
                     }
-                    else
+                    catch (Exception exc)
                     {
-                        accountList.Add(new TwoFACodeModel
-                        {
-                            Label = decryptedModel[i].Label,
-                            Issuer = decryptedModel[i].Issuer,
-                            AccountIconName = DataService.Instance.GetIconForLabel(decryptedModel[i].Label.ToLower()),
-                            SelectedCategories = new System.Collections.ObjectModel.ObservableCollection<CategoryModel>(),
-                            IsEnabled = false,
-                            IsChecked = false
-                        });
+                        await LoggingService.LogException(exc, SettingsService.Instance.LoggingSetting);
+                        throw;
                     }
+
+                    var model = new TwoFACodeModel
+                    {
+                        Label = decryptedModel[i].Label,
+                        TotpSize = decryptedModel[i].Digits,
+                        Issuer = decryptedModel[i].Issuer,
+                        Period = decryptedModel[i].Period,
+                        HashMode = algorithm,
+                        SelectedCategories = new System.Collections.ObjectModel.ObservableCollection<CategoryModel>(),
+                        SecretByteArray = Base32Encoding.ToBytes(decryptedModel[i].Secret),
+                        AccountIconName = DataService.Instance.GetIconForLabel(decryptedModel[i].Label.ToLower())
+                    };
+                    if (string.IsNullOrWhiteSpace(model.Issuer))
+                    {
+                        model.Issuer = decryptedModel[i].Label;
+                    }
+                    if (decryptedModel[i].Type == OTPType.steam.ToString().ToUpper())
+                    {
+                        model.OTPType = OTPType.steam.ToString();
+                    }
+                    accountList.Add(model);
                 }
-                return (accountList, true);
+                else
+                {
+                    accountList.Add(new TwoFACodeModel
+                    {
+                        Label = decryptedModel[i].Label,
+                        Issuer = decryptedModel[i].Issuer,
+                        AccountIconName = DataService.Instance.GetIconForLabel(decryptedModel[i].Label.ToLower()),
+                        SelectedCategories = new System.Collections.ObjectModel.ObservableCollection<CategoryModel>(),
+                        IsEnabled = false,
+                        IsChecked = false
+                    });
+                }
             }
-            return (new List<TwoFACodeModel>(), false);
+            return (accountList, true);
         }
 
         private KeyParameter DeriveKey(byte[] passwordBytes, byte[] salt, uint iterations)
@@ -119,24 +116,19 @@ namespace Project2FA.Services.Importer
             var salt = data.Skip(IterationsLength).Take(SaltLength).ToArray();
             var iv = data.Skip(IterationsLength + SaltLength).Take(IvLength).ToArray();
             var payload = data.Skip(IterationsLength + SaltLength + IvLength).ToArray();
-            if (iterations <= 500000)
-            {
-                var key = DeriveKey(passwordBytes, salt, iterations);
-
-                var keyParameter = new ParametersWithIV(key, iv);
-                var cipher = CipherUtilities.GetCipher(AlgorithmDescription);
-                cipher.Init(false, keyParameter);
-
-                byte[] decrypted;
-
-                decrypted = cipher.DoFinal(payload);
-                return Encoding.UTF8.GetString(decrypted);
-            }
-            else
+            if (iterations > MaxIterations)
             {
                 // assume that backup format is incorrect and iterations are too high
                 return string.Empty;
             }
+
+            var key = DeriveKey(passwordBytes, salt, iterations);
+
+            var keyParameter = new ParametersWithIV(key, iv);
+            var cipher = CipherUtilities.GetCipher(AlgorithmDescription);
+            cipher.Init(false, keyParameter);
+
+            return Encoding.UTF8.GetString(cipher.DoFinal(payload));
         }
     }
 }

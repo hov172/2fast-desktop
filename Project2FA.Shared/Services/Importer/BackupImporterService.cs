@@ -7,26 +7,13 @@ using Windows.Storage.Streams;
 using Project2FA.Repository.Models;
 using UNOversal.Services.Logging;
 using System.Collections.Generic;
-using Org.BouncyCastle.Crypto;
 using Project2FA.Shared.Models;
-
-
-#if WINDOWS_UWP
-#else
-
-using Project2FA.Uno;
-using Project2FA.Uno.Views;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Controls;
-#endif
 
 namespace Project2FA.Services.Importer
 {
     public class BackupImporterService : IBackupImporterService
     {
         private ILoggingService LoggingService { get; }
-        //private ISerializationService SerializationService { get; }
         private IAegisBackupImportService AegisBackupService { get; }
         private IAndOTPBackupImportService AndOTPBackupService { get; }
         private ITwoFASBackupImportService TwoFASBackupImportService { get; }
@@ -68,41 +55,25 @@ namespace Project2FA.Services.Importer
         {
             try
             {
-                List<TwoFACodeModel> accountList = new List<TwoFACodeModel>();
-                bool successful = false;
-                switch (backupServiceEnum)
+                Func<string, byte[], Task<(List<TwoFACodeModel> accountList, bool successful)>> import = backupServiceEnum switch
                 {
-                    case BackupServiceEnum.Aegis:
-                        (accountList, successful) = await AegisBackupService.ImportBackup(await GetFileContent(storageFile), Encoding.UTF8.GetBytes(password));
-                        break;
-                    case BackupServiceEnum.AndOTP:
-                        (accountList, successful) = await AndOTPBackupService.ImportBackup(await GetFileContent(storageFile), Encoding.UTF8.GetBytes(password));
-                        break;
-                    case BackupServiceEnum.TwoFAS:
-                        (accountList, successful) = await TwoFASBackupImportService.ImportBackup(await GetFileContent(storageFile), Encoding.UTF8.GetBytes(password));
-                        break;
-                    case BackupServiceEnum.Twofast:
-                        (accountList, successful) = await TwofastBackupImportService.ImportBackup(await GetFileContent(storageFile), Encoding.UTF8.GetBytes(password));
-                        break;
-                    default:
-                        break;
-                }
+                    BackupServiceEnum.Aegis => AegisBackupService.ImportBackup,
+                    BackupServiceEnum.AndOTP => AndOTPBackupService.ImportBackup,
+                    BackupServiceEnum.TwoFAS => TwoFASBackupImportService.ImportBackup,
+                    BackupServiceEnum.Twofast => TwofastBackupImportService.ImportBackup,
+                    _ => null
+                };
+                if (import is null) return (new List<TwoFACodeModel>(), false, null);
 
-                if (successful)
-                {
-                    return (accountList, true, null);
-                }
-                else
-                {
-                    return (new List<TwoFACodeModel>(), false, null);
-                }
+                var (accountList, successful) = await import(await GetFileContent(storageFile), Encoding.UTF8.GetBytes(password));
+
+                return successful
+                    ? (accountList, true, null)
+                    : (new List<TwoFACodeModel>(), false, null);
             }
             catch (Exception exc)
             {
-                if (exc is InvalidCipherTextException icte)
-                {
-                    // TODO wrong password
-                }
+                // TODO surface a wrong-password hint for InvalidCipherTextException
                 await LoggingService.LogException(exc, SettingsService.Instance.LoggingSetting);
                 return (new List<TwoFACodeModel>(), false, exc);
             }

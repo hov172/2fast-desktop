@@ -194,7 +194,7 @@ namespace Project2FA.ViewModels
 #endif
 
             Model.SelectedCategories ??= new ObservableCollection<CategoryModel>();
-            Model.SelectedCategories.AddRange(GlobalTempCategories.Where(x => x.IsSelected == true), true);
+            Model.SelectedCategories.AddRange(GlobalTempCategories.Where(x => x.IsSelected), true);
 #if TWOFAST_DESKTOP
             if (!await DataService.Instance.AddDesktopAccount(Model)) return;
 #else
@@ -600,7 +600,7 @@ namespace Project2FA.ViewModels
         /// <returns></returns>
         public Task<bool> SearchAccountFonts(string senderText)
         {
-            if (string.IsNullOrEmpty(senderText) == false && senderText.Length >= 2 && senderText != Strings.Resources.AccountCodePageSearchNotFound)
+            if (!string.IsNullOrEmpty(senderText) && senderText.Length >= 2 && senderText != Strings.Resources.AccountCodePageSearchNotFound)
             {
                 var tempList = DataService.Instance.FontIconCollection.Where(x => x.Name.Contains(senderText, System.StringComparison.OrdinalIgnoreCase)).ToList();
                 FontIdentifikationCollection.AddRange(tempList, true);
@@ -638,7 +638,7 @@ namespace Project2FA.ViewModels
 
             try
             {
-                if (DataService.Instance.FontIconCollection.Where(x => x.Name == transformName).Any())
+                if (DataService.Instance.FontIconCollection.Any(x => x.Name == transformName))
                 {
                     Model.AccountIconName = transformName;
                     AccountIconName = transformName;

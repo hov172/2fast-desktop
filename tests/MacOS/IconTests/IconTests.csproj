@@ -3,5 +3,6 @@
 <ItemGroup>
 <Compile Include="../../../Project2FA.Shared/Converters/FontIconNameToGlyphConverter.cs" Link="Glyph.cs" />
 <Compile Include="../../../Project2FA.Shared/Converters/PersonalPictureInitialsVisibilityConverter.cs" Link="Initials.cs" />
+<Compile Include="../../../Project2FA.Shared/Converters/BytesToHumanReadableConverter.cs" Link="Bytes.cs" />
 </ItemGroup>
 </Project>

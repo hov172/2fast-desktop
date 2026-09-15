@@ -2,8 +2,6 @@
 using BiometryService;
 using Project2FA.Services.Enums;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 
 namespace Project2FA.ViewModels

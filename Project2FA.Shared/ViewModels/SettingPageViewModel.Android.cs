@@ -1,7 +1,5 @@
 ﻿#if __ANDROID__
 using System;
-using System.Collections.Generic;
-using System.Text;
 using Project2FA.Uno.Droid;
 using AndroidX.Biometric;
 using Project2FA.Services.Enums;

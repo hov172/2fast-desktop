@@ -155,7 +155,7 @@ namespace Project2FA.ViewModels
 
         public void SetPrimaryBTNStatus()
         {
-            if (ImportCollection.Where(x => x.IsEnabled).Any() && ImportCollection.Where(x => x.IsChecked).Any())
+            if (ImportCollection.Any(x => x.IsEnabled) && ImportCollection.Any(x => x.IsChecked))
             {
                 IsPrimaryBTNEnable = true;
             }

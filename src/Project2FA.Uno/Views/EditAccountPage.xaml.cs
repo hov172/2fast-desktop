@@ -1,13 +1,8 @@
-﻿using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
-using Project2FA.Repository.Models;
+﻿using Project2FA.Repository.Models;
 using Project2FA.UnoApp;
 using Project2FA.ViewModels;
 using UNOversal.Ioc;
 using UNOversal.Services.Dialogs;
-using System;
-using System.Collections.ObjectModel;
 using Windows.UI;
 
 namespace Project2FA.Uno.Views
@@ -68,18 +63,6 @@ namespace Project2FA.Uno.Views
             }
         }
 
-        private void ReplaceNoteFontColor(bool isLightTheme)
-        {
-            if (isLightTheme)
-            {
-                ViewModel.Notes = ViewModel.Notes.Replace(@"\red255\green255\blue255", @"\red0\green0\blue0");
-            }
-            else
-            {
-                ViewModel.Notes = ViewModel.Notes.Replace(@"\red0\green0\blue0", @"\red255\green255\blue255");
-            }
-        }
-
         private void REB_Notes_TextChanged(object sender, RoutedEventArgs e)
         {
             //ViewModel.Notes = Toolbar.Formatter?.Text;
@@ -101,12 +84,10 @@ namespace Project2FA.Uno.Views
 
         private async void BTN_ManageCategories_Click(object sender, RoutedEventArgs e)
         {
-            var dialogService = App.Current.Container.Resolve<UNOversal.Services.Dialogs.IDialogService>();
-            await dialogService.ShowDialogAsync(new ManageCategoriesContentDialog(), new UNOversal.Services.Dialogs.DialogParameters());
+            var dialogService = App.Current.Container.Resolve<IDialogService>();
+            await dialogService.ShowDialogAsync(new ManageCategoriesContentDialog(), new DialogParameters());
             // Refresh the selectable tokens with the latest global categories, keeping current selections.
-            var selected = System.Linq.Enumerable.ToHashSet(
-                System.Linq.Enumerable.Select(
-                    System.Linq.Enumerable.Where(ViewModel.GlobalTempCategories, x => x.IsSelected), x => x.Guid));
+            var selected = ViewModel.GlobalTempCategories.Where(x => x.IsSelected).Select(x => x.Guid).ToHashSet();
             ViewModel.GlobalTempCategories.Clear();
             foreach (var category in Project2FA.Services.DataService.Instance.GlobalCategories)
             {

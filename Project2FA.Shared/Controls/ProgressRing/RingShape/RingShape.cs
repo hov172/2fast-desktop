@@ -196,7 +196,7 @@ namespace Project2FA.Controls
         {
             EllipseGeometry eg;
 
-            if (IsCircle == true)
+            if (IsCircle)
             {
                 eg = new EllipseGeometry
                 {
@@ -229,7 +229,7 @@ namespace Project2FA.Controls
 
             var arcSegment = new ArcSegment();
 
-            if (IsCircle == true)
+            if (IsCircle)
             {
                 var radius = EqualRadius;
 
@@ -427,7 +427,7 @@ namespace Project2FA.Controls
 
             if (angle >= _normalizedMaxAngle)
             {
-                if (isStart == true)
+                if (isStart)
                 {
                     _validStartAngle = _normalizedMaxAngle;
                 }
@@ -438,7 +438,7 @@ namespace Project2FA.Controls
             }
             else if (angle <= _normalizedMinAngle)
             {
-                if (isStart == true)
+                if (isStart)
                 {
                     _validStartAngle = _normalizedMinAngle;
                 }
@@ -449,7 +449,7 @@ namespace Project2FA.Controls
             }
             else
             {
-                if (isStart == true)
+                if (isStart)
                 {
                     _validStartAngle = angle;
                 }

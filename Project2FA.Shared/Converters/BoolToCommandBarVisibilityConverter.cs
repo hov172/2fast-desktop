@@ -13,8 +13,10 @@ namespace Project2FA.Converters
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            if (value is bool) return (bool)value ? CommandBarOverflowButtonVisibility.Visible : CommandBarOverflowButtonVisibility.Collapsed;
-            return CommandBarOverflowButtonVisibility.Visible;
+            // Anything that is not an explicit "false" keeps the overflow button visible.
+            return value is bool flag && !flag
+                ? CommandBarOverflowButtonVisibility.Collapsed
+                : CommandBarOverflowButtonVisibility.Visible;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)

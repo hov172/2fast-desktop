@@ -1,8 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Project2FA.Strings;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using UNOversal.Services.Dialogs;
@@ -48,51 +46,20 @@ namespace Project2FA.ViewModels
 
         public bool IsMDMLoginScreenWallpaperAvailable
         {
-            get
-            {
-                if (SettingsService.Instance.IsProVersion)
-                {
-                    if (!string.IsNullOrWhiteSpace(SettingsService.Instance.LoginScreenWallpaper))
-                    {
-                        return true;
-                    }
-                }
-                return false;
-            }
+            get => SettingsService.Instance.IsProVersion
+                && !string.IsNullOrWhiteSpace(SettingsService.Instance.LoginScreenWallpaper);
         }
 
         public bool IsMDMLoginScreenWallpaperNotAvailable
         {
-            get
-            {
-                if (SettingsService.Instance.IsProVersion)
-                {
-                    if (string.IsNullOrWhiteSpace(SettingsService.Instance.LoginScreenWallpaper))
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
-                    }
-                }
-                return true;
-            }
+            get => !IsMDMLoginScreenWallpaperAvailable;
         }
 
         public string MDMLoginScreenWallpaperStr
         {
-            get
-            {
-                if (SettingsService.Instance.IsProVersion)
-                {
-                    if (!string.IsNullOrWhiteSpace(SettingsService.Instance.LoginScreenWallpaper))
-                    {
-                        return SettingsService.Instance.LoginScreenWallpaper;
-                    }
-                }
-                return string.Empty;
-            }
+            get => IsMDMLoginScreenWallpaperAvailable
+                ? SettingsService.Instance.LoginScreenWallpaper
+                : string.Empty;
         }
 
 #if WINDOWS_UWP

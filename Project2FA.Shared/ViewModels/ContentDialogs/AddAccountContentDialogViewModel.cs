@@ -4,7 +4,6 @@ using UNOversal.Logging;
 using UNOversal.Services.File;
 using Project2FA.Services.Parser;
 using Project2FA.Services;
-using System.Linq;
 using System.Collections.ObjectModel;
 using Project2FA.Repository.Models;
 using Project2FA.Core.Utils;

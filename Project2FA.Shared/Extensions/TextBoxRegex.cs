@@ -113,7 +113,7 @@ namespace Project2FA.Extensions
             }
 
             var isValid = (bool)textBox.GetValue(IsValidProperty);
-            if (regexMatch == false && force && newText != string.Empty)
+            if (!regexMatch && force && newText != string.Empty)
             {
                 var validationModel = (ValidationMode)textBox.GetValue(ValidationModeProperty);
                 if (validationModel == ValidationMode.Forced)

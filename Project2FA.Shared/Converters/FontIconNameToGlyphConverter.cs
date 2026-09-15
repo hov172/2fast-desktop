@@ -27,19 +27,13 @@ namespace Project2FA.Converters
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            if (value is string name)
-            {
-                var model = IconNameLookup.Find(name);
-                if (model != null)
-                {
-                    return ((char)model.UnicodeIndex).ToString();
-                }
-                return string.Empty;
-            }
-            else
+            if (value is not string name)
             {
                 return string.Empty;
             }
+
+            var model = IconNameLookup.Find(name);
+            return model != null ? ((char)model.UnicodeIndex).ToString() : string.Empty;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)

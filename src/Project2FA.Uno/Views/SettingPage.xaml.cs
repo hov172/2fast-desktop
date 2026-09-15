@@ -1,3 +1,4 @@
+using Project2FA.Services;
 using Project2FA.ViewModels;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -24,7 +25,12 @@ namespace Project2FA.Uno.Views
                 GeneralSettingsSection.Visibility = section == 0 ? Visibility.Visible : Visibility.Collapsed;
                 DatafileSection.Visibility = section == 1 ? Visibility.Visible : Visibility.Collapsed;
                 AboutSection.Visibility = section == 2 ? Visibility.Visible : Visibility.Collapsed;
-                SettingsTitle.Text = section == 1 ? "Data file" : section == 2 ? "About" : "Settings";
+                SettingsTitle.Text = section switch
+                {
+                    1 => DesktopText.Get("SettingsSectionDatafile", "Data file"),
+                    2 => DesktopText.Get("SettingsSectionAbout", "About"),
+                    _ => DesktopText.Get("SettingsSectionGeneral", "Settings")
+                };
                 if (section == 0) await ViewModel.SettingsPartViewModel.RefreshDesktopBiometrySettings();
             };
 #endif

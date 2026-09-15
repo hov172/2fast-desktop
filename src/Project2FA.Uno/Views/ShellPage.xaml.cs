@@ -1,15 +1,7 @@
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 using Project2FA.UnoApp;
 using Project2FA.ViewModels;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using Uno.Toolkit.UI;
-using UNOversal.Navigation;
 using UNOversal.Ioc;
+using UNOversal.Navigation;
 using Windows.UI.Core;
 using Frame = Microsoft.UI.Xaml.Controls.Frame;
 
@@ -169,87 +161,5 @@ namespace Project2FA.Uno.Views
             }
         }
 
-        private bool TryFindItem(Type type, object parameter, out object item)
-        {
-            // is page registered?
-
-            if (!PageNavigationRegistry.TryGetRegistration(type, out PageNavigationInfo info))
-            {
-                item = null;
-                return false;
-            }
-
-            // search settings
-
-            if (NavigationQueue.TryParse(_settingsNavigationStr, null, out NavigationQueue settings))
-            {
-                if (type == settings.Last().View && (string)parameter == settings.Last().QueryString)
-                {
-                    item = ShellView.SettingsItem;
-                    return true;
-                }
-                else
-                {
-                    // not settings
-                }
-            }
-
-            // filter menu items
-            IEnumerable<(NavigationViewItem Item, string Path)> menuItems = ShellView.MenuItems
-                .OfType<NavigationViewItem>()
-                .Select(x => (
-                    Item: x,
-                    Path: x.Tag as string
-                ))
-                .Where(x => !string.IsNullOrEmpty(x.Path));
-
-            // search filtered items
-
-            foreach ((NavigationViewItem Item, string Path) in menuItems)
-            {
-                if (NavigationQueue.TryParse(Path, null, out NavigationQueue menuQueue)
-                    && Equals(menuQueue.Last().View, type) && menuQueue.Last().QueryString == (string)parameter)
-                {
-                    item = Item;
-                    return true;
-                }
-            }
-
-            // filter footer menu items
-            IEnumerable<(NavigationViewItem Item, string Path)> footerMenuItems = ShellView.FooterMenuItems
-                .OfType<NavigationViewItem>()
-                .Select(x => (
-                    Item: x,
-                    Path: x.Tag as string
-                ))
-                .Where(x => !string.IsNullOrEmpty(x.Path));
-
-            // search filtered items
-
-            foreach ((NavigationViewItem Item, string Path) in footerMenuItems)
-            {
-                if (NavigationQueue.TryParse(Path, null, out NavigationQueue menuQueue)
-                    && Equals(menuQueue.Last().View, type) && menuQueue.Last().QueryString == (string)parameter)
-                {
-                    item = Item;
-                    return true;
-                }
-            }
-
-            // not found
-
-            item = null;
-            return false;
-        }
-
-        private NavigationViewItem Find(NavigationViewItem item)
-        {
-            NavigationViewItem menuItem = ShellView.MenuItems.OfType<NavigationViewItem>().SingleOrDefault(x => x.Equals(item) && x.Tag != null);
-            if (menuItem is null)
-            {
-                menuItem = ShellView.FooterMenuItems.OfType<NavigationViewItem>().SingleOrDefault(x => x.Equals(item) && x.Tag != null);
-            }
-            return menuItem;
-        }
     }
 }

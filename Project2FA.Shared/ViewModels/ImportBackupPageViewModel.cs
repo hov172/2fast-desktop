@@ -53,7 +53,7 @@ namespace Project2FA.ViewModels
             {
                 // add selected categories to the model and add to collection
                 Model.SelectedCategories ??= new ObservableCollection<CategoryModel>();
-                Model.SelectedCategories.AddRange(GlobalTempCategories.Where(x => x.IsSelected == true), true);
+                Model.SelectedCategories.AddRange(GlobalTempCategories.Where(x => x.IsSelected), true);
                 DataService.Instance.Collection.Add(Model);
             }
 #if __ANDROID__ || _IOS__

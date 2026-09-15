@@ -78,12 +78,8 @@ namespace Project2FA.Core.Services.NTP
 
             await s.ConnectAsync(ep);
 
-            byte[] ntpData = new byte[48]; // RFC 2030 
+            byte[] ntpData = new byte[48]; // RFC 2030, zero-initialised
             ntpData[0] = 0x1B;
-            for (int i = 1; i < 48; i++)
-            {
-                ntpData[i] = 0;
-            }
 
             //Stops code hang if NTP is blocked
             s.ReceiveTimeout = 1500;

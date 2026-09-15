@@ -43,11 +43,11 @@ namespace Project2FA.ViewModels
                 OnPropertyChanged(nameof(NoCategoriesExists));
                 CanSaveFilter = false;
                 GlobalTempCategories.AddRange(DataService.Instance.GlobalCategories.Select(x => (CategoryModel)x.Clone()).ToList(), true);
-                var selectedItems = GlobalCategories.Where(x => x.IsSelected == true);
-                var tempItems = GlobalTempCategories.Where(x => selectedItems.Where(s => s.Guid == x.Guid).Any());
-                for (int i = 0; i < tempItems.Count(); i++)
+                var selectedItems = GlobalCategories.Where(x => x.IsSelected);
+                var tempItems = GlobalTempCategories.Where(x => selectedItems.Any(s => s.Guid == x.Guid)).ToList();
+                foreach (var item in tempItems)
                 {
-                    tempItems.ElementAt(i).IsSelected = true;
+                    item.IsSelected = true;
                 }
             });
         }
@@ -67,7 +67,7 @@ namespace Project2FA.ViewModels
                 DataService.Instance.GlobalCategories[i].IsSelected = GlobalTempCategories[i].IsSelected;
             }
 
-            if (DataService.Instance.GlobalCategories.Where(x => x.IsSelected == true).Any())
+            if (DataService.Instance.GlobalCategories.Any(x => x.IsSelected))
             {
                 if (DataService.Instance.IsFilterChecked)
                 {
@@ -92,20 +92,14 @@ namespace Project2FA.ViewModels
             get => DataService.Instance.GlobalCategories;
         }
 
-        public bool NoCategoriesExists 
+        public bool NoCategoriesExists
         {
-            get
-            {
-                return DataService.Instance.GlobalCategories.Count == 0;
-            }
+            get => DataService.Instance.GlobalCategories.Count == 0;
         }
 
         public bool CategoriesExists
         {
-            get
-            {
-                return DataService.Instance.GlobalCategories.Count > 0;
-            }
+            get => DataService.Instance.GlobalCategories.Count > 0;
         }
 
         public bool CanSaveFilter 

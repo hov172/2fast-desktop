@@ -18,21 +18,7 @@ namespace Project2FA.Helpers
 
         protected override DataTemplate SelectTemplateCore(object item, DependencyObject container)
         {
-            if (item is TwoFACodeModel model)
-            {
-                if (model.IsFavourite)
-                {
-                    return Accent;
-                }
-                else
-                {
-                    return Normal;
-                }
-            }
-            else
-            {
-                return Normal;
-            }
+            return item is TwoFACodeModel model && model.IsFavourite ? Accent : Normal;
         }
     }
 }

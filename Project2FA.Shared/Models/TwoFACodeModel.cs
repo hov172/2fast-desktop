@@ -11,7 +11,6 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using System.Windows.Input;
-using Windows.UI.WebUI;
 #if !WINDOWS_UWP
 using Microsoft.UI.Xaml.Data;
 #endif
@@ -30,13 +29,7 @@ namespace Project2FA.Repository.Models
         public string Label
         {
             get => _label;
-            set
-            {
-                if(SetProperty(ref _label, value))
-                {
-                    //RaisePropertyChanged(nameof(Model));
-                }
-            }
+            set => SetProperty(ref _label, value);
         }
 
         private string _issuer = string.Empty;
@@ -62,10 +55,7 @@ namespace Project2FA.Repository.Models
         }
 
         [JsonIgnore]
-        public string IsFavouriteText
-        {
-            get => _isFavourite ? "1#"+ Label : Label;
-        }
+        public string IsFavouriteText => _isFavourite ? "1#" + Label : Label;
 
         //default seconds for renew the 2fa code
         private int _period = 30;
@@ -88,7 +78,7 @@ namespace Project2FA.Repository.Models
         [JsonIgnore]
         public string ImportNotice { get; set; } = string.Empty;
         [JsonIgnore]
-        public string DeviceBindingNotice => string.IsNullOrEmpty(MobileIdDeviceId) ? "" : "This MobileID token is bound to this Mac. A backup cannot activate it on another Mac.";
+        public string DeviceBindingNotice => string.IsNullOrEmpty(MobileIdDeviceId) ? "" : DesktopText.Get("MobileIdDeviceBindingNotice", "This MobileID token is bound to this Mac. A backup cannot activate it on another Mac.");
         [JsonIgnore]
         public bool IsOcraCapable => OTPType == "ocra" || OTPType == "mobileid";
 #if !WINDOWS_UWP
@@ -197,41 +187,9 @@ namespace Project2FA.Repository.Models
         }
 
         [JsonIgnore]
-        public TwoFACodeModel Model
-        {
-            get => this;
-        }
-
+        public TwoFACodeModel Model => this;
 
         public ObservableCollection<CategoryModel> SelectedCategories { get; set; }
-
-
-        //[JsonIgnore]
-        //public List<(string name, string message)> Errors
-        //{
-        //    get
-        //    {
-        //        var list = new List<(string name, string message)>();
-        //        foreach (var item in from ValidationResult e in GetErrors(null) select e)
-        //        {
-        //            list.Add((item.MemberNames.FirstOrDefault(), item.ErrorMessage));
-        //        }
-        //        return list;
-        //    }
-        //}
-
-        //private void Model_ErrorsChanged(object sender, DataErrorsChangedEventArgs e)
-        //{
-        //    OnPropertyChanged(nameof(Errors)); // Update Errors on every Error change, so I can bind to it.
-        //}
-
-        /// <summary>
-        /// default constructor
-        /// </summary>
-        public TwoFACodeModel()
-        {
-            //ErrorsChanged += Model_ErrorsChanged;
-        }
 
         public object Clone()
         {

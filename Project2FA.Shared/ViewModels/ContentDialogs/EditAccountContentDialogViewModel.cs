@@ -11,7 +11,6 @@ using Project2FA.Helpers;
 using Project2FA.Services;
 using System.Collections.ObjectModel;
 using Project2FA.Core.Utils;
-using System.Linq;
 using UNOversal.Services.Serialization;
 
 

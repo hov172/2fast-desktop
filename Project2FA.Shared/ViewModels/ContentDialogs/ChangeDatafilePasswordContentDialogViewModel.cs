@@ -123,7 +123,7 @@ namespace Project2FA.ViewModels
             }
 
             //datafile must not changed when password was invalid (written already by other app)
-            if (InvalidPassword == false)
+            if (!InvalidPassword)
             {
                 await DataService.Instance.WriteLocalDatafile();
             }

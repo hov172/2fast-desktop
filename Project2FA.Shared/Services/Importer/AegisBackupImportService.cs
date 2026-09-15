@@ -29,62 +29,34 @@ namespace Project2FA.Services.Importer
         }
         public Task<(List<TwoFACodeModel> accountList, bool successful)> ImportBackup(string content, byte[] bytePassword)
         {
-            const string BaseAlgorithm = "AES";
-            const string Mode = "GCM";
-            const string Padding = "NoPadding";
-            const string AlgorithmDescription = BaseAlgorithm + "/" + Mode + "/" + Padding;
-
             if (bytePassword is null || bytePassword.Length == 0)
             {
                 var model = SerializationService.Deserialize<AegisModel<AegisDecryptedDatabase>>(content);
 
                 return Task.FromResult((CreateAccountCollection(model.Database.Entries), true));
             }
-            else
+
+            AegisModel<string> encryptedModel = SerializationService.Deserialize<AegisModel<string>>(content);
+
+            // search for password slot
+            var slot = encryptedModel.Header.Slots?.FirstOrDefault(x => x.Type == AegisSlotType.Password);
+            if (slot == null)
             {
-                AegisModel<string> encryptedModel = SerializationService.Deserialize<AegisModel<string>>(content);
-
-                // search for password slot
-                if (encryptedModel.Header.Slots != null && encryptedModel.Header.Slots.Count > 0)
-                {
-                    var slot = encryptedModel.Header.Slots.Where(x => x.Type == AegisSlotType.Password).FirstOrDefault();
-                    if (slot != null)
-                    {
-                        byte[] saltBytes = HexStringToByteArray(slot.Salt);
-
-                        // SCrypt parameters
-                        int n = slot.N;  // Cost factor
-                        int r = slot.R;  // Block size
-                        int p = slot.P;  // Parallelization factor
-
-                        // Derive the key
-                        int keySize = 32; // Key size in bytes
-                        byte[] derivedKey = SCrypt.Generate(bytePassword, saltBytes, n, r, p, keySize);
-
-                        // get data and initialisation vector
-                        byte[] databaseBytes = Convert.FromBase64String(encryptedModel.Database);
-                        byte[] ivBytes = Hex.Decode(encryptedModel.Header.Params.Nonce);
-                        byte[] keyBytes = Hex.Decode(slot.Key);
-                        byte[] macBytes = Hex.Decode(encryptedModel.Header.Params.Tag);
-
-                        var masterKey = DecryptSlot(slot, bytePassword, AlgorithmDescription);
-                        // decrypt
-                        var decryptedBytes = DecryptAesGcm(masterKey, ivBytes, databaseBytes, macBytes, AlgorithmDescription);
-                        var json = Encoding.UTF8.GetString(decryptedBytes);
-                        var database = SerializationService.Deserialize<AegisDecryptedDatabase>(json);
-
-                        return Task.FromResult((CreateAccountCollection(database.Entries), true));
-                    }
-                    else
-                    {
-                        return Task.FromResult((new List<TwoFACodeModel>(), false));
-                    }
-                }
-                else
-                {
-                    return Task.FromResult((new List<TwoFACodeModel>(), false));
-                }
+                return Task.FromResult((new List<TwoFACodeModel>(), false));
             }
+
+            // get data and initialisation vector
+            byte[] databaseBytes = Convert.FromBase64String(encryptedModel.Database);
+            byte[] ivBytes = Hex.Decode(encryptedModel.Header.Params.Nonce);
+            byte[] macBytes = Hex.Decode(encryptedModel.Header.Params.Tag);
+
+            var masterKey = DecryptSlot(slot, bytePassword, BackupCryptoHelper.AlgorithmDescription);
+            // decrypt
+            var decryptedBytes = DecryptAesGcm(masterKey, ivBytes, databaseBytes, macBytes, BackupCryptoHelper.AlgorithmDescription);
+            var json = Encoding.UTF8.GetString(decryptedBytes);
+            var database = SerializationService.Deserialize<AegisDecryptedDatabase>(json);
+
+            return Task.FromResult((CreateAccountCollection(database.Entries), true));
         }
 
         private List<TwoFACodeModel> CreateAccountCollection(List<AegisEntry> entries)
@@ -134,7 +106,7 @@ namespace Project2FA.Services.Importer
         private byte[] DecryptSlot(AegisSlot slot, byte[] password, string algorithm)
         {
             var saltBytes = Hex.Decode(slot.Salt);
-            var derivedKey = SCrypt.Generate(password, saltBytes, slot.N, slot.R, slot.P, 32);
+            var derivedKey = SCrypt.Generate(password, saltBytes, slot.N, slot.R, slot.P, BackupCryptoHelper.KeyLength);
 
             var ivBytes = Hex.Decode(slot.KeyParams.Nonce);
             var keyBytes = Hex.Decode(slot.Key);
@@ -160,17 +132,6 @@ namespace Project2FA.Services.Importer
             System.Buffer.BlockCopy(payload, 0, result, 0, payload.Length);
             System.Buffer.BlockCopy(mac, 0, result, payload.Length, mac.Length);
             return result;
-        }
-
-        private byte[] HexStringToByteArray(string hex)
-        {
-            int length = hex.Length;
-            byte[] bytes = new byte[length / 2];
-            for (int i = 0; i < length; i += 2)
-            {
-                bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
-            }
-            return bytes;
         }
     }
 }

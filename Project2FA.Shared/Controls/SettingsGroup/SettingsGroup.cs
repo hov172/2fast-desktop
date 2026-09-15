@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Text;
 
 #if WINDOWS_UWP
 using Windows.UI.Xaml.Automation.Peers;
@@ -96,14 +94,9 @@ namespace Project2FA.Controls
                 return;
             }
 
-            if (_settingsGroup.Description == null)
-            {
-                _settingsGroup._descriptionPresenter.Visibility = Visibility.Collapsed;
-            }
-            else
-            {
-                _settingsGroup._descriptionPresenter.Visibility = Visibility.Visible;
-            }
+            _settingsGroup._descriptionPresenter.Visibility = _settingsGroup.Description == null
+                ? Visibility.Collapsed
+                : Visibility.Visible;
         }
 
         protected override AutomationPeer OnCreateAutomationPeer()

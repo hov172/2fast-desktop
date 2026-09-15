@@ -34,75 +34,63 @@ namespace Project2FA.Services.Importer
 
         public async Task<(List<TwoFACodeModel> accountList, bool successful)> ImportBackup(string content, byte[] bytePassword)
         {
-            List<TwoFACodeModel> accountList = new List<TwoFACodeModel>();
             var backup = SerializationService.Deserialize<TwoFASBackup>(content);
 
-            if (backup.ServicesEncrypted != null)
+            // backups without a password are not supported yet
+            if (backup.ServicesEncrypted == null || bytePassword is null || bytePassword.Length == 0)
             {
-                if (bytePassword is null || bytePassword.Length == 0)
-                {
-                    //throw new ArgumentException("Password required but not provided");
-                    return (new List<TwoFACodeModel>(), false);
-                }
+                return (new List<TwoFACodeModel>(), false);
+            }
 
-                var decryptedContent = DecryptServices(backup.ServicesEncrypted, bytePassword);
-                if (!string.IsNullOrWhiteSpace(decryptedContent))
-                {
-                    backup.Services = SerializationService.Deserialize<List<TwoFASServiceModel>>(decryptedContent);
+            var decryptedContent = DecryptServices(backup.ServicesEncrypted, bytePassword);
+            if (string.IsNullOrWhiteSpace(decryptedContent))
+            {
+                return (new List<TwoFACodeModel>(), false);
+            }
 
-                    for (int i = 0; i < backup.Services.Count; i++)
+            List<TwoFACodeModel> accountList = new List<TwoFACodeModel>();
+            backup.Services = SerializationService.Deserialize<List<TwoFASServiceModel>>(decryptedContent);
+
+            for (int i = 0; i < backup.Services.Count; i++)
+            {
+                if (backup.Services[i].Otp.TokenType == "TOTP")
+                {
+                    OtpHashMode algorithm;
+                    try
                     {
-                        if (backup.Services[i].Otp.TokenType == "TOTP")
-                        {
-                            OtpHashMode algorithm;
-                            try
-                            {
-                                algorithm = BackupCryptoHelper.ToHashMode(backup.Services[i].Otp.Algorithm);
-                            }
-                            catch (Exception exc)
-                            {
-                                await LoggingService.LogException(exc, SettingsService.Instance.LoggingSetting);
-                                throw;
-                            }
-
-
-                            var model = new TwoFACodeModel
-                            {
-                                Label = backup.Services[i].Name,
-                                Issuer = backup.Services[i].Otp.Issuer,
-                                Period = backup.Services[i].Otp.Period,
-                                TotpSize = backup.Services[i].Otp.Digits,
-                                HashMode = algorithm,
-                                SecretByteArray = Base32Encoding.ToBytes(backup.Services[i].Secret),
-                                AccountIconName = DataService.Instance.GetIconForLabel(backup.Services[i].Name.ToLower())
-                            };
-                            accountList.Add(model);
-                        }
-                        else
-                        {
-                            accountList.Add(new TwoFACodeModel
-                            {
-                                Label = backup.Services[i].Name,
-                                Issuer = backup.Services[i].Otp.Issuer,
-                                AccountIconName = DataService.Instance.GetIconForLabel(backup.Services[i].Name.ToLower()),
-                                IsEnabled = false,
-                                IsChecked = false
-                            });
-                        }
-
+                        algorithm = BackupCryptoHelper.ToHashMode(backup.Services[i].Otp.Algorithm);
                     }
-                    return (accountList, true);
+                    catch (Exception exc)
+                    {
+                        await LoggingService.LogException(exc, SettingsService.Instance.LoggingSetting);
+                        throw;
+                    }
+
+                    var model = new TwoFACodeModel
+                    {
+                        Label = backup.Services[i].Name,
+                        Issuer = backup.Services[i].Otp.Issuer,
+                        Period = backup.Services[i].Otp.Period,
+                        TotpSize = backup.Services[i].Otp.Digits,
+                        HashMode = algorithm,
+                        SecretByteArray = Base32Encoding.ToBytes(backup.Services[i].Secret),
+                        AccountIconName = DataService.Instance.GetIconForLabel(backup.Services[i].Name.ToLower())
+                    };
+                    accountList.Add(model);
                 }
                 else
                 {
-                    return (new List<TwoFACodeModel>(), false);
+                    accountList.Add(new TwoFACodeModel
+                    {
+                        Label = backup.Services[i].Name,
+                        Issuer = backup.Services[i].Otp.Issuer,
+                        AccountIconName = DataService.Instance.GetIconForLabel(backup.Services[i].Name.ToLower()),
+                        IsEnabled = false,
+                        IsChecked = false
+                    });
                 }
             }
-            else
-            {
-                // without password
-            }
-            return (new List<TwoFACodeModel>(), false);
+            return (accountList, true);
         }
 
         private string DecryptServices(string payload, byte[] bytePassword)
@@ -123,17 +111,13 @@ namespace Project2FA.Services.Importer
             var cipher = CipherUtilities.GetCipher(AlgorithmDescription);
             cipher.Init(false, keyParameter);
 
-            byte[] decryptedBytes;
-
             try
             {
-                decryptedBytes = cipher.DoFinal(encryptedData);
-                var decryptedJson = Encoding.UTF8.GetString(decryptedBytes);
-                return decryptedJson;
+                return Encoding.UTF8.GetString(cipher.DoFinal(encryptedData));
             }
-            catch (InvalidCipherTextException e)
+            catch (InvalidCipherTextException)
             {
-                //throw new BackupPasswordException("The password is incorrect", e);
+                // wrong password
                 return string.Empty;
             }
         }

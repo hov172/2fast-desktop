@@ -2,8 +2,6 @@
 using CommunityToolkit.Mvvm.Messaging;
 using Project2FA.Core.Messenger;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
 using UNOversal.Navigation;

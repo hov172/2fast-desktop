@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 #if WINDOWS_UWP
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -28,13 +26,12 @@ namespace Project2FA.Helpers
 
         private static void OnChangedItemChanged(DependencyObject attachingElement, DependencyPropertyChangedEventArgs e)
         {
-            if (!(attachingElement is ItemsControl itemsControl))
+            if (attachingElement is not ItemsControl itemsControl)
             {
                 throw new ArgumentException($"Attaching element must be of type '{nameof(ItemsControl)}'");
             }
 
-            var container = (itemsControl.ContainerFromItem(e.NewValue) as ContentControl);
-            if (container != null)
+            if (itemsControl.ContainerFromItem(e.NewValue) is ContentControl container)
             {
                 var containerContent = container.Content;
                 container.Content = null;

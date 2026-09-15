@@ -25,7 +25,7 @@ namespace Project2FA.Services.Importer
         {
             if (bytePassword is null || bytePassword.Length == 0)
             {
-                //throw new ArgumentException("Password required but not provided");
+                // a 2fast vault is always password protected
                 return Task.FromResult((new List<TwoFACodeModel>(), false));
             }
 #if TWOFAST_DESKTOP

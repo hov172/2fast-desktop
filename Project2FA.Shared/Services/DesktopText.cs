@@ -1,4 +1,3 @@
-#if TWOFAST_DESKTOP
 using Windows.ApplicationModel.Resources;
 
 namespace Project2FA.Services;
@@ -13,4 +12,3 @@ internal static class DesktopText
         return string.IsNullOrWhiteSpace(value) ? fallback : value;
     }
 }
-#endif

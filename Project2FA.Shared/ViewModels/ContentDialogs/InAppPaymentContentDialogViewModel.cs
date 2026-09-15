@@ -172,7 +172,7 @@ namespace Project2FA.ViewModels
 
         private void CheckProVersion(StoreLicense storeLicense)
         {
-            if (SettingsService.Instance.IsProVersion == false)
+            if (!SettingsService.Instance.IsProVersion)
             {
                 SettingsService.Instance.IsProVersion = true;
                 SettingsService.Instance.PurchasedStoreId = storeLicense.SkuStoreId.Split("/")[0];

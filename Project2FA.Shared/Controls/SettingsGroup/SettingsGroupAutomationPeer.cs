@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 #if WINDOWS_UWP
 using Windows.UI.Xaml.Automation.Peers;
 #else

@@ -23,17 +23,15 @@ namespace Project2FA.Core.Utils
             {
                 return false;
             }
-            else
+
+            try
             {
-                try
-                {
-                    dictionary.Add(key, value);
-                    return true;
-                }
-                catch
-                {
-                    return false;
-                }
+                dictionary.Add(key, value);
+                return true;
+            }
+            catch
+            {
+                return false;
             }
         }
 

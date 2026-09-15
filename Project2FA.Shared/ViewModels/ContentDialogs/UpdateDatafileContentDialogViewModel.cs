@@ -38,7 +38,7 @@ namespace Project2FA.ViewModels
             ISerializationCryptoService serializationCryptoService,
             IFileService fileService) : base(secretService, fileService, serializationService, serializationCryptoService)
         {
-            SecretService = App.Current.Container.Resolve<ISecretService>();
+            SecretService = secretService;
             ConfirmErrorCommand = new RelayCommand(() =>
             {
                 ShowError = false;

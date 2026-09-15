@@ -56,12 +56,6 @@ namespace Project2FA.UnoApp
         public App()
         {
             InitializeLogging();
-
-#if __IOS__ || __ANDROID__
-            //SetStyles();
-            //FeatureConfiguration.Style.ConfigureNativeFrameNavigation();
-#endif
-
             this.InitializeComponent();
 #if TWOFAST_UI_PREVIEW
             RequestedTheme = Environment.GetEnvironmentVariable("TWOFAST_UI_THEME") == "light" ? ApplicationTheme.Light : ApplicationTheme.Dark;
@@ -179,55 +173,6 @@ namespace Project2FA.UnoApp
             WinUIWindow.Current.Activate();
         }
 
-        private void SetStyles()
-        {
-#if ANDROID
-            //var style = new Style(typeof(NativePivotPresenter))
-            //{
-            //    Setters =
-            //    {
-            //        new Setter<NativePivotPresenter>("Template", pb => pb
-            //            .Template = new ControlTemplate(() =>
-            //                new Grid
-            //                {
-            //                    RowDefinitions =
-            //                    {
-            //                        new RowDefinition(){ Height = GridLength.Auto},
-            //                        new RowDefinition(){ Height = new GridLength(1, GridUnitType.Star)},
-            //                    },
-
-            //                    Children =
-            //                    {
-            //                        // Header
-            //                        new Border
-            //                        {
-            //                            Child = new Uno.UI.Controls.SlidingTabLayout(ContextHelper.Current)
-            //                            {
-            //                                LayoutParameters = new Android.Views.ViewGroup.LayoutParams(Android.Views.ViewGroup.LayoutParams.MatchParent, Android.Views.ViewGroup.LayoutParams.WrapContent),
-            //                            },
-            //                            BorderThickness = new Thickness(0,0,0,1),
-            //                        }
-            //                        .Apply(b => b.SetBinding("Background", new Binding { Path = "Background", RelativeSource = RelativeSource.TemplatedParent }))
-            //                        .Apply(b => b.SetBinding("BorderBrush", new Binding { Path = "BorderBrush", RelativeSource = RelativeSource.TemplatedParent })),
-
-            //                        // Content
-            //                        new ExtendedViewPager(ContextHelper.Current)
-            //                        {
-            //                            OffscreenPageLimit = 1,
-            //                            PageMargin = (int)TypedValue.ApplyDimension(ComplexUnitType.Dip, 4, ContextHelper.Current.Resources.DisplayMetrics),
-            //                            SwipeEnabled = true,
-            //                        }
-            //                        .Apply(v => Grid.SetRow(v, 1))
-            //                    }
-            //            })
-            //        )
-            //    }
-            //};
-
-            //Style.RegisterDefaultStyleForType(typeof(NativePivotPresenter), style);
-#endif
-        }
-
         /// <summary>
         /// Detects if the focus is lost for the app and start the timer for auto logout
         /// </summary>
@@ -247,11 +192,7 @@ namespace Project2FA.UnoApp
 #endif
             {
                 // Focused
-                if (_focusLostTimer == null)
-                {
-                    return;
-                }
-                if (_focusLostTimer.IsEnabled)
+                if (_focusLostTimer?.IsEnabled == true)
                 {
                     _focusLostTimer.Stop();
                 }
@@ -283,34 +224,33 @@ namespace Project2FA.UnoApp
                 return;
             }
             TimeSpan timeDiff = DateTime.Now - _focusLostTime;
-            if (SettingsService.Instance.UseAutoLogout)
+            if (!SettingsService.Instance.UseAutoLogout ||
+                timeDiff.TotalMinutes < SettingsService.Instance.AutoLogoutMinutes)
             {
-                if (timeDiff.TotalMinutes >= SettingsService.Instance.AutoLogoutMinutes)
-                {
+                return;
+            }
 #if TWOFAST_DESKTOP
-                    DesktopSession.Lock();
+            DesktopSession.Lock();
 #endif
-                    _focusLostTimer.Stop();
-                    var dialogService = Current.Container.Resolve<IDialogService>();
-                    if (await dialogService.IsDialogRunning())
-                    {
-                        dialogService.CloseDialogs();
-                    }
-                    if (ShellPageInstance.MainFrame.DispatcherQueue.HasThreadAccess)
-                    {
-                        //await ShellPageInstance.ViewModel.NavigationService.NavigateAsync("/" + nameof(BlankPage));
-                        if (DataService.Instance.ActivatedDatafile != null)
-                        {
-                            await ShellPageInstance.ViewModel.NavigationService.NavigateAsync("/" + nameof(FileActivationPage));
-                        }
-                        else
-                        {
-                            var navigationParameters = new NavigationParameters();
-                            navigationParameters.Add("isLogout", true);
-                            await ShellPageInstance.ViewModel.NavigationService.NavigateAsync("/" + nameof(LoginPage), navigationParameters);
-                        }
-                    }
-                }
+            _focusLostTimer.Stop();
+            var dialogService = Current.Container.Resolve<IDialogService>();
+            if (await dialogService.IsDialogRunning())
+            {
+                dialogService.CloseDialogs();
+            }
+            if (!ShellPageInstance.MainFrame.DispatcherQueue.HasThreadAccess)
+            {
+                return;
+            }
+            if (DataService.Instance.ActivatedDatafile != null)
+            {
+                await ShellPageInstance.ViewModel.NavigationService.NavigateAsync("/" + nameof(FileActivationPage));
+            }
+            else
+            {
+                var navigationParameters = new NavigationParameters();
+                navigationParameters.Add("isLogout", true);
+                await ShellPageInstance.ViewModel.NavigationService.NavigateAsync("/" + nameof(LoginPage), navigationParameters);
             }
         }
 

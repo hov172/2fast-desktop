@@ -6,11 +6,9 @@ using Project2FA.Core.Utils;
 using Project2FA.Repository.Models;
 using Project2FA.Services;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using UNOversal.Services.Dialogs;
@@ -94,7 +92,7 @@ namespace Project2FA.ViewModels
         private Task CreateCategoryCommandTask()
         {
             // no duplicate allowed
-            if (TempGlobalCategories.Where(x => x.Name == Label).FirstOrDefault() == null)
+            if (!TempGlobalCategories.Any(x => x.Name == Label))
             {
                 DataChanged = true;
                 TempGlobalCategories.Add(new CategoryModel 

@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Text;
 #if WINDOWS_UWP
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -32,14 +30,20 @@ namespace Project2FA.Extensions
         private static void OnBindableSelectedItemsChanged(
             DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            var listView = d as ListView;
-            listView.SelectionChanged += (s, args) =>
-            {
-                var boundList = GetBindableSelectedItems(listView);
-                boundList.Clear();
-                foreach (var item in listView.SelectedItems)
-                    boundList.Add(item);
-            };
+            if (d is not ListView listView) return;
+            // Re-subscribing a static handler is idempotent: -= removes the earlier one.
+            listView.SelectionChanged -= SyncSelectedItems;
+            if (e.NewValue is IList) listView.SelectionChanged += SyncSelectedItems;
+        }
+
+        private static void SyncSelectedItems(object sender, SelectionChangedEventArgs args)
+        {
+            if (sender is not ListView listView) return;
+            var boundList = GetBindableSelectedItems(listView);
+            if (boundList is null) return;
+            boundList.Clear();
+            foreach (var item in listView.SelectedItems)
+                boundList.Add(item);
         }
     }
 

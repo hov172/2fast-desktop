@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 #if WINDOWS_UWP
 using Windows.UI.Xaml.Data;
 #else
@@ -13,14 +11,9 @@ namespace Project2FA.Converters
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            if(int.TryParse(value.ToString(), out var unicodeIndex))
-            {
-                return ((char)unicodeIndex).ToString();
-            }
-            else
-            {
-                return string.Empty;
-            }
+            return int.TryParse(value.ToString(), out var unicodeIndex)
+                ? ((char)unicodeIndex).ToString()
+                : string.Empty;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)

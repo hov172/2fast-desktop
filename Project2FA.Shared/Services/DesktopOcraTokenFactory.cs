@@ -10,6 +10,8 @@ namespace Project2FA.Services.Desktop;
 /// </summary>
 internal static class DesktopOcraTokenFactory
 {
+    private const string SeedError = "Enter a token name and valid seed in the selected encoding (at least 10 bytes).";
+
     internal static bool TryCreate(
         string name,
         string seed,
@@ -21,7 +23,7 @@ internal static class DesktopOcraTokenFactory
         error = string.Empty;
         if (string.IsNullOrWhiteSpace(name))
         {
-            error = "Enter a token name and valid seed in the selected encoding (at least 10 bytes).";
+            error = SeedError;
             return false;
         }
 
@@ -37,7 +39,7 @@ internal static class DesktopOcraTokenFactory
             };
             if (key.Length < 10)
             {
-                error = "Enter a token name and valid seed in the selected encoding (at least 10 bytes).";
+                error = SeedError;
                 return false;
             }
 
@@ -53,14 +55,9 @@ internal static class DesktopOcraTokenFactory
             };
             return true;
         }
-        catch (ArgumentException)
+        catch (Exception e) when (e is ArgumentException or FormatException)
         {
-            error = "Enter a token name and valid seed in the selected encoding (at least 10 bytes).";
-            return false;
-        }
-        catch (FormatException)
-        {
-            error = "Enter a token name and valid seed in the selected encoding (at least 10 bytes).";
+            error = SeedError;
             return false;
         }
         finally

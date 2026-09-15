@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Security.Cryptography;
 using System.Text;
 using UNOversal.Logging;
 using UNOversal.Ioc;
@@ -29,12 +28,6 @@ namespace Project2FA.Converters
             {
                 try
                 {
-                    //var svgBuffer = CryptographicBuffer.ConvertStringToBinary(value.ToString(), BinaryStringEncoding.Utf8);
-
-                    //using (var stream = svgBuffer.AsStream())
-                    //{
-                    //    svg.SetSourceAsync(stream.AsRandomAccessStream()).AsTask().ConfigureAwait(false);
-                    //}
                     var utf8 = new UTF8Encoding();
                     var svgBuffer = utf8.GetBytes(value.ToString());
 

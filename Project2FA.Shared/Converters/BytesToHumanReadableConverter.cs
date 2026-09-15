@@ -15,9 +15,10 @@ namespace Project2FA.Converters
             var size = decimal.Parse(value.ToString());
             string[] sizes = { "B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB" };
             var order = 0;
-            while (size >= 1024m && ++order < sizes.Length)
+            while (size >= 1024m && order < sizes.Length - 1)
             {
-                size = size / 1024m;
+                size /= 1024m;
+                order++;
             }
 
             switch (order)

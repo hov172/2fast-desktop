@@ -14,16 +14,13 @@ namespace Project2FA.Converters
         public object Convert(object value, Type targetType, object parameter, string language)
         {
             var invert = parameter != null;
-            var str = value as string;
-            if (str != null)
+            // A string counts as "empty" when null or blank; any other value only when null.
+            bool isEmpty = value is string str ? string.IsNullOrEmpty(str) : value == null;
+            if (isEmpty)
             {
-                return string.IsNullOrEmpty(str)
-                    ? (invert ? Visibility.Visible : Visibility.Collapsed)
-                    : (invert ? Visibility.Collapsed : Visibility.Visible);
+                return invert ? Visibility.Visible : Visibility.Collapsed;
             }
-            return value == null
-                ? (invert ? Visibility.Visible : Visibility.Collapsed)
-                : (invert ? Visibility.Collapsed : Visibility.Visible);
+            return invert ? Visibility.Collapsed : Visibility.Visible;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)

@@ -22,7 +22,7 @@ void Check(bool condition, string name)
 {
     if (!condition) throw new Exception("FAIL: " + name);
     count++;
-Console.WriteLine("PASS: " + name);
+    Console.WriteLine("PASS: " + name);
 }
 const string prefix = "otpauth://totp/2fast:Test?secret=JBSWY3DPEHPK3PXP&issuer=2fast";
 Check(StrictProject2FAParser.TryParse(prefix, out var pairs), "standard TOTP URI");
@@ -40,7 +40,7 @@ foreach (var text in new[]
     prefix + "#fragment", prefix.Replace("/2fast:Test", "/%0A"), new string('A', 16385),
     "otpauth://user@totp/Test?secret=JBSWY3DPEHPK3PXP"
 }) Check(!StrictProject2FAParser.TryParse(text, out _), "malformed/unsupported payload rejected " + count);
-    // Synthetic MobileID envelope; expected key/OTP computed independently using Python hashlib/hmac.
+// Synthetic MobileID envelope; expected key/OTP computed independently using Python hashlib/hmac.
 string mobile = "mobileid://www.deepnetsecurity.com/mobileid/install?sn=123456789&seed=c4APXbSD1NJVmdFIEsbQSfZ/&suite=OCRA-1:HOTP-SHA1-6:QN08-T1M&v=1&tn=Synthetic%20Test&ac=24681357";
 Check(StrictProject2FAParser.TryParse(mobile, out pairs), "encrypted MobileID QR import");
 var mobileValues = pairs.ToDictionary(x => x.Key, x => x.Value);

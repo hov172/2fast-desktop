@@ -55,7 +55,7 @@ namespace Project2FA.ViewModels
         /// <returns></returns>
         public async Task<bool> SearchAccountFonts(string senderText)
         {
-            if (string.IsNullOrEmpty(senderText) == false && senderText.Length >= 2 && senderText != Strings.Resources.AccountCodePageSearchNotFound)
+            if (!string.IsNullOrEmpty(senderText) && senderText.Length >= 2 && senderText != Strings.Resources.AccountCodePageSearchNotFound)
             {
                 #if TWOFAST_DESKTOP
                 string iconQuery = Project2FA.Converters.IconNameLookup.Normalize(senderText);

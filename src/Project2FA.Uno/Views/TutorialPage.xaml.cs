@@ -37,6 +37,7 @@ namespace Project2FA.Uno.Views
         /// <returns></returns>
         private async Task CreateTeachingTip(FrameworkElement element, string title, string content)
         {
+            TextBlock txt = new TextBlock { Text = content, TextWrapping = TextWrapping.WrapWholeWords };
             var control = MainGrid.FindDescendant(nameof(TeachingTip));
             if (control != null)
             {
@@ -46,16 +47,13 @@ namespace Project2FA.Uno.Views
                     tooltip.IsOpen = false;
                     await Task.Delay(500);
                 }
-                TextBlock txt = new TextBlock { Text = content, TextWrapping = TextWrapping.WrapWholeWords };
                 tooltip.Title = title;
                 tooltip.Content = txt;
                 tooltip.Target = element;
                 tooltip.IsOpen = true;
-
             }
             else
             {
-                TextBlock txt = new TextBlock { Text = content, TextWrapping = TextWrapping.WrapWholeWords };
                 TeachingTip teachingTip = new TeachingTip
                 {
                     Target = element,
@@ -69,51 +67,38 @@ namespace Project2FA.Uno.Views
             }
         }
 
-        private void BTN_SetFavourite_Click(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// Shows the TeachingTip of a tutorial item for the element that raised the event
+        /// </summary>
+        private void ShowItemTeachingTip(object sender, string title, string content)
         {
-            if (sender as FrameworkElement != null)
+            if (sender is FrameworkElement element)
             {
-                CreateTeachingTip(sender as FrameworkElement, Strings.Resources.TutorialPageItemFavouriteBTNTitle, Strings.Resources.TutorialPageItemFavouriteBTNTDesc).ConfigureAwait(false);
+                CreateTeachingTip(element, title, content).ConfigureAwait(false);
             }
         }
+
+        private void BTN_SetFavourite_Click(object sender, RoutedEventArgs e)
+            => ShowItemTeachingTip(sender, Strings.Resources.TutorialPageItemFavouriteBTNTitle, Strings.Resources.TutorialPageItemFavouriteBTNTDesc);
 
         private void BTN_CopyCode_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender as FrameworkElement != null)
-            {
-                CreateTeachingTip(sender as FrameworkElement, Strings.Resources.TutorialPageItemCopyCodeBTNTitle, Strings.Resources.TutorialPageItemCopyCodeBTNDesc).ConfigureAwait(false);
-            }
-        }
+            => ShowItemTeachingTip(sender, Strings.Resources.TutorialPageItemCopyCodeBTNTitle, Strings.Resources.TutorialPageItemCopyCodeBTNDesc);
 
         private void BTN_ShowCode_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender as FrameworkElement != null)
-            {
-                CreateTeachingTip(sender as FrameworkElement, Strings.Resources.TutorialPageItemShowCodeBTNTitle, Strings.Resources.TutorialPageItemShowCodeBTNDesc).ConfigureAwait(false);
-            }
-        }
+            => ShowItemTeachingTip(sender, Strings.Resources.TutorialPageItemShowCodeBTNTitle, Strings.Resources.TutorialPageItemShowCodeBTNDesc);
 
         private void TutorialPageItemMoreBTN_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender as FrameworkElement != null)
-            {
-                CreateTeachingTip(sender as FrameworkElement, Strings.Resources.TutorialPageItemMoreBTNTitle, Strings.Resources.TutorialPageItemMoreBTNDesc).ConfigureAwait(false);
-            }
-        }
+            => ShowItemTeachingTip(sender, Strings.Resources.TutorialPageItemMoreBTNTitle, Strings.Resources.TutorialPageItemMoreBTNDesc);
 
         private void FV_Tutorials_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (ViewModel != null && ViewModel.SelectedIndex == 4)
+            if (ViewModel?.SelectedIndex != 4)
             {
-                var control = MainGrid.FindDescendant(nameof(TeachingTip));
-                if (control != null)
-                {
-                    var tooltip = (control as TeachingTip);
-                    if (tooltip.IsOpen)
-                    {
-                        tooltip.IsOpen = false;
-                    }
-                }
+                return;
+            }
+            if (MainGrid.FindDescendant(nameof(TeachingTip)) is TeachingTip tooltip && tooltip.IsOpen)
+            {
+                tooltip.IsOpen = false;
             }
         }
 
@@ -128,9 +113,11 @@ namespace Project2FA.Uno.Views
 
         private void HLBTN_PasswordInfo(object sender, RoutedEventArgs e)
         {
-            var markdownText = new MarkdownTextBlock();
-            markdownText.Margin = new Thickness(8, 8, 8, 8);
-            markdownText.Text = Strings.Resources.TutorialPagePasswordInfo;
+            var markdownText = new MarkdownTextBlock
+            {
+                Margin = new Thickness(8, 8, 8, 8),
+                Text = Strings.Resources.TutorialPagePasswordInfo
+            };
             markdownText.OnLinkClicked += MarkdownTextBlock_LinkClicked;
             AutoCloseTeachingTip teachingTip = new AutoCloseTeachingTip
             {

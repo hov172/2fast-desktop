@@ -153,6 +153,12 @@ namespace Project2FA.ViewModels
             var token = operation.Token;
             var service = new DesktopBiometryService();
             bool enrolling = false;
+            void UndoEnrollment()
+            {
+                if (!enrolling) return;
+                try { service.Remove(key); } catch { }
+                _settings.ActivateBiometricLogin = false;
+            }
             try
             {
                 if (!enabled)
@@ -195,11 +201,11 @@ namespace Project2FA.ViewModels
             }
             catch (OperationCanceledException)
             {
-                if (enrolling) { try { service.Remove(key); } catch { } _settings.ActivateBiometricLogin = false; }
+                UndoEnrollment();
             }
             catch (Exception e)
             {
-                if (enrolling) { try { service.Remove(key); } catch { } _settings.ActivateBiometricLogin = false; }
+                UndoEnrollment();
                 await DesktopSession.Message(DialogService, DesktopPlatform.BiometricName, e is BiometryException ? e.Message : DesktopText.Get("BiometricSettingsFailed", "Unable to change {0} settings. Please try again.").Replace("{0}", DesktopPlatform.BiometricName));
             }
             finally
@@ -267,9 +273,15 @@ namespace Project2FA.ViewModels
                 DesktopScanDiagnostics.Record(stage, e);
                 Exception cause = e;
                 while (cause.InnerException != null) cause = cause.InnerException;
-                string detail = cause is BiometryException ? cause.Message
-                    : stage == "capturing QR" && cause is InvalidOperationException ? cause.Message
-                    : "The operation failed while " + stage + ". Error type: " + cause.GetType().Name + ".";
+                string detail;
+                if (cause is BiometryException || (stage == "capturing QR" && cause is InvalidOperationException))
+                {
+                    detail = cause.Message;
+                }
+                else
+                {
+                    detail = "The operation failed while " + stage + ". Error type: " + cause.GetType().Name + ".";
+                }
                 await DesktopSession.Message(DialogService, stage == "opening account review" ? "QR read — account import failed" : "QR scanner", detail);
             }
             finally { macScanning = false; }

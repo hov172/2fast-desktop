@@ -30,11 +30,10 @@ public sealed partial class AccountCodePage : Page
         Loaded += (_, _) => ObserveAccounts();
         Unloaded += (_, _) => StopObservingAccounts();
         DataContextChanged += (_, _) => { Bindings.Update(); ObserveAccounts(); };
-        // Evcnt for the native back behavior which currently skips the framework extension
+        // Event for the native back behavior which currently skips the framework extension
 #if __ANDROID__ || __IOS__
         App.ShellPageInstance.MainFrame.Navigated -= MainFrame_Navigated;
         App.ShellPageInstance.MainFrame.Navigated += MainFrame_Navigated;
-        PropertyChangedCallback callback = new PropertyChangedCallback(SelectedTabBarIndexChanged);
         //register an event for the changed selected index property of the TabBar
         MobileAutoSuggestBox.RegisterDisposablePropertyChangedCallback(VisibilityProperty, SelectedTabBarIndexChanged);
         //App.ShellPageInstance.ViewModel.TabBarIsVisible = true;
@@ -101,12 +100,18 @@ public sealed partial class AccountCodePage : Page
         if (ViewModel?.TwoFADataService == null) return;
         int total = ViewModel.TwoFADataService.Collection.Count;
         int shown = ViewModel.TwoFADataService.ACVCollection.Count;
-        CollectionSummary.Text = shown == total ? $"{total} account{(total == 1 ? "" : "s")}" : $"{shown} of {total} accounts";
+        CollectionSummary.Text = shown != total
+            ? string.Format(DesktopText.Get("AccountCountFiltered", "{0} of {1} accounts"), shown, total)
+            : total == 1
+                ? string.Format(DesktopText.Get("AccountCountOne", "{0} account"), total)
+                : string.Format(DesktopText.Get("AccountCountMany", "{0} accounts"), total);
         EmptyState.Visibility = shown == 0 ? Visibility.Visible : Visibility.Collapsed;
-        EmptyTitle.Text = total == 0 ? "Add your first account" : "No matching accounts";
+        EmptyTitle.Text = total == 0
+            ? DesktopText.Get("EmptyVaultTitle", "Add your first account")
+            : DesktopText.Get("NoMatchingAccountsTitle", "No matching accounts");
         EmptyDescription.Text = total == 0
-            ? "Scan a setup QR from your screen or camera, or enter a setup key manually."
-            : "Try another account name or clear the search field.";
+            ? DesktopText.Get("EmptyVaultDescription", "Scan a setup QR from your screen or camera, or enter a setup key manually.")
+            : DesktopText.Get("NoMatchingAccountsDescription", "Try another account name or clear the search field.");
     }
 
     private static TwoFACodeModel AccountFromSender(object sender) =>
@@ -136,29 +141,28 @@ public sealed partial class AccountCodePage : Page
 
     private void SelectedTabBarIndexChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
     {
-        var visibilty = (Visibility)args.NewValue;
-        switch (visibilty)
+        switch ((Visibility)args.NewValue)
         {
             case Visibility.Collapsed:
-                var fadeOutStoryboard = new Storyboard();
-                var fadeAnimation = new DoubleAnimation { From = 1.0, To = 0.0, Duration = new Duration(TimeSpan.FromSeconds(1.0)) };
-                Storyboard.SetTarget(fadeAnimation, MobileAutoSuggestBox);
-                Storyboard.SetTargetProperty(fadeAnimation, "Opacity");
-                fadeOutStoryboard.Children.Add(fadeAnimation);
-                fadeOutStoryboard.Begin();
+                FadeSearchBox(from: 1.0, to: 0.0);
                 break;
             case Visibility.Visible:
-                var fadeInStoryboard = new Storyboard();
-                var fadeInAnimation = new DoubleAnimation { From = 0.0, To = 1.0, Duration = new Duration(TimeSpan.FromSeconds(1.0)) };
-                Storyboard.SetTarget(fadeInAnimation, MobileAutoSuggestBox);
-                Storyboard.SetTargetProperty(fadeInAnimation, "Opacity");
-                fadeInStoryboard.Children.Add(fadeInAnimation);
-                fadeInStoryboard.Begin();
+                FadeSearchBox(from: 0.0, to: 1.0);
                 MobileAutoSuggestBox.Focus(FocusState.Programmatic);
                 break;
             default:
                 break;
         }
+    }
+
+    private void FadeSearchBox(double from, double to)
+    {
+        var animation = new DoubleAnimation { From = from, To = to, Duration = new Duration(TimeSpan.FromSeconds(1.0)) };
+        Storyboard.SetTarget(animation, MobileAutoSuggestBox);
+        Storyboard.SetTargetProperty(animation, "Opacity");
+        var storyboard = new Storyboard();
+        storyboard.Children.Add(animation);
+        storyboard.Begin();
     }
 
     /// <summary>
@@ -243,18 +247,10 @@ public sealed partial class AccountCodePage : Page
 
     private void AutoSuggestBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
     {
-        if (args.SelectedItem is TwoFACodeModel item)
+        if (args.SelectedItem is TwoFACodeModel item && item.Label != Strings.Resources.AccountCodePageSearchNotFound)
         {
-            if (item.Label != Strings.Resources.AccountCodePageSearchNotFound)
-            {
-                ViewModel.TwoFADataService.ACVCollection.Filter = x => ((TwoFACodeModel)x) == item;
-                ViewModel.SearchedAccountLabel = item.Label;
-            }
-            else
-            {
-                ViewModel.SearchedAccountLabel = string.Empty;
-                ViewModel.TwoFADataService.ACVCollection.Filter = null;
-            }
+            ViewModel.TwoFADataService.ACVCollection.Filter = x => ((TwoFACodeModel)x) == item;
+            ViewModel.SearchedAccountLabel = item.Label;
         }
         else
         {
