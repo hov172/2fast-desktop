@@ -49,3 +49,16 @@ redundancy that CLAUDE.md reserves for its own change.
 
 See the [user guide](USER-GUIDE.md), [macOS guide](../MACOS.md) and
 [Windows guide](WINDOWS.md).
+
+## Post-tag documentation refresh (2026-09-15)
+
+After tagging, a documentation audit corrected the guides against the
+released code: the user guide had still described release 1.4.0, and the UX
+flows, design, interactions, architecture, plan, compatibility and release
+process documents carried stale counts and claims. The corrected guides were
+committed on `main` after the tag, and the documentation ZIP and both Windows
+portable ZIPs attached to this release were regenerated with them. The
+application binaries inside the Windows ZIPs, the standalone EXEs and the macOS
+DMG and ZIP are unchanged. `SHA256SUMS` and the documentation checksum file were
+regenerated, so the archive checksums for the three refreshed ZIPs differ from
+the originals published earlier the same day.
