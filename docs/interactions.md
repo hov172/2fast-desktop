@@ -9,8 +9,9 @@ animation over a decorative one.
 | Duration | Where |
 | --- | --- |
 | `0:0:0.3` | `ImplicitOffset` — the `OffsetAnimation` applied to `TwoFASelectionListViewItemStyle`, so account rows slide rather than jump when the list re-orders, filters or a category changes |
-| `0:0:0.240` | control-state transitions in `Styles/Generic/Button.xaml` and `SettingsCard.xaml` |
-| `0:0:0.333` | WinUI-inherited control transitions |
+| `0:0:0.240` | drag/reorder state transitions inside the `TwoFASelectionListViewItemStyle` template in `Styles/Styles.xaml` |
+| `0:0:0.333` | WinUI-inherited keyframe transitions, also in `Styles.xaml` |
+| `0:0:0.083` | the only duration in `Styles/Generic/*.xaml` |
 | `0` | instantaneous visual-state setters — the majority |
 
 Use the existing `ImplicitAnimationSet` resources rather than adding
@@ -27,8 +28,8 @@ Mobile swaps the `NavigationView` for a `TabBar` via `ViewModel.IsMobile`.
 
 ## Loading and progress
 
-- Long or indeterminate work uses `Shimmer` skeletons — placeholder shapes over
-  the eventual layout, not a spinner over an empty page.
+- `Shimmer` skeletons exist in `Controls/` but no desktop view uses them; the
+  accounts list shows an indeterminate `ProgressRing` bound to `IsLoading`.
 - `ImageEx` handles its own placeholder and fade for async images; do not
   hand-roll image loading.
 - The TOTP countdown is a `RadialProgressBar` / `ProgressRing` driven by the
@@ -39,7 +40,9 @@ Mobile swaps the `NavigationView` for a `TabBar` via `ViewModel.IsMobile`.
 
 ## Feedback and errors
 
-- Transient confirmations (code copied, and similar) use `AutoCloseTeachingTip`.
+- Code-copied confirmation is a light-dismiss `TeachingTip` built in
+  `AccountCodePage` code-behind; `AutoCloseTeachingTip` is used by `TutorialPage`
+  and `AddAccountPage`.
 - Recoverable errors are inline and specific to the field. A failed unlock clears
   the password box and shows the error in place; it does not navigate away.
 - Blocking errors and confirmations use a `ContentDialog` through
@@ -61,9 +64,10 @@ entry on demand; revealing one entry must not reveal the rest.
 
 ## Input
 
-- Every action reachable by pointer must be reachable by keyboard. Account-card
-  actions (copy, edit, show QR) are visible controls precisely so they are
-  focusable — do not move them behind hover.
+- Every action reachable by pointer must be reachable by keyboard. Account-row
+  copy and show/hide are visible controls; edit, show QR, favourite, OCRA and
+  delete are in the row's focusable ⋯ menu button — do not move any of them
+  behind hover.
 - Search filters as you type against account name and service.
 - Touch targets stay at or above `CardActionControlMinWidth` on cards; the shell
   pane uses `CompactPaneLength="56"`.

@@ -27,8 +27,9 @@ hard-code a colour, font family or icon glyph in a view — reference the resour
   preferred reference. Fall back to WinUI system brushes
   (`ControlFillColorTertiaryBrush`, `SystemChromeAltHighColor`, …) for control
   chrome.
-- `TranslucentBackground{High,Medium,Low}Brush` exist per theme at 0.9 / 0.75 /
-  0.55 opacity for overlay surfaces.
+- `TranslucentBackground{High,Medium,Low}Brush` exist in light and dark at 0.9 /
+  0.75 / 0.55 opacity for overlay surfaces; high contrast defines only High and
+  Medium.
 
 ## Typography and iconography
 
@@ -36,9 +37,10 @@ hard-code a colour, font family or icon glyph in a view — reference the resour
   shell header.
 - Icon fonts ship in `Project2FA.Shared/Assets/Fonts/`:
   `FluentSystemIcons-Regular.ttf`, `FluentSystemIcons-Filled.ttf`,
-  `SimpleIcons.ttf` — referenced via the `SimpleIcons`, `SegoeFluentIcons`,
-  `SegoeFluentIconsFilled` and `SegoeFullFluentIcons` font-family resources in
-  `Styles.xaml`. Use `FullFluentFontIconStyle` for `FontIcon`.
+  `SimpleIcons.ttf` — referenced via the `SimpleIcons`, `SegoeFluentIconsFilled`
+  and `SegoeFullFluentIcons` font-family resources in `Styles.xaml`. The
+  `SegoeFluentIcons` resource points at `Segoe Fluent Icons.ttf`, which is not
+  shipped. Use `FullFluentFontIconStyle` for `FontIcon`.
 - Service logos for accounts resolve through
   `FontIconNameToGlyphConverter` / `FontIconUnicodeIndexToGlyphConverter` against
   the identification data in `Assets/JSONs`. Add a service there, not in a view.
@@ -48,11 +50,12 @@ hard-code a colour, font family or icon glyph in a view — reference the resour
 - Shell breakpoint: `MinWindowWidth="900"` switches the `NavigationView` from
   `LeftCompact` (`CompactPaneLength="56"`) to `Left`. Below that the pane is
   compact; on mobile the shell swaps to a `TabBar`.
-- Corner radius is user-configurable (Settings → General → corner radius), so
-  bind radius rather than fixing it.
-- `CardActionControlMinWidth` keeps account-card actions (copy, edit, QR) at a
-  usable size. Those actions must remain visible on the card, not hidden behind a
-  hover-only affordance — this was a deliberate 1.4.3 change.
+- Round corners is a user toggle (`UseRoundCorner`, Settings → General → Round
+  corners), so bind radius rather than fixing it.
+- `CardActionControlMinWidth` (248) sizes the action controls on the Settings
+  and Add-account pages. Account rows keep copy and show/hide visible; edit, QR,
+  favourite, OCRA challenge and delete live in the row's ⋯ menu — a deliberate
+  1.4.3 change. Do not hide the visible actions behind a hover-only affordance.
 
 ## Controls to reuse
 

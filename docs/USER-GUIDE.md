@@ -1,4 +1,4 @@
-# 2fast 1.4.0 user guide
+# 2fast 1.5.4 user guide
 
 This guide describes the updated Uno desktop app for Windows and macOS. It does
 not describe the older Windows Store/UWP app or mobile clients. Button wording
@@ -7,24 +7,24 @@ and additional actions are available from the **+** and **…** menus.
 
 ## 1. Install and open the app
 
-Download from the private repository's [1.4.0 release](https://github.com/hov172/2fast-desktop/releases/tag/v1.4.0).
+Download from the private repository's [1.5.4 release](https://github.com/hov172/2fast-desktop/releases/tag/v1.5.4).
 GitHub access requires an account authorized for this private repository.
 
 | Download | Use on |
 | --- | --- |
-| `2fast-macos-universal.zip` | Apple Silicon or Intel Mac, macOS 15+ |
-| `2fast-windows-x64.zip` | Intel/AMD 64-bit Windows PC |
-| `2fast-windows-arm64.zip` | ARM64 Windows PC |
+| `2fast-macos-universal.dmg` / `.zip` | Apple Silicon or Intel Mac, macOS 15+ |
+| `2fast-windows-x64.zip` / `.exe` | Intel/AMD 64-bit Windows PC |
+| `2fast-windows-arm64.zip` / `.exe` | ARM64 Windows PC |
 
-Extract the ZIP before opening the app. Mac users open `2fast.app`; Windows users
-open `Project2FA.Uno.exe` and keep the other extracted files alongside it. The
+Mac users open the DMG and drag `2fast.app` into Applications; Windows users
+extract the ZIP and open `Project2FA.Uno.exe`, keeping the other extracted files
+alongside it (the `.exe` download is a standalone single-file build). The
 .NET runtime is included. A vault is separate from the application: replacing
 application files does not upgrade or replace your `.2fa` file.
 
-The Mac app is development-signed, not Developer ID signed/notarized. Gatekeeper
-can reject it, particularly on other Macs. Windows packages are unsigned. Read
-the platform guide for installation limits rather than assuming release status
-means Apple/Microsoft distribution approval.
+The Mac app and DMG are Developer ID signed, notarized, and stapled. Windows
+packages are unsigned. Read the platform guide for installation limits rather
+than assuming release status means Microsoft distribution approval.
 
 ## 2. Create a vault or open an existing one
 
@@ -64,7 +64,7 @@ authenticator setup code.
 
 ### Scan a phone, printed code, or another display
 
-1. Open Accounts and choose **Scan camera** (also available through **+**).
+1. Open Accounts and choose **Add account → Scan camera**.
 2. Allow camera access when the operating system asks.
 3. Choose the camera if more than one is available.
 4. Keep the entire QR visible, in focus, and free of glare. The preview should
@@ -80,7 +80,7 @@ reopen the scanner for each unsuccessful frame.
 ### Scan a QR on a webpage on this computer
 
 1. Open the setup webpage and make the full QR visible.
-2. In Accounts choose **Scan screen**, or the screen option inside the scanner.
+2. In Accounts choose **Add account → Scan screen**, or the screen option inside the scanner.
 3. On Mac, use Apple's sharing picker to select the browser window or display.
    On Windows, choose a window or display from the scanner's source list.
 4. Check the preview. If capturing a display, move the 2fast window so it does
@@ -115,12 +115,12 @@ Use **Copy code** to paste into the service's verification field. If a code is
 about to expire, wait for the next code before submitting it. Keep the computer's
 date/time synchronized with the service.
 
-Use **Edit** to change an account's displayed name/details and save the dialog.
+Use **Edit account** to change an account's displayed name/details and save the dialog.
 Changing the account name does not rename the vault, change your website login,
 or re-enroll the token with its provider. Icon/display changes do not change the
 underlying secret. Favorite controls mark accounts for easier access.
 
-Use **View QR** for a supported TOTP account to show its enrollment QR. Another
+Use **View QR code** for a supported TOTP account to show its enrollment QR. Another
 authenticator that reads this QR receives the account's secret. Display it only
 when you intend to transfer the token. OCRA/MobileID QR export is deliberately
 blocked because exporting those profiles as TOTP would create an incorrect token.
@@ -137,7 +137,7 @@ an authorization code, enter the code provided with that enrollment when asked.
 The vault password and the Deepnet authorization code are different credentials.
 
 Supported MobileID accounts normally show their changing OTP. For a challenge,
-open the account's **… → OCRA challenge…** action:
+open the account's **⋯ → OCRA challenge** action:
 
 1. Enter the numeric challenge from the login page (1–8 digits).
 2. Choose **Generate**.
@@ -241,7 +241,7 @@ URL, and stops syncing that moved copy. It is not a remote rename operation.
 | Data-file fields cannot be typed into | Use Settings → Data file action buttons |
 | Old client cannot open upgraded vault | Update that client to this desktop build or use its preserved legacy copy |
 | WebDAV save fails | Connectivity, canonical HTTPS address, ETags, permissions, concurrent updates |
-| Mac launch rejected | Current release is development-signed, not notarized; see MACOS.md |
+| Mac launch rejected | Release builds are notarized; confirm the download is the signed DMG/ZIP and see MACOS.md |
 
 When reporting a problem, include OS/architecture, app version, action taken,
 and the error wording. Do not include the QR payload, setup key, vault password,
