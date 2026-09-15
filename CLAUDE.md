@@ -21,7 +21,7 @@ converter, or a helper, find the owner in the table below and extend it.
 | JSON (de)serialization | `Project2FA.Shared/Services/Serialization/` — `SerializationService`, `SerializationContext` (source-generated, AOT-safe) | ad-hoc `JsonSerializer` calls with new options |
 | Settings / preferences | `Project2FA.Shared/Services/SettingsService/SettingsService.cs` (`SettingsService.Instance`) | a new settings wrapper |
 | Secrets, biometric-bound keys | `UNOversal.Services.Secrets.ISecretService`, `Platforms/Desktop/DesktopSecretHelper.cs` | a new keychain/credential helper |
-| WebDAV | `Project2FA.Shared/Services/WebDAV/` (`WebDAVDirectoryService.Instance`). The copy in `Project2FA.Core/Services/WebDAV/` is **dead** — unreferenced, `GetClient()` returns `null` | a third WebDAV client |
+| WebDAV | `Project2FA.Shared/Services/WebDAV/` (`WebDAVDirectoryService.Instance`). The dead copy that used to sit in `Project2FA.Core/Services/WebDAV/` has been deleted | a second WebDAV client |
 | Backup import (Aegis, andOTP, 2FAS, 2fast) | `Project2FA.Shared/Services/Importer/` behind `IBackupImporterService` | a new importer service; add a format alongside the existing four |
 | Page/dialog view-model state | `Project2FA.Shared/ViewModels/` and `ViewModels/Base/*ViewModelBase.cs` | a parallel view-model for the same page |
 | Value conversion for XAML | `Project2FA.Shared/Converters/` (16 converters) | a converter that duplicates an existing one |
@@ -45,7 +45,7 @@ not locate the shared ones. Two facts to internalise:
 2. **OTP parsing uses one injected seam.** Desktop registers the strict
    `StrictProject2FAParser` implementation of `IProject2FAParser`; mobile keeps
    the legacy-compatible parser. View-models no longer branch on
-   `TWOFAST_DESKTOP` or call a parser in the head. Coverage remains in
+   `TWOFAST_DESKTOP` to pick a parser or call one in the head. Coverage remains in
    `tests/MacOS/ParserTests.csproj` (which, despite its path, is the shared
    parser suite and runs on Windows too).
 
@@ -66,26 +66,29 @@ work with tests attached — not something to do opportunistically in the middle
 of an unrelated change.
 
 The counterexample worth copying: `AddAccountPageViewModel` (70 lines) and
-`AddAccountContentDialogViewModel` (84 lines) are thin shells over the shared
-`AddAccountViewModelBase` (1090 lines). That is what reuse looks like here.
+`AddAccountContentDialogViewModel` (83 lines) are thin shells over the shared
+`AddAccountViewModelBase` (1083 lines). That is what reuse looks like here.
 
 ## Conventions
 
 **Layering.** `Project2FA.Core` (platform-free) → `Project2FA.Shared` (shared
 project, `.shproj`, compiled into every head) → heads (`src/Project2FA.Uno`,
 `Project2FA/Project2FA.UWP`). Code in `Shared` must not reach into a head's
-namespaces. `AddAccountViewModelBase` currently violates this by referencing
-`Project2FA.Services.Parser.StrictProject2FAParser`; do not add a second violation.
+namespaces. A handful of shared view-models (`LoginPageViewModel`,
+`AccountCodePageViewModel`, `CameraPageViewModel`, `TutorialPageViewModel`,
+`EditAccountPageViewModel`) still `using` head namespaces (`Project2FA.UnoApp`,
+`Project2FA.Uno.Views`, `Project2FA.UWP.Views`) under `#if`; do not add another.
 
 **MVVM.** `CommunityToolkit.Mvvm`. View-models derive from `ObservableObject` /
 `ObservableRecipient` and declare properties by hand with `SetProperty`, and
-commands as `IAsyncRelayCommand` / `ICommand` fields. The source generators
-(`[ObservableProperty]`, `[RelayCommand]`) are used in exactly one place each —
+commands as `IAsyncRelayCommand` / `ICommand` fields. The source generators are
+all but unused — `[RelayCommand]` appears in exactly one place
+(`WebDAVAuthContentDialogViewModel`) and `[ObservableProperty]` nowhere —
 match the surrounding hand-written style rather than introducing generators
 piecemeal. Shared behaviour goes in `ViewModels/Base/*ViewModelBase.cs`;
 platform additions go in a `partial` of the same view-model.
 
-**Binding.** Prefer `x:Bind` (262 uses) over `{Binding}` (49). Use `{Binding}`
+**Binding.** Prefer `x:Bind` (262 uses) over `{Binding}` (47). Use `{Binding}`
 only where `x:Bind` cannot express the target (data templates over untyped
 items, style setters).
 

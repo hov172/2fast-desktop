@@ -61,7 +61,7 @@ execution on a Windows PC. No user's vault was modified by these checks.
 | Window/display scan | Apple sharing picker | App source list and GDI capture |
 | Saved unlock credential | Touch ID Keychain | Windows Hello/Passport plus DPAPI |
 | Universal Mac / native Windows packages | One ARM/Intel archive | Separate x64 and ARM64 archives |
-| Normal distribution trust | Development-signed, not notarized | Unsigned portable build |
+| Normal distribution trust | Developer ID-signed and notarized | Unsigned portable build |
 
 Matching workflows does not mean identical operating-system dialogs or complete
 hardware validation. For step-by-step instructions see the [user guide](USER-GUIDE.md).

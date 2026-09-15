@@ -7,7 +7,7 @@ misrepresents itself. Conventions live in [CLAUDE.md](../CLAUDE.md).
 
 | Project | Kind | Owns |
 | --- | --- | --- |
-| `Project2FA.Core` | class library, platform-free | `Constants`, WebDAV client + directory service, network-time service, collection utilities, OTP migration proto models |
+| `Project2FA.Core` | class library, platform-free | `Constants`, network-time service, collection utilities, OTP migration proto models |
 | `Project2FA.Shared` | **shared project** (`.shproj`) compiled into every head | models, view-models, services (crypto, serialization, parser, importers, settings, WebDAV), converters, messenger, controls, localized strings |
 | `src/Project2FA.Uno` | Uno head — `net10.0-desktop`, iOS, Android | **the shipping app**; XAML views, dialogs, DI registration, platform code under `Platforms/` |
 | `Project2FA/Project2FA.UWP` | legacy UWP head, **compile-only** | inherited Windows Store build. No script or CI builds it, it cannot build on macOS, and it launches to a black window (pre-existing, reproduces at `HEAD`). It does compile on Windows with the 10.0.26100 SDK, MSBuild 18 and the UWP workload, and it compiles `Project2FA.Shared` — which is its value: a second compiler over the shared layer. See [uwp-head.md](uwp-head.md) |
@@ -54,7 +54,8 @@ Rules that follow from this:
 - Cross-view-model notification uses the messages in
   `Project2FA.Shared/Messenger/` (`CategoriesChangedMessage`,
   `DatafileWriteStatusChangedMessage`, `FilteringChangedMessage`,
-  `PasswordStatusChangedMessage`, `WebDAVStatusChangedMessage`), never events or
+  `InAppItemChangedMessage`, `PasswordStatusChangedMessage`,
+  `WebDAVStatusChangedMessage`), never events or
   static callbacks.
 - Anything serialized must be declared in `SerializationContext`. The desktop
   heads publish trimmed; reflection-based JSON fails at runtime.
@@ -115,7 +116,7 @@ the shared name makes that seam explicit to readers and tooling.
 | vault encrypt/decrypt | Shared `Services/Serialization/DesktopVaultCodec` owns V4 and delegates explicit V0–V3 compatibility to `CryptoService` / `SerializationCryptoService`. |
 | ~~WebDAV client + directory~~ | resolved — the dead `Project2FA.Core/Services/WebDAV/` fork was deleted; `Project2FA.Shared/Services/WebDAV/` is the only implementation |
 | ~~bool → constant converters~~ | resolved — `FavouriteToIconConverter`, `ShowCodeToIconConverter`, `FavouriteTooltipConverter` and `TOTPVisibilityTooltipConverter` now derive from `Converters/BoolToValueConverter.cs` and only declare their value pair |
-| ~~PBKDF2 `DeriveKey` + `OtpHashMode` switch~~ | resolved — lifted into `Services/Importer/BackupCryptoHelper.cs`, used by the andOTP and 2FAS importers |
+| ~~PBKDF2 `DeriveKey` + `OtpHashMode` switch~~ | resolved — lifted into `Services/Importer/BackupCryptoHelper.cs`, used by the andOTP and 2FAS importers (Aegis shares only its AES/GCM constants) |
 
 `StrictProject2FAParser` is the desktop parser — it bounds input length,
 rejects non-default ports, user-info and fragments, validates the Base32 secret
@@ -127,8 +128,8 @@ The importer duplication was scaffolding, not format logic. `BackupCryptoHelper`
 now owns the `AES/GCM/NoPadding` constants, the `Pkcs5S2ParametersGenerator` call
 shape and the `"SHA1"/"SHA256"/"SHA512" => OtpHashMode` switch; each importer
 still supplies its own digest, iteration count and payload layout, and keeps its
-own upstream attribution header. Aegis was left alone — its slot-based key
-derivation shares nothing with the other two.
+own upstream attribution header. Aegis keeps its own scrypt slot-based key
+derivation and takes only `AlgorithmDescription` / `KeyLength` from the helper.
 
 **Not duplication, despite appearances.** `DesktopFileTransaction` (local
 backup → write → rollback), `DesktopRemoteVaultTransaction` (conditional remote
@@ -167,7 +168,7 @@ The shared project refers to desktop capabilities by their short names through
 the conditional global seam. The implementation inventory remains explicit in
 the desktop namespace and is covered by the platform suites.
 
-`DataService.WriteAtomicAsync` (line 1004) is the clearest example: the method
+`DataService.WriteAtomicAsync` (line 955) is the clearest example: the method
 body is an `#if TWOFAST_DESKTOP` early-return delegating to
 `DesktopVaultLocation.WriteAtomicAsync`, followed by the UWP `StorageFile`
 implementation. Two atomic-write implementations, one file, selected by

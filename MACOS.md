@@ -1,7 +1,7 @@
 # 2fast 1.5.4 for macOS
 
 The app is named **2fast**, version **1.5.4**, build **154**. Download
-`2fast-macos-universal.dmg` from the private repository's
+`2fast-macos-universal.dmg` from the repository's
 [release page](https://github.com/hov172/2fast-desktop/releases/tag/v1.5.4).
 
 ## Requirements and installation
@@ -26,8 +26,7 @@ release packaging requires Developer ID signing and notarization before upload.
 Open **About the app** in the navigation menu for the version, build number, OS
 and architecture details. **Copy app details** copies those fields for a support
 report. The page also links to the user guide, releases, issues, source code and
-GPL-3.0 license, and credits the original 2fast project. Private project links
-require repository access.
+GPL-3.0 license, and credits the original 2fast project.
 
 ## First use and daily operation
 
@@ -140,7 +139,8 @@ The native Objective-C bridge is compiled with warnings treated as errors.
 codesign --verify --deep --strict dist/2fast.app
 ```
 
-Additional compiled-app contracts after building:
+`test-macos.sh` also runs the compiled-app contracts when the matching
+`osx-arm64`/`osx-x64` build output exists. To run them alone:
 
 ```sh
 dotnet run --project tests/MacOS/VaultModelTests/VaultModelTests.csproj -c Release -- src/Project2FA.Uno/bin/Release/net10.0-desktop/osx-arm64 .
@@ -165,7 +165,7 @@ See the [verification report](docs/audits/2026-09-08-desktop-parity.md) and
 
 ## Licensing and provenance
 
-This private distribution retains upstream GPL-3.0 licensing; see [LICENSE](LICENSE).
+This distribution retains upstream GPL-3.0 licensing; see [LICENSE](LICENSE).
 It is not an official upstream 2fast release. Vendored dependencies were initially
 restored from BiometryService `c8e9aa11807e6df54a31109ead1a625fca25ab41`, Otp.NET
 `06f39f3781dc8f4b8c59d1c30a86a9c767af0ccf`, UNOversalTemplate

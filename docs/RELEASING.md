@@ -2,8 +2,8 @@
 
 The current desktop release is `v1.5.4`, following `v1.5.3`. Its app
 version is 1.5.4 and build number is 154. This release includes a notarized macOS
-universal DMG/app ZIP and Windows x64/ARM64 portable ZIPs.
-This private distribution does not replace upstream version history.
+universal DMG/app ZIP, Windows x64/ARM64 portable ZIPs and standalone EXEs.
+This distribution does not replace upstream version history.
 
 1. Run the documented platform builds and regression checks. Mac packaging needs
    locally configured signing; never commit private keys or signing profiles.
@@ -14,8 +14,8 @@ This private distribution does not replace upstream version history.
 5. Generate SHA-256 checksums for exactly the attached downloads. Publish the
    installation, compatibility and verification documents alongside the builds.
 6. Set release/prerelease status as requested by the maintainer. Always retain
-   signing and hardware acceptance limitations in the notes. Verify repository
-   privacy and that the tag points to the intended commit.
+   signing and hardware acceptance limitations in the notes. Verify that the
+   privacy gate passed and that the tag points to the intended commit.
 
 Use `scripts/build-macos.sh` and `scripts/package-macos-universal.py` following
 MACOS.md, and `scripts/build-windows.ps1` or `scripts/build-windows.sh` following
@@ -39,8 +39,10 @@ and upstream documentation clearly identified as historical material.
 After all platform builds finish, run `python3 scripts/package-release-docs.py` to assemble the current-version guides, refresh the Windows packages with those guides, and checksum all current release downloads.
 
 For 1.5.4, the asset set is the notarized Mac DMG and app ZIP, Windows x64/ARM64
-portable ZIPs and standalone EXEs, the versioned documentation ZIP, and SHA256SUMS.
-Upload the flattened guides alongside the archive. Verify remote asset digests
+portable ZIPs and standalone EXEs, the versioned documentation ZIP, and the
+checksum files (`SHA256SUMS` plus the per-platform macOS and documentation
+lists). The flattened guides ship inside the documentation ZIP, not as separate
+assets. Verify remote asset digests
 against the local files before declaring the release complete.
 
 ## Privacy gates

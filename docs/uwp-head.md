@@ -13,8 +13,9 @@ discoverable from the project file, and all of it is expensive to rediscover.
   (`.github/` has no `workflows/`).
 - It cannot be built on macOS at all: it needs the Windows SDK, WinRT projections
   and CsWinRT.
-- It has been touched once in this fork, by `568bb6a`, the commit that imported
-  it from upstream.
+- It was imported from upstream by `568bb6a`. Since then only `efd1ee9` (compile
+  without the Store certificate), `db9b1ad` and `32cf634` (shell-context
+  decoupling) have touched it.
 
 **Keep it compiling anyway.** `Project2FA.Shared` compiles into it, so it is a
 second compiler over the shared layer — which is how the Phase 1c converter and

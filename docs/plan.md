@@ -3,8 +3,9 @@
 Current release: **1.5.4**. Last reviewed: **2026-09-15**.
 
 **Done:** Phase 0 (context stack), 1b (dead code), 1c (duplicate collapse),
-1d (coverage), desktop namespace correction, and parser seam consolidation.
-Remaining structural work is tracked in Phases 2, 4, 5 and 6.
+1d (coverage), desktop namespace correction, parser seam consolidation, and
+Phases 2–6. No structural phase is currently open; the standing non-goals at
+the end of this file still apply.
 
 This file states what phase the project is in. Implement the current phase only.
 Do not scaffold later phases; do not fold consolidation work into an unrelated
@@ -54,13 +55,11 @@ Pure rename and namespace correction. No behaviour change, no logic moved.
 - Namespace correction completed: `Project2FA.Services.MacOS` is now
   `Project2FA.Services.Desktop`.
   This includes `WindowsCameras`, `WindowsQrScanner`, `WindowsScreenCapture` and
-  `WindowsCredentialStore`, which currently sit in a `…MacOS` namespace.
-- Rename `tests/MacOS/ParserTests.csproj` → `tests/Desktop/ParserTests.csproj`,
-  and move the other cross-platform suites out of `tests/MacOS/`.
-- Update `<Compile Include="../../../src/…" />` paths in every affected test
-  `.csproj` — the suites include source files directly and will break silently
-  in the IDE otherwise.
-- Update `scripts/test-windows.ps1` and `scripts/test-macos.sh` paths.
+  `WindowsCredentialStore`, which now sit in `Project2FA.Services.Desktop`.
+- **Not done, by choice:** `tests/MacOS/ParserTests.csproj` and the other
+  cross-platform suites stay under `tests/MacOS/` for historical compatibility;
+  both `scripts/test-windows.ps1` and `scripts/test-macos.sh` run them from
+  there.
 
 **Verify:** `pwsh scripts/test-windows.ps1` and `./scripts/test-macos.sh` pass;
 `git diff` contains no changed statements, only identifiers and paths.
@@ -69,7 +68,7 @@ Pure rename and namespace correction. No behaviour change, no logic moved.
 
 ### Phase 1b — delete dead code ✅ done
 
-Deleted `Project2FA.Core/Services/WebDAV/` (4 files, ~640 lines): an unreferenced
+Deleted `Project2FA.Core/Services/WebDAV/` (3 files, ~600 lines): an unreferenced
 fork of the live `Shared/…/WebDAVDirectoryService`, a `WebDAVClientService` whose
 `GetClient()` was commented out and returned `null`, and an error-handler
 interface serving only that copy. `Project2FA.Core.csproj` had already excluded
@@ -86,10 +85,11 @@ the folder from compilation, so nothing was built from it; the stale
 - Added `Services/Importer/BackupCryptoHelper.cs` with the `AES/GCM/NoPadding`
   constants, a digest-parameterized `DeriveKey`, and `ToHashMode`. The andOTP and
   2FAS importers use it; each keeps its own digest, iteration count and payload
-  layout. Aegis was left alone — its slot-based derivation shares nothing.
+  layout. Aegis keeps its scrypt slot-based derivation and takes only the
+  AES/GCM constants from the helper.
 
 **Verified:** desktop head builds `0 Error(s)` with the warning count unchanged
-from baseline (964); `scripts/test-windows.ps1` green — 32 parser checks, 25 OCRA
+from baseline (964); `scripts/test-windows.ps1` green — 32 parser checks, 27 OCRA
 checks including RFC 6287 vectors, Windows DPAPI round trip.
 
 **Release path verified too.** `scripts/build-windows.ps1 -Runtime win-x64
@@ -195,10 +195,10 @@ text now resolves through `DesktopText` and the shared English resource file.
 Native exception fallbacks remain intentionally local because they are also
 diagnostic messages used by platform failure reporting.
 
-**Verify:** resource XML has 523 unique keys; focused desktop suites pass; no
+**Verify:** resource XML has 538 unique keys; focused desktop suites pass; no
 desktop dialog flow bypasses the resource seam.
 
-**Non-goal:** translating into the other 14 languages — `en` is the source of
+**Non-goal:** translating into the other 15 languages — `en` is the source of
 truth and the rest follow the project's normal translation route.
 
 ---
