@@ -22,7 +22,7 @@ learn more about their work and support the project. The
 
 ## Downloads
 
-Current desktop release: **1.5.1** (app title **2fast**).
+Current desktop release: **1.5.2** (app title **2fast**).
 
 Get the builds from [Releases](https://github.com/hov172/2fast-desktop/releases).
 
@@ -31,6 +31,7 @@ Get the builds from [Releases](https://github.com/hov172/2fast-desktop/releases)
 | `2fast-macos-universal.dmg` / `.zip` | macOS, Apple Silicon and Intel |
 | `2fast-windows-x64.zip` | Windows, Intel/AMD x64 |
 | `2fast-windows-arm64.zip` | Windows ARM64 |
+| `2fast-windows-x64.exe` / `2fast-windows-arm64.exe` | Windows standalone single-file builds |
 
 Extract the Windows archive before launching `Project2FA.Uno.exe`. Windows
 packages are unsigned portable builds. Open the Mac DMG and drag 2fast into

@@ -1,6 +1,6 @@
 # Plan
 
-Current release: **1.5.1**. Last reviewed: **2026-09-10**.
+Current release: **1.5.2**. Last reviewed: **2026-09-14**.
 
 **Done:** Phase 0 (context stack), 1b (dead code), 1c (duplicate collapse),
 1d (coverage), desktop namespace correction, and parser seam consolidation.
