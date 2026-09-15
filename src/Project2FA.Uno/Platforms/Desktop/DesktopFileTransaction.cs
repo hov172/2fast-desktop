@@ -14,8 +14,11 @@ internal static class DesktopFileTransaction
         string temporary = Path.Combine(Path.GetDirectoryName(destination)!, ".2fast-copy-" + Guid.NewGuid().ToString("N"));
         try
         {
+            var options = new FileStreamOptions { Mode = FileMode.CreateNew, Access = FileAccess.Write, Options = FileOptions.Asynchronous };
+            if (!OperatingSystem.IsWindows())
+                options.UnixCreateMode = UnixFileMode.UserRead | UnixFileMode.UserWrite;
             await using (var input = File.OpenRead(source))
-            await using (var output = new FileStream(temporary, new FileStreamOptions { Mode = FileMode.CreateNew, Access = FileAccess.Write, Options = FileOptions.Asynchronous, UnixCreateMode = OperatingSystem.IsWindows() ? null : UnixFileMode.UserRead | UnixFileMode.UserWrite }))
+            await using (var output = new FileStream(temporary, options))
             {
                 await input.CopyToAsync(output);
                 output.Flush(true);
