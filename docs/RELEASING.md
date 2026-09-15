@@ -54,8 +54,10 @@ directories. Documentation packaging invokes the same gate automatically.
 Universal Mac packaging requires `APPLE_DEVELOPER_ID` (certificate SHA-1) and
 `APPLE_DISTRIBUTION_PROFILE` (the Developer ID Direct provisioning profile). It
 signs nested code with Developer ID and Hardened Runtime/timestamps. Use the
-`Jay_SIGNARO` (or equivalent) notarytool keychain profile to submit the ZIP and
-DMG, staple both, and regenerate the app ZIP from the stapled app. Keep signing
+`Jay_SIGNARO` (or equivalent) notarytool keychain profile to submit the ZIP,
+staple the app and regenerate the app ZIP from it, then run
+`scripts/package-macos-dmg.sh` (which adds the drag-to-install Applications
+link), submit the DMG and staple it. Keep signing
 credentials outside Git.
 
 Use a GitHub noreply identity for new author, committer and tagger metadata.
