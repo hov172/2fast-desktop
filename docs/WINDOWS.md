@@ -1,6 +1,6 @@
-# 2fast 1.5.2 for Windows — Uno desktop
+# 2fast 1.5.3 for Windows — Uno desktop
 
-The app title is **2fast**, version **1.5.2**, build **152**.
+The app title is **2fast**, version **1.5.3**, build **153**.
 See the [complete user guide](USER-GUIDE.md) for step-by-step vault setup, account
 editing, OCRA/Deepnet, backup/restore, WebDAV and troubleshooting.
 
