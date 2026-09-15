@@ -12,6 +12,13 @@ dotnet run --project tests/MacOS/OcraTests/OcraTests.csproj -c Release
 dotnet run --project tests/MacOS/NewDataFileTests/NewDataFileTests.csproj -c Release
 dotnet run --project tests/MacOS/RemoteVaultTests/RemoteVaultTests.csproj -c Release
 dotnet run --project tests/MacOS/SecretStoreTests/SecretStoreTests.csproj -c Release
+# VaultModelTests loads the compiled desktop head; build it first with scripts/build-macos.sh.
+app_output="src/Project2FA.Uno/bin/Release/net10.0-desktop/osx-$([[ "$(uname -m)" == arm64 ]] && echo arm64 || echo x64)"
+if [[ -f "$app_output/Project2FA.Uno.dll" ]]; then
+  dotnet run --project tests/MacOS/VaultModelTests/VaultModelTests.csproj -c Release -- "$app_output" .
+else
+  echo "Skipping VaultModelTests: $app_output not built (run scripts/build-macos.sh first)." >&2
+fi
 test_bundle="$repo_root/tests/MacOS/bin/NativeTests.app"
 mkdir -p "$test_bundle/Contents/MacOS"
 xcrun clang -fobjc-arc -fblocks -Wall -Wextra -Werror -Wno-unused-parameter \
