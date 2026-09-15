@@ -1,20 +1,21 @@
 param([switch]$Hello)
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
+
+function Invoke-Suite($Project, $FailureMessage, $ExtraArgs = @()) {
+    if ($ExtraArgs.Count) { dotnet run --project $Project -c Release -- @ExtraArgs }
+    else { dotnet run --project $Project -c Release }
+    if ($LASTEXITCODE -ne 0) { throw $FailureMessage }
+}
+
 Push-Location $root
 try {
-    dotnet run --project tests/Desktop/SharedProjectTests/SharedProjectTests.csproj -c Release
-    if ($LASTEXITCODE -ne 0) { throw 'Shared project manifest is out of sync.' }
-    dotnet run --project tests/Desktop/ImporterCryptoTests/ImporterCryptoTests.csproj -c Release
-    if ($LASTEXITCODE -ne 0) { throw 'Backup importer crypto tests failed.' }
-    dotnet run --project tests/Desktop/QrFrameTests/QrFrameTests.csproj -c Release
-    if ($LASTEXITCODE -ne 0) { throw 'QR frame tests failed.' }
-    dotnet run --project tests/MacOS/ParserTests.csproj -c Release
-    if ($LASTEXITCODE -ne 0) { throw 'Shared QR parser tests failed.' }
-    dotnet run --project tests/MacOS/OcraTests/OcraTests.csproj -c Release
-    if ($LASTEXITCODE -ne 0) { throw 'OCRA tests failed.' }
+    Invoke-Suite 'tests/Desktop/SharedProjectTests/SharedProjectTests.csproj' 'Shared project manifest is out of sync.'
+    Invoke-Suite 'tests/Desktop/ImporterCryptoTests/ImporterCryptoTests.csproj' 'Backup importer crypto tests failed.'
+    Invoke-Suite 'tests/Desktop/QrFrameTests/QrFrameTests.csproj' 'QR frame tests failed.'
+    Invoke-Suite 'tests/MacOS/ParserTests.csproj' 'Shared QR parser tests failed.'
+    Invoke-Suite 'tests/MacOS/OcraTests/OcraTests.csproj' 'OCRA tests failed.'
     $nativeArgs = @()
     if ($Hello) { $nativeArgs += '--hello' }
-    dotnet run --project tests/Desktop/WindowsNativeTests/WindowsNativeTests.csproj -c Release -- @nativeArgs
-    if ($LASTEXITCODE -ne 0) { throw 'Windows native tests failed.' }
+    Invoke-Suite 'tests/Desktop/WindowsNativeTests/WindowsNativeTests.csproj' 'Windows native tests failed.' $nativeArgs
 } finally { Pop-Location }

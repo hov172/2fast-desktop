@@ -1,7 +1,4 @@
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 using Project2FA.ViewModels;
-using System;
 using Windows.System;
 
 namespace Project2FA.Uno.Views;

@@ -4,6 +4,13 @@ import struct
 import zipfile
 import subprocess
 import sys
+
+def check_pe_architecture(path, machine, label):
+    binary = path.read_bytes()
+    pe = struct.unpack_from('<I', binary, 0x3c)[0]
+    assert binary[pe:pe+4] == b'PE\0\0' and struct.unpack_from('<H', binary, pe+4)[0] == machine, f'Wrong architecture: {label}'
+    return binary
+
 root = Path(__file__).resolve().parent.parent
 dist = root / 'dist'
 for arch, machine in [('x64', 0x8664), ('arm64', 0xaa64)]:
@@ -11,9 +18,7 @@ for arch, machine in [('x64', 0x8664), ('arm64', 0xaa64)]:
     if not folder.exists():
         continue
     for name in ['Project2FA.Uno.exe', 'OpenCvSharpExtern.dll', 'coreclr.dll']:
-        binary = (folder / name).read_bytes()
-        pe = struct.unpack_from('<I', binary, 0x3c)[0]
-        assert binary[pe:pe+4] == b'PE\0\0' and struct.unpack_from('<H', binary, pe+4)[0] == machine, f'Wrong architecture: {name}'
+        check_pe_architecture(folder / name, machine, name)
     # The app only opens cameras through DirectShow, never video files/FFmpeg.
     for unused in folder.glob('opencv_videoio_ffmpeg*.dll'):
         unused.unlink()
@@ -32,9 +37,7 @@ for arch, machine in [('x64', 0x8664), ('arm64', 0xaa64)]:
                 archive.write(path, Path('2fast') / path.relative_to(folder))
     single = dist / ('windows-' + arch + '-singlefile') / 'Project2FA.Uno.exe'
     if single.exists():
-        binary = single.read_bytes()
-        pe = struct.unpack_from('<I', binary, 0x3c)[0]
-        assert binary[pe:pe+4] == b'PE\0\0' and struct.unpack_from('<H', binary, pe+4)[0] == machine, 'Wrong architecture: single-file exe'
+        binary = check_pe_architecture(single, machine, 'single-file exe')
         subprocess.run([sys.executable, str(root / 'scripts/verify-release-privacy.py'), str(single)], check=True)
         (dist / ('2fast-windows-' + arch + '.exe')).write_bytes(binary)
 lines = []

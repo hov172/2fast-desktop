@@ -46,9 +46,6 @@ namespace Project2FA.UnoApp
         /// </summary>
         protected WinUIWindow? MainWindow { get; private set; }
 
-#if __IOS__
-        Foundation.NSUrl _activeDatafileUrl;
-#endif
         /// <summary>
         /// Initializes the singleton application object. This is the first line of authored code
         /// executed, and as such is the logical equivalent of main() or WinMain().
@@ -109,47 +106,21 @@ namespace Project2FA.UnoApp
             }
 #endif
 
-#if __ANDROID__ || __IOS__
-            //FeatureConfiguration.ListViewBase.AnimateScrollIntoView = false;
-#endif
-
             if (MainWindow.Content == null)
             {
                 MainWindow.Content = ShellPageInstance;
-                //ThemeHelper.Initialize();
-                // Hide default title bar
-                // not implemented
-                //CoreApplicationViewTitleBar coreTitleBar = CoreApplication.GetCurrentView().TitleBar;
-                //if (!coreTitleBar.ExtendViewIntoTitleBar)
-                //{
-                //    coreTitleBar.ExtendViewIntoTitleBar = true;
-                //}
 
                 WinUIWindow.Current.Activated -= Current_Activated;
                 WinUIWindow.Current.Activated += Current_Activated;
 
-                // LoadIconNames(); //only for development
-                // handle startup
                 if (args?.Arguments is ILaunchActivatedEventArgs e)
                 {
                     SystemInformationHelper.Instance.TrackAppUse(e);
                 }
 
-                if (args.Arguments is ProtocolActivatedEventArgs fileStartOnLaunch)
-                {
-                    // TODO not implemented in Android/iOS
-                    //var file = fileActivated.Files.FirstOrDefault();
-                    //DataService.Instance.ActivatedDatafile = (StorageFile)file;
-                    //var dialogService = Current.Container.Resolve<IDialogService>();
-                    //if (await dialogService.IsDialogRunning())
-                    //{
-                    //    dialogService.CloseDialogs();
-                    //}
-                    //await ShellPageInstance.NavigationService.NavigateAsync("/" + nameof(BlankPage));
-                    //FileActivationPage fileActivationPage = Container.Resolve<FileActivationPage>();
-                    //WinUIWindow.Current.Content = fileActivationPage;
-                }
-                else
+                // File activation on launch (Windows/macOS) is handled after this block;
+                // Android/iOS protocol activation on cold launch is not implemented.
+                if (args.Arguments is not ProtocolActivatedEventArgs)
                 {
                     if (!string.IsNullOrWhiteSpace(SettingsService.Instance.DataFilePasswordHash))
                     {
@@ -262,44 +233,6 @@ namespace Project2FA.UnoApp
 #endif
             return ShellPageInstance;
         }
-
-#if __IOS__
-        //public override bool OpenUrl(UIKit.UIApplication app, Foundation.NSUrl url, Foundation.NSDictionary options)
-        //{
-        //    string urlPath = url.Path;
-        //    if (_activeDatafileUrl != null)
-        //    {
-        //        //release the access
-        //        _activeDatafileUrl.StopAccessingSecurityScopedResource();
-        //    }
-        //    _activeDatafileUrl = url;
-
-        //    if (Foundation.NSFileManager.DefaultManager.IsReadableFile(urlPath))
-        //    {
-        //        LoadStorageFile(url,urlPath);
-        //        //openedFile = new StorageFile(new );//await StorageFile.GetFileFromPathAsync(urlPath);
-        //        //data = Foundation.NSData.FromFile(urlPath);
-        //    }
-        //    else
-        //    {
-        //        if (url.StartAccessingSecurityScopedResource())
-        //        {
-        //            //data = Foundation.NSData.FromFile(urlPath);
-        //            LoadStorageFile(url,urlPath);
-                    
-        //        }
-        //    }
-
-        //    DataService.Instance.OpenDatefileUrl = url;
-        //    return base.OpenUrl(app, url, options);
-        //}
-
-        private async Task LoadStorageFile(Foundation.NSUrl url, string path)
-        {
-            DataService.Instance.ActivatedDatafile = await StorageFile.GetFileFromPathAsync(path);
-            url.StopAccessingSecurityScopedResource();
-        }
-#endif
 
         /// <summary>
         /// Configures global Uno Platform logging

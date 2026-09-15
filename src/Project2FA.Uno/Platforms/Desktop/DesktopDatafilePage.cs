@@ -17,7 +17,7 @@ public sealed partial class SettingPage
         catch (Exception error)
         {
             DesktopScanDiagnostics.Record("data-file action", error);
-            DatafileStatus.Text = error is IOException || error is ArgumentException || error is InvalidOperationException
+            DatafileStatus.Text = error is IOException or ArgumentException or InvalidOperationException
                 ? error.Message : DesktopText.Get("DatafileOperationFailed", "The file operation could not be completed. Check access to the selected folder.");
         }
         finally { foreach (var button in DatafileActions.Children.OfType<Button>()) button.IsEnabled = true; fileActionRunning = false; }

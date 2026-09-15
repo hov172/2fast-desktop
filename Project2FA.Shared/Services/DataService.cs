@@ -106,10 +106,6 @@ namespace Project2FA.Services
         private Foundation.NSUrl _openDatefileUrl = null;
 #endif
 
-        //private StorageFileQueryResult _queryResult; // to reload the datafile if the file is modified
-        //private bool _datafileWritten;
-        //private int _queryChangedCounter;
-
         /// <summary>
         /// Gets public singleton property.
         /// </summary>
@@ -533,31 +529,6 @@ namespace Project2FA.Services
                                     }
                                 }
                             }
-
-                            
-
-                            //if (_queryResult == null)
-                            //{
-                            //    try
-                            //    {
-                            //        // monitors the folder of the datafile for changes and triggers the reload. 
-                            //        List<string> fileTypeFilter = new List<string>();
-                            //        fileTypeFilter.Add(".2fa");
-                            //        var options = new QueryOptions(CommonFileQuery.DefaultQuery, fileTypeFilter);
-                            //        _queryResult = folder.CreateFileQueryWithOptions(options);
-                            //        //subscribe on query's ContentsChanged event
-                            //        _queryResult.ContentsChanged += Query_DatafileChanged;
-                            //        // call the query to get later changed elements
-                            //        //TODO add this feature
-                            //        //var files = await _queryResult.GetFilesAsync();
-                            //    }
-                            //    catch (Exception exc)
-                            //    {
-                            //        // TODO exception
-                            //        throw;
-                            //    }
-                            //}
-                            
                         }
                     }
                     catch (Exception exc)
@@ -695,26 +666,6 @@ namespace Project2FA.Services
                 }
             }
         }
-
-        //private async void Query_DatafileChanged(IStorageQueryResultBase sender, object args)
-        //{
-        //    if (_queryChangedCounter != 0)
-        //    {
-        //        _initialization = true;
-        //        // reload the datafile only, when the file is modified outside the app
-        //        if (!_datafileWritten)
-        //        {
-        //            // TODO display information for reloading
-        //            // reload the datafile, if the file is changed
-        //            await ReloadDatafile();
-        //        }
-        //        else
-        //        {
-        //            _datafileWritten = false;
-        //        }
-        //    }
-        //    _queryChangedCounter++;
-        //}
 
         public void ErrorResolved()
         {
@@ -1166,30 +1117,18 @@ namespace Project2FA.Services
 
         public string GetIconForLabel(string label)
         {
-            var transformName = label;
-            transformName = transformName.Replace(" ", string.Empty);
-            transformName = transformName.Replace("-", string.Empty);
+            string transformName = label.Replace(" ", string.Empty).Replace("-", string.Empty);
 
             try
             {
-                if (FontIconCollection.Where(x => x.Name == transformName).Any())
+                if (FontIconCollection.Any(x => x.Name == transformName))
                 {
                     return transformName;
                 }
-                else
-                {
-                    // fallback: check if one IconNameCollectionModel name fits into the label name
 
-                    var list = FontIconCollection.Where(x => x.Name.Contains(transformName));
-                    if (list.Count() == 1)
-                    {
-                        return transformName;
-                    }
-                    else
-                    {
-                        return string.Empty;
-                    }
-                }
+                // fallback: check if one IconNameCollectionModel name fits into the label name
+                bool hasSingleMatch = FontIconCollection.Count(x => x.Name.Contains(transformName)) == 1;
+                return hasSingleMatch ? transformName : string.Empty;
             }
             catch (Exception exc)
             {

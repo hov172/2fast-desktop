@@ -609,7 +609,6 @@ namespace Project2FA.ViewModels
                     if (FontIdentifikationCollection.Count == 0)
                     {
                         FontIdentifikationCollection.Add(new FontIdentifikationModel { Name = Strings.Resources.AccountCodePageSearchNotFound });
-                        return Task.FromResult(true);
                     }
                     return Task.FromResult(true);
                 }

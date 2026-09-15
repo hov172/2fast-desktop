@@ -170,105 +170,11 @@ public class ImageElement : IAddChild
                 _image.Height = _precedentHeight;
             }
         }
-        catch (Exception exc)
+        catch (Exception)
         {
-
+            // Best-effort image load; leave the alt text visible on failure.
         }
     }
-
-    //    private async void LoadImage(object sender, RoutedEventArgs e)
-    //    {
-    //        if (_loaded) return;
-
-    //        void imageLoaded(ImageSource source)
-    //        {
-    //            _loaded = true;
-    //            _imageCache.TryAdd(_uri, source);
-    //            _altText.Visibility = Visibility.Collapsed;
-    //        }
-
-    //        if (_imageCache.TryGetValue(_uri, out ImageSource? value))
-    //        {
-    //            _image.Source = value;
-    //            imageLoaded(value);
-    //        }
-    //        else
-    //        {
-    //            try
-    //            {
-    //                if (_imageProvider != null && _imageProvider.ShouldUseThisProvider(_uri.AbsoluteUri))
-    //                {
-    //                    var source = await _imageProvider.GetImageSource(_uri.AbsoluteUri);
-    //                    _image.Source = source;
-    //                    imageLoaded(source);
-    //                }
-    //                else if (_uri.Scheme == "file")
-    //                {
-    //                    StorageFile? file = await StorageFile.GetFileFromPathAsync(_uri.LocalPath);
-    //                    if (file != null)
-    //                    {
-    //                        using IRandomAccessStream? stream = await file.OpenAsync(FileAccessMode.Read);
-    //                        BitmapImage bitmap = new();
-    //                        if (stream != null) await bitmap.SetSourceAsync(stream);
-    //                        _image.Source = bitmap;
-    //                        _image.Width = bitmap.PixelWidth == 0 ? bitmap.DecodePixelWidth : bitmap.PixelWidth;
-    //                        _image.Height = bitmap.PixelHeight == 0 ? bitmap.DecodePixelHeight : bitmap.PixelHeight;
-    //                        imageLoaded(bitmap);
-    //                    }
-    //                }
-    //                else
-    //                {
-    //                    HttpClient client = new();
-    ////#if __WASM__
-    ////                    client.DefaultRequestHeaders.Add("Access-Control-Allow-Origin", "*");
-    ////                    client.DefaultRequestHeaders.Add("Access-Control-Allow-Methods", "*");
-    ////                    client.DefaultRequestHeaders.Add("Access-Control-Allow-Headers", "*");
-    ////                    client.DefaultRequestHeaders.Add("Access-Control-Max-Age", "86400");
-    ////#endif
-    //                    HttpResponseMessage response = await client.GetAsync(_uri);
-    //                    if (response != null)
-    //                    {
-    //                        string? contentType = response.Content.Headers?.ContentType?.MediaType;
-    //                        if (contentType == "image/svg+xml")
-    //                        {
-    //                            string? svgString = await response.Content.ReadAsStringAsync();
-    //                            ImageSource resImage = await _svgRenderer.SvgToImageSource(svgString);
-    //                            if (resImage != null)
-    //                            {
-    //                                _image.Source = resImage;
-    //                                Size size = Helper.GetSvgSize(svgString);
-    //                                if (size.Width > 0) _image.Width = size.Width;
-    //                                if (size.Height > 0) _image.Height = size.Height;
-    //                                imageLoaded(resImage);
-    //                            }
-    //                        }
-    //                        else
-    //                        {
-    //                            using Stream? stream = await response.Content.ReadAsStreamAsync();
-    //                            BitmapImage bitmap = new();
-
-    //                            if (stream != null) await bitmap.SetSourceAsync(stream.AsRandomAccessStream());
-
-    //                            _image.Source = bitmap;
-    //                            _image.Width = bitmap.PixelWidth == 0 ? bitmap.DecodePixelWidth : bitmap.PixelWidth;
-    //                            _image.Height = bitmap.PixelHeight == 0 ? bitmap.DecodePixelHeight : bitmap.PixelHeight;
-    //                            imageLoaded(bitmap);
-    //                        }
-    //                    }
-    //                }
-    //            }
-    //            catch (Exception) { }
-    //        }
-
-    //        if (_precedentWidth != 0)
-    //        {
-    //            _image.Width = _precedentWidth;
-    //        }
-    //        if (_precedentHeight != 0)
-    //        {
-    //            _image.Height = _precedentHeight;
-    //        }
-    //    }
 
     public void AddChild(IAddChild child)
     {

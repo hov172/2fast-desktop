@@ -75,44 +75,33 @@ public static class Helper
         // Check if the current position is already an insertion position
         if (position.IsAtInsertionPosition(logicalDirection))
         {
-            // Return the same position
             return position;
         }
-        else
+
+        // Try to find the next insertion position by moving one symbol forward
+        TextPointer next = position.GetPositionAtOffset(1, logicalDirection);
+        if (next == null)
         {
-            // Try to find the next insertion position by moving one symbol forward
-            TextPointer next = position.GetPositionAtOffset(1, logicalDirection);
-            // If there is no next position, return null
-            if (next == null)
-            {
-                return null;
-            }
-            else
-            {
-                // Recursively call this method until an insertion position is found or null is returned
-                return next.GetNextInsertionPosition(logicalDirection);
-            }
+            return null;
         }
+
+        // Recursively call this method until an insertion position is found or null is returned
+        return next.GetNextInsertionPosition(logicalDirection);
     }
 
     public static bool IsAtInsertionPosition(this TextPointer position, LogicalDirection logicalDirection)
     {
-        // Get the character rect of the current position
         Rect currentRect = position.GetCharacterRect(logicalDirection);
         // Try to get the next position by moving one symbol forward
         TextPointer next = position.GetPositionAtOffset(1, logicalDirection);
-        // If there is no next position, return false
         if (next == null)
         {
             return false;
         }
-        else
-        {
-            // Get the character rect of the next position
-            Rect nextRect = next.GetCharacterRect(logicalDirection);
-            // Compare the two rects and return true if they are different
-            return !currentRect.Equals(nextRect);
-        }
+
+        // Two positions are distinct insertion points if their character rects differ
+        Rect nextRect = next.GetCharacterRect(logicalDirection);
+        return !currentRect.Equals(nextRect);
     }
 
     public static string RemoveImageSize(string? url)
@@ -226,19 +215,6 @@ public static class Helper
                 return new(width, height);
             }
         }
-
-        // not using this one as it's seems to be from the HTML renderer
-        //// Try to parse the width and height from the special attributes
-        //var attributes = link.GetAttributes();
-        //if (attributes != null && attributes.Properties != null)
-        //{
-        //    var width = attributes.Properties.FirstOrDefault(p => p.Key == "width")?.Value;
-        //    var height = attributes.Properties.FirstOrDefault(p => p.Key == "height")?.Value;
-        //    if (!string.IsNullOrEmpty(width) && !string.IsNullOrEmpty(height) && int.TryParse(width, out int w) && int.TryParse(height, out int h))
-        //    {
-        //        return new(w, h);
-        //    }
-        //}
 
         // Return default values if no width and height are found
         return default;

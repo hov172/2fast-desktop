@@ -1,6 +1,5 @@
 using Markdig;
 using Markdig.Syntax;
-//using Symptum.Core.Management.Resources;
 using Symptum.Markdown.Embedding;
 using Symptum.UI.Markdown.Renderers;
 using Symptum.UI.Markdown.TextElements;
@@ -22,20 +21,12 @@ public class ImportsHandler
         {
             string id = kvp.Key;
             ExportBlock? match = null;
-            if (id.StartsWith(nameof(Symptum)))
+            // Resource-backed imports ("Symptum?..." ids) are not wired up in this fork;
+            // only same-document exports can be resolved.
+            if (!id.StartsWith(nameof(Symptum)))
             {
-                var ids = id.Split('?');
-                string resId = ids[0];
-                string impId = ids[1];
-                //if (ResourceManager.TryGetResourceFromId(resId, out IResource? resource)
-                //    && resource is MarkdownFileResource markdownFileResource
-                //    && !string.IsNullOrEmpty(markdownFileResource.Markdown))
-                //{
-                //    MarkdownDocument doc = Markdig.Markdown.Parse(markdownFileResource.Markdown, pipeline);
-                //    match = doc.Descendants<ExportBlock>().FirstOrDefault(e => impId.Equals(e.Id.ToString(), StringComparison.InvariantCulture));
-                //}
+                match = availableExports?.FirstOrDefault(e => kvp.Key.Equals(e.Id.ToString(), StringComparison.InvariantCulture));
             }
-            else match = availableExports?.FirstOrDefault(e => kvp.Key.Equals(e.Id.ToString(), StringComparison.InvariantCulture));
 
             if (match != null)
             {
