@@ -1,8 +1,8 @@
-# 2fast 1.5.3 for macOS
+# 2fast 1.5.4 for macOS
 
-The app is named **2fast**, version **1.5.3**, build **153**. Download
+The app is named **2fast**, version **1.5.4**, build **154**. Download
 `2fast-macos-universal.dmg` from the private repository's
-[release page](https://github.com/hov172/2fast-desktop/releases/tag/v1.5.3).
+[release page](https://github.com/hov172/2fast-desktop/releases/tag/v1.5.4).
 
 ## Requirements and installation
 
@@ -161,7 +161,7 @@ checked, successful Touch ID unlock remains untested. Intel compiled checks run
 under Rosetta; physical Intel acceptance remains outstanding. Live capture and
 Deepnet server interoperability need platform acceptance beyond managed tests.
 See the [verification report](docs/audits/2026-09-08-desktop-parity.md) and
-[release notes](docs/RELEASE-v1.5.3.md).
+[release notes](docs/RELEASE-v1.5.4.md).
 
 ## Licensing and provenance
 

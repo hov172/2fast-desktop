@@ -1,7 +1,7 @@
 # Desktop releases
 
-The current desktop release is `v1.5.3`, following `v1.5.2`. Its app
-version is 1.5.3 and build number is 153. This release includes a notarized macOS
+The current desktop release is `v1.5.4`, following `v1.5.3`. Its app
+version is 1.5.4 and build number is 154. This release includes a notarized macOS
 universal DMG/app ZIP and Windows x64/ARM64 portable ZIPs.
 This private distribution does not replace upstream version history.
 
@@ -38,7 +38,7 @@ and upstream documentation clearly identified as historical material.
 
 After all platform builds finish, run `python3 scripts/package-release-docs.py` to assemble the current-version guides, refresh the Windows packages with those guides, and checksum all current release downloads.
 
-For 1.5.3, the asset set is the notarized Mac DMG and app ZIP, Windows x64/ARM64
+For 1.5.4, the asset set is the notarized Mac DMG and app ZIP, Windows x64/ARM64
 portable ZIPs and standalone EXEs, the versioned documentation ZIP, and SHA256SUMS.
 Upload the flattened guides alongside the archive. Verify remote asset digests
 against the local files before declaring the release complete.

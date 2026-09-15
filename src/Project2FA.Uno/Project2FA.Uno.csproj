@@ -16,9 +16,9 @@
     <!-- App Identifier -->
     <ApplicationId>jpweber.it.Project2FA.Uno</ApplicationId>
     <!-- Versions -->
-    <ApplicationDisplayVersion>1.5.3</ApplicationDisplayVersion>
-    <ApplicationVersion>153</ApplicationVersion>
-    <Version>1.5.3</Version>
+    <ApplicationDisplayVersion>1.5.4</ApplicationDisplayVersion>
+    <ApplicationVersion>154</ApplicationVersion>
+    <Version>1.5.4</Version>
     <!-- Package Publisher -->
     <ApplicationPublisher>Jan Philipp Weber</ApplicationPublisher>
     <!-- Package Description -->
