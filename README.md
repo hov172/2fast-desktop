@@ -29,14 +29,23 @@ Get the builds from [Releases](https://github.com/hov172/2fast-desktop/releases)
 | Package | Platform |
 | --- | --- |
 | `2fast-macos-universal.dmg` / `.zip` | macOS, Apple Silicon and Intel |
+| `2fast-windows-x64-setup.exe` / `2fast-windows-arm64-setup.exe` | Windows installer — recommended |
 | `2fast-windows-x64.zip` | Windows, Intel/AMD x64 |
 | `2fast-windows-arm64.zip` | Windows ARM64 |
 | `2fast-windows-x64.exe` / `2fast-windows-arm64.exe` | Windows standalone single-file builds |
 
-Extract the Windows archive before launching `Project2FA.Uno.exe`. Windows
-packages are unsigned portable builds. Open the Mac DMG and drag 2fast into
-Applications. The published Mac app and DMG use
-Developer ID signing with Apple notarization and stapled tickets.
+The Windows **installer** installs for all users by default, into Program Files,
+and asks for administrator approval. Choose **Install for me only** in the first
+dialog to install under `%LOCALAPPDATA%\Programs\2fast` without elevation.
+Either way it adds Start menu and optional desktop shortcuts, and appears in
+Installed apps. Uninstalling removes the application only: your `.2fa` vault
+files are never touched, wherever you keep them.
+
+Prefer the ZIP if you want a portable copy: extract it and launch
+`Project2FA.Uno.exe`. Windows packages are unsigned, so SmartScreen will warn on
+first run — check the SHA256 checksum against `SHA256SUMS` on the release page.
+Open the Mac DMG and drag 2fast into Applications. The published Mac app and DMG
+use Developer ID signing with Apple notarization and stapled tickets.
 
 ## Features
 

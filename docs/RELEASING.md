@@ -39,7 +39,8 @@ and upstream documentation clearly identified as historical material.
 After all platform builds finish, run `python3 scripts/package-release-docs.py` to assemble the current-version guides, refresh the Windows packages with those guides, and checksum all current release downloads.
 
 For 1.5.4, the asset set is the notarized Mac DMG and app ZIP, Windows x64/ARM64
-portable ZIPs and standalone EXEs, the versioned documentation ZIP, and the
+installers (`2fast-windows-<arch>-setup.exe`), portable ZIPs and standalone
+EXEs, the versioned documentation ZIP, and the
 checksum files (`SHA256SUMS` plus the per-platform macOS and documentation
 lists). The flattened guides ship inside the documentation ZIP, not as separate
 assets. Verify remote asset digests

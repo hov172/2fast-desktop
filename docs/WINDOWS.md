@@ -4,10 +4,29 @@ The app title is **2fast**, version **1.5.4**, build **154**.
 See the [complete user guide](USER-GUIDE.md) for step-by-step vault setup, account
 editing, OCRA/Deepnet, backup/restore, WebDAV and troubleshooting.
 
-Extract the complete architecture-specific ZIP and run `Project2FA.Uno.exe`.
-Alternatively, download the matching standalone `2fast-windows-x64.exe` or
-`2fast-windows-arm64.exe`; these embed the runtime, libraries, and app assets
-and extract them automatically when launched.
+Three Windows packages are published; pick one.
+
+**Installer — `2fast-windows-x64-setup.exe` / `2fast-windows-arm64-setup.exe`.**
+Installs **for all users** by default, into `%ProgramFiles%\2fast`, and asks for
+administrator approval. The first dialog also offers **Install for me only**,
+which installs under `%LOCALAPPDATA%\Programs\2fast` with no elevation — use it
+on a machine where you are not an administrator. Adds a Start menu entry, an
+optional desktop shortcut, and an entry in Installed apps for removal. Close
+2fast before running it; the installer refuses to replace a running copy.
+**Uninstalling removes the application only — your `.2fa` vault files are never
+deleted**, wherever you keep them. Installing a newer version upgrades in place
+rather than adding a second copy.
+
+For unattended deployment: `2fast-windows-x64-setup.exe /ALLUSERS /VERYSILENT
+/NORESTART`, or `/CURRENTUSER` for a per-user install. `/DIR="…"` overrides the
+install location.
+
+**Portable ZIP.** Extract the complete architecture-specific ZIP and run
+`Project2FA.Uno.exe`.
+
+**Standalone single file.** The matching `2fast-windows-x64.exe` or
+`2fast-windows-arm64.exe` embeds the runtime, libraries, and app assets
+and extracts them automatically when launched.
 Use x64 for Intel/AMD PCs and ARM64 for ARM Windows PCs. The .NET runtime and
 matching native camera library are included. Keep the DLLs beside the executable.
 This is a locally built, unsigned desktop distribution, not a Windows Store update.
