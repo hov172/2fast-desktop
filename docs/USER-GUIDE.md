@@ -13,14 +13,22 @@ GitHub access requires an account authorized for this private repository.
 | Download | Use on |
 | --- | --- |
 | `2fast-macos-universal.dmg` / `.zip` | Apple Silicon or Intel Mac, macOS 15+ |
-| `2fast-windows-x64.zip` / `.exe` | Intel/AMD 64-bit Windows PC |
-| `2fast-windows-arm64.zip` / `.exe` | ARM64 Windows PC |
+| `2fast-windows-x64-setup.exe` | Intel/AMD 64-bit Windows PC — installer, recommended |
+| `2fast-windows-arm64-setup.exe` | ARM64 Windows PC — installer, recommended |
+| `2fast-windows-x64.zip` / `.exe` | Intel/AMD 64-bit Windows PC — portable |
+| `2fast-windows-arm64.zip` / `.exe` | ARM64 Windows PC — portable |
 
-Mac users open the DMG and drag `2fast.app` into Applications; Windows users
-extract the ZIP and open `Project2FA.Uno.exe`, keeping the other extracted files
-alongside it (the `.exe` download is a standalone single-file build). The
-.NET runtime is included. A vault is separate from the application: replacing
-application files does not upgrade or replace your `.2fa` file.
+Mac users open the DMG and drag `2fast.app` into Applications.
+
+Windows users have three options. The **`-setup.exe` installer** is the simplest:
+it installs for all users and adds a Start menu entry, or choose *Install for me
+only* in the first dialog if you are not an administrator. Otherwise **extract
+the ZIP** and open `Project2FA.Uno.exe`, keeping the other extracted files
+alongside it; or download the plain **`.exe`**, which is a standalone
+single-file build. The .NET runtime is included in all three.
+
+A vault is separate from the application: replacing application files, or
+uninstalling, does not upgrade, replace or delete your `.2fa` file.
 
 The Mac app and DMG are Developer ID signed, notarized, and stapled. Windows
 packages are unsigned. Read the platform guide for installation limits rather

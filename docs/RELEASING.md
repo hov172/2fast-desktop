@@ -38,6 +38,13 @@ and upstream documentation clearly identified as historical material.
 
 After all platform builds finish, run `python3 scripts/package-release-docs.py` to assemble the current-version guides, refresh the Windows packages with those guides, and checksum all current release downloads.
 
+**ARM64 Windows packages must be built on an ARM64 Windows host.** Publishing
+them from an x64 machine fails in `Uno.Sdk.Extras.Publish.Windows.targets` with
+*"Cross publishing self-contained WPF applications is not supported."*
+`package-windows.py` skips any architecture whose `dist/windows-<arch>/` folder
+has no `Project2FA.Uno.exe`, so an x64-only run produces the x64 assets and
+reports the skip rather than failing.
+
 For 1.5.4, the asset set is the notarized Mac DMG and app ZIP, Windows x64/ARM64
 installers (`2fast-windows-<arch>-setup.exe`), portable ZIPs and standalone
 EXEs, the versioned documentation ZIP, and the

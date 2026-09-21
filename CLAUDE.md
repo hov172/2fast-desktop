@@ -154,10 +154,19 @@ pwsh scripts/test-windows.ps1                          # QR frame, shared parser
 dotnet run --project tests/MacOS/ParserTests.csproj -c Release
 
 # package / release
-python scripts/package-windows.py
+python scripts/package-windows.py      # zip + single-file exe + Inno Setup installer
 python scripts/package-macos-universal.py
 python scripts/verify-release-privacy.py dist/windows-x64
 ```
+
+`package-windows.py` also builds `dist/2fast-windows-<arch>-setup.exe` from
+[scripts/windows-installer.iss](scripts/windows-installer.iss) when Inno Setup
+is present (`winget install JRSoftware.InnoSetup`, or point `ISCC` at its
+`ISCC.exe`); without it the installer step is skipped and the ZIP and
+single-file EXE are still produced. The installer defaults to an all-users
+install and offers a per-user one. Its uninstaller must never gain an
+`[UninstallDelete]` entry — `.2fa` vaults live outside the install directory and
+uninstalling must not destroy a user's second factors.
 
 The Uno head targets `net10.0-desktop`; note that `TWOFAST_DESKTOP` /
 `TWOFAST_WINDOWS` / `TWOFAST_MACOS` are only defined when a `RuntimeIdentifier`
