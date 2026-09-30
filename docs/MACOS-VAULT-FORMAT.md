@@ -51,6 +51,10 @@ holds copies, matched by `Guid`. The icon fields are strings:
   with `uint.TryParse`; an empty or non-decimal value shows no icon.
 - `UnicodeString`: the same glyph as `U+XXXX` (e.g. `"U+E220"`).
 
+The desktop keeps its original icons: it always draws the Segoe Fluent
+glyph for `UnicodeIndex`. The emoji below are display-only stand-ins in 2fast
+Browser and are never written to the vault.
+
 Writers store only icons from that list. 2fast Browser shows each one as an
 emoji stand-in and, on unlock or import, rewrites any `UnicodeIndex` that is
 not a decimal of at most 65535 (empty, hex such as `"1f4bc"`, or an emoji code
