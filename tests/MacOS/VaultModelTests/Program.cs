@@ -45,3 +45,5 @@ GeneratedCardChecks.Run(app);
 CryptoChecks.Run(app);
 
 VaultV4Checks.Run(app, model);
+
+BrowserVaultChecks.Run(app);

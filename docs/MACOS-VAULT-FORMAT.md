@@ -93,6 +93,9 @@ metadata and seed preservation, tampered headers/ciphertext, fresh salt/nonce,
 wrong passwords, whitespace preservation, downgrade rejection, and V0–V3 migration.
 File/HTTP fault-injection tests cover commit, rollback, conflicts, lost responses,
 ETag requirements, create collisions, and retained recovery copies.
+`VaultModelTests` also opens `fixtures/browser-written.2fa`, a V4 vault written by
+the separate 2fast Browser extension's WebCrypto codec, so the two codecs cannot
+drift apart silently; the extension's own suite imports a desktop-written vault.
 
 - [.NET AES-GCM](https://learn.microsoft.com/en-us/dotnet/api/system.security.cryptography.aesgcm.encrypt)
 - [OWASP password derivation guidance](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html)
