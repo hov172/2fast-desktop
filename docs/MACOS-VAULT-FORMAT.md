@@ -40,6 +40,23 @@ are replaced; creating a new encrypted file cannot strengthen existing copies.
 After verifying migration and any required compatibility, manage old copies using
 your normal backup retention process. The app does not delete them automatically.
 
+## Categories
+
+`GlobalCategories` holds each category once; an account's `SelectedCategories`
+holds copies, matched by `Guid`. The icon fields are strings:
+
+- `UnicodeIndex`: the **decimal** glyph number from
+  `Project2FA.Shared/Assets/JSONs/CategoryIcons.json` (e.g. `"57888"` for Bank).
+  The desktop draws it with its bundled Segoe Fluent Icons font and parses it
+  with `uint.TryParse`; an empty or non-decimal value shows no icon.
+- `UnicodeString`: the same glyph as `U+XXXX` (e.g. `"U+E220"`).
+
+Writers store only icons from that list. 2fast Browser shows each one as an
+emoji stand-in and, on unlock or import, rewrites any `UnicodeIndex` that is
+not a decimal of at most 65535 (empty, hex such as `"1f4bc"`, or an emoji code
+point past the desktop's `(char)` range) to the nearest listed icon, in both
+`GlobalCategories` and account copies.
+
 ## WebDAV
 
 WebDAV password changes and upgrades operate online over HTTPS. The server must

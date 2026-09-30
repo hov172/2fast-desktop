@@ -26,8 +26,11 @@ public sealed partial class ManageCategoriesContentDialog : ContentDialog
     {
         if (sender is ComboBox cb && cb.DataContext is CategoryModel model && ViewModel != null)
         {
-            ViewModel.SelectedComboBoxItem = ViewModel.IconSourceCollection
-                .Where(x => x.UnicodeIndex == Convert.ToUInt32(model.UnicodeIndex)).FirstOrDefault();
+            // Vaults from other writers (e.g. older 2fast Browser builds) can carry an empty or non-decimal index;
+            // preselect nothing for those instead of throwing FormatException.
+            ViewModel.SelectedComboBoxItem = uint.TryParse(model.UnicodeIndex, out var unicodeIndex)
+                ? ViewModel.IconSourceCollection.FirstOrDefault(x => x.UnicodeIndex == unicodeIndex)
+                : null;
         }
     }
 

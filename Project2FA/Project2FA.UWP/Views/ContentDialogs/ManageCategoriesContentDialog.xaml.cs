@@ -67,7 +67,10 @@ namespace Project2FA.UWP.Views
             {
                 if (cb.DataContext is CategoryModel model)
                 {
-                    ViewModel.SelectedComboBoxItem = ViewModel.IconSourceCollection.Where(x => x.UnicodeIndex == Convert.ToUInt32(model.UnicodeIndex)).FirstOrDefault();
+                    // An empty or non-decimal index (e.g. from an older 2fast Browser build) must not throw.
+                    ViewModel.SelectedComboBoxItem = uint.TryParse(model.UnicodeIndex, out var unicodeIndex)
+                        ? ViewModel.IconSourceCollection.FirstOrDefault(x => x.UnicodeIndex == unicodeIndex)
+                        : null;
                     //cb.SelectedItem = ViewModel.IconSourceCollection.Where(x => x.UnicodeIndex == Convert.ToUInt32(model.UnicodeIndex)).FirstOrDefault();
                 }
             }
